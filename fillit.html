@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formular cu Câmp de Text</title>
+    <style>
+        .input-container {
+            margin-bottom: 20px;
+        }
+
+        .display-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="input-container">
+    <label for="inputText">Introdu textul:</label>
+    <input type="text" id="inputText" name="inputText">
+    <button onclick="submitText()">Trimite</button>
+</div>
+
+<div class="display-container">
+    <h3>Textul introdus este:</h3>
+    <p id="displayText"></p>
+</div>
+
+<script>
+    function submitText() {
+        var inputText = document.getElementById("inputText").value;
+        document.getElementById("displayText").textContent = inputText;
+    }
+</script>
+
+</body>
+</html>
