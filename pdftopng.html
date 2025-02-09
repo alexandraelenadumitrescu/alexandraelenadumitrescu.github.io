@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to PNG Converter</title>
+</head>
+<body>
+
+    <h1>PDF to PNG Converter</h1>
+
+    <form id="pdfForm">
+        <input type="file" id="pdfFile" name="file" accept="application/pdf" required />
+        <button type="submit">Convert</button>
+    </form>
+
+    <br />
+
+    <div id="result">
+        <h2>Converted Image:</h2>
+        <img id="convertedImage" style="max-width: 100%;" />
+    </div>
+
+    <script src="req.js"></script>
+</body>
+</html>
