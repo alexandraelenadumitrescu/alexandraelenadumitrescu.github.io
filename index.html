@@ -11,6 +11,7 @@
             margin: 0;
             padding: 0;
             background-color: #fffdf6;
+            position: relative;
         }
         header {
             text-align: start; /* Centrează conținutul în interiorul headerului */
@@ -25,6 +26,30 @@
             margin: 0 15px;
             text-decoration: none;
             color: #333;
+        }
+        .under-construction-banner {
+          position: fixed; /*ar merge si absolute8?
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-45deg); /* Centreaza si roteste */
+          font-size: 10vw; 
+          font-weight: bold;
+          color: rgba(255, 0, 0, 0.3); 
+          padding: 20px;
+         
+          white-space: nowrap; 
+          z-index: 9999; 
+          pointer-events: none; 
+          min-width: 150vw; 
+          text-align: center;
+        }
+
+       
+        @media (max-width: 768px) {
+          .under-construction-banner {
+            font-size: 13vw; 
+            
+          }
         }
     </style>
 </head>
