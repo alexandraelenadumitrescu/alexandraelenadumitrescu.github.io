@@ -50,33 +50,40 @@
             color: #007bff;
             margin-top: 0;
             font-size: 1.5em;
+            margin-bottom: 10px;
         }
 
         .countdown-box p {
             font-size: 1.1em;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #555;
         }
 
         .countdown-time {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px; /* Redus gap-ul pentru a se încadra mai bine */
             margin-top: 15px;
         }
 
         .time-segment {
             background-color: #e9ecef;
             border-radius: 5px;
-            padding: 10px 15px;
-            font-size: 1.4em;
+            padding: 10px 5px; /* Redus padding-ul orizontal */
+            font-size: 1.2em; /* Redus font-size */
             font-weight: bold;
             color: #333;
-            min-width: 60px;
+            min-width: 50px; /* Redus min-width */
             text-align: center;
+            flex: 1; /* Pentru distribuție egală */
         }
 
-        .time-segment span {
+        .time-segment span.value {
+            display: block;
+            font-size: 1.5em; /* Font size for the number */
+        }
+
+        .time-segment span.label {
             display: block;
             font-size: 0.7em;
             margin-top: 5px;
@@ -98,33 +105,69 @@
         <div class="countdown-box">
             <h2>Început An Universitar</h2>
             <p>29 septembrie 2025</p>
-            <div id="countdownAnUniversitar" class="countdown-time">
-                <div class="time-segment"><span id="daysAnUniversitar"></span><span>Zile</span></div>
-                <div class="time-segment"><span id="hoursAnUniversitar"></span><span>Ore</span></div>
-                <div class="time-segment"><span id="minutesAnUniversitar"></span><span>Minute</span></div>
-                <div class="time-segment"><span id="secondsAnUniversitar"></span><span>Secunde</span></div>
+            <div class="countdown-time">
+                <div class="time-segment">
+                    <span id="daysAnUniversitar" class="value">00</span>
+                    <span class="label">Zile</span>
+                </div>
+                <div class="time-segment">
+                    <span id="hoursAnUniversitar" class="value">00</span>
+                    <span class="label">Ore</span>
+                </div>
+                <div class="time-segment">
+                    <span id="minutesAnUniversitar" class="value">00</span>
+                    <span class="label">Minute</span>
+                </div>
+                <div class="time-segment">
+                    <span id="secondsAnUniversitar" class="value">00</span>
+                    <span class="label">Secunde</span>
+                </div>
             </div>
         </div>
 
         <div class="countdown-box">
             <h2>Sesiunea de Comunicări Științifice</h2>
             <p>10 martie 2025</p>
-            <div id="countdownComunicari" class="countdown-time">
-                <div class="time-segment"><span id="daysComunicari"></span><span>Zile</span></div>
-                <div class="time-segment"><span id="hoursComunicari"></span><span>Ore</span></div>
-                <div class="time-segment"><span id="minutesComunicari"></span><span>Minute</span></div>
-                <div class="time-segment"><span id="secondsComunicari"></span><span>Secunde</span></div>
+            <div class="countdown-time">
+                <div class="time-segment">
+                    <span id="daysComunicari" class="value">00</span>
+                    <span class="label">Zile</span>
+                </div>
+                <div class="time-segment">
+                    <span id="hoursComunicari" class="value">00</span>
+                    <span class="label">Ore</span>
+                </div>
+                <div class="time-segment">
+                    <span id="minutesComunicari" class="value">00</span>
+                    <span class="label">Minute</span>
+                </div>
+                <div class="time-segment">
+                    <span id="secondsComunicari" class="value">00</span>
+                    <span class="label">Secunde</span>
+                </div>
             </div>
         </div>
 
         <div class="countdown-box">
             <h2>Predarea Lucrării de Licență</h2>
             <p>30 iunie 2025</p>
-            <div id="countdownLicenta" class="countdown-time">
-                <div class="time-segment"><span id="daysLicenta"></span><span>Zile</span></div>
-                <div class="time-segment"><span id="hoursLicenta"></span><span>Ore</span></div>
-                <div class="time-segment"><span id="minutesLicenta"></span><span>Minute</span></div>
-                <div class="time-segment"><span id="secondsLicenta"></span><span>Secunde</span></div>
+            <div class="countdown-time">
+                <div class="time-segment">
+                    <span id="daysLicenta" class="value">00</span>
+                    <span class="label">Zile</span>
+                </div>
+                <div class="time-segment">
+                    <span id="hoursLicenta" class="value">00</span>
+                    <span class="label">Ore</span>
+                </div>
+                <div class="time-segment">
+                    <span id="minutesLicenta" class="value">00</span>
+                    <span class="label">Minute</span>
+                </div>
+                <div class="time-segment">
+                    <span id="secondsLicenta" class="value">00</span>
+                    <span class="label">Secunde</span>
+                </div>
             </div>
         </div>
     </div>
@@ -134,6 +177,7 @@
             const now = new Date().getTime();
             const distance = targetDate - now;
 
+            // Dacă data a trecut
             if (distance < 0) {
                 document.getElementById(daysId).innerHTML = "00";
                 document.getElementById(hoursId).innerHTML = "00";
@@ -142,18 +186,20 @@
                 return;
             }
 
+            // Calculează zile, ore, minute, secunde
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
+            // Actualizează elementele HTML cu zero padding
             document.getElementById(daysId).innerHTML = String(days).padStart(2, '0');
             document.getElementById(hoursId).innerHTML = String(hours).padStart(2, '0');
             document.getElementById(minutesId).innerHTML = String(minutes).padStart(2, '0');
             document.getElementById(secondsId).innerHTML = String(seconds).padStart(2, '0');
         }
 
-        // Setarea datelor țintă (Anul, Luna -1 pentru că ianuarie e 0, Ziua, Ora, Minutul, Secunda)
+        // Setarea datelor țintă (Anul, Luna -1 pentru că ianuarie e 0, Ziua)
         const targetAnUniversitar = new Date("Sep 29, 2025 00:00:00").getTime();
         const targetComunicari = new Date("Mar 10, 2025 00:00:00").getTime();
         const targetLicenta = new Date("Jun 30, 2025 00:00:00").getTime();
@@ -165,7 +211,7 @@
             updateCountdown(targetLicenta, "daysLicenta", "hoursLicenta", "minutesLicenta", "secondsLicenta");
         }, 1000);
 
-        // Apelez funcțiile o dată la început pentru a afișa imediat valorile corecte
+        // Apel inițial pentru a afișa valorile imediat
         updateCountdown(targetAnUniversitar, "daysAnUniversitar", "hoursAnUniversitar", "minutesAnUniversitar", "secondsAnUniversitar");
         updateCountdown(targetComunicari, "daysComunicari", "hoursComunicari", "minutesComunicari", "secondsComunicari");
         updateCountdown(targetLicenta, "daysLicenta", "hoursLicenta", "minutesLicenta", "secondsLicenta");
