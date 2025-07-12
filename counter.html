@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contor Evenimente Universitare</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #0056b3;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .countdown-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .countdown-box {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            width: 280px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .countdown-box h2 {
+            color: #007bff;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .countdown-box p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .countdown-time {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .time-segment {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .time-segment span {
+            display: block;
+            font-size: 0.7em;
+            margin-top: 5px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        @media (max-width: 768px) {
+            .countdown-box {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Contor Evenimente Universitare</h1>
+
+    <div class="countdown-container">
+        <div class="countdown-box">
+            <h2>Început An Universitar</h2>
+            <p>29 septembrie 2025</p>
+            <div id="countdownAnUniversitar" class="countdown-time">
+                <div class="time-segment"><span id="daysAnUniversitar"></span><span>Zile</span></div>
+                <div class="time-segment"><span id="hoursAnUniversitar"></span><span>Ore</span></div>
+                <div class="time-segment"><span id="minutesAnUniversitar"></span><span>Minute</span></div>
+                <div class="time-segment"><span id="secondsAnUniversitar"></span><span>Secunde</span></div>
+            </div>
+        </div>
+
+        <div class="countdown-box">
+            <h2>Sesiunea de Comunicări Științifice</h2>
+            <p>10 martie 2025</p>
+            <div id="countdownComunicari" class="countdown-time">
+                <div class="time-segment"><span id="daysComunicari"></span><span>Zile</span></div>
+                <div class="time-segment"><span id="hoursComunicari"></span><span>Ore</span></div>
+                <div class="time-segment"><span id="minutesComunicari"></span><span>Minute</span></div>
+                <div class="time-segment"><span id="secondsComunicari"></span><span>Secunde</span></div>
+            </div>
+        </div>
+
+        <div class="countdown-box">
+            <h2>Predarea Lucrării de Licență</h2>
+            <p>30 iunie 2025</p>
+            <div id="countdownLicenta" class="countdown-time">
+                <div class="time-segment"><span id="daysLicenta"></span><span>Zile</span></div>
+                <div class="time-segment"><span id="hoursLicenta"></span><span>Ore</span></div>
+                <div class="time-segment"><span id="minutesLicenta"></span><span>Minute</span></div>
+                <div class="time-segment"><span id="secondsLicenta"></span><span>Secunde</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateCountdown(targetDate, daysId, hoursId, minutesId, secondsId) {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.getElementById(daysId).innerHTML = "00";
+                document.getElementById(hoursId).innerHTML = "00";
+                document.getElementById(minutesId).innerHTML = "00";
+                document.getElementById(secondsId).innerHTML = "00";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById(daysId).innerHTML = String(days).padStart(2, '0');
+            document.getElementById(hoursId).innerHTML = String(hours).padStart(2, '0');
+            document.getElementById(minutesId).innerHTML = String(minutes).padStart(2, '0');
+            document.getElementById(secondsId).innerHTML = String(seconds).padStart(2, '0');
+        }
+
+        // Setarea datelor țintă (Anul, Luna -1 pentru că ianuarie e 0, Ziua, Ora, Minutul, Secunda)
+        const targetAnUniversitar = new Date("Sep 29, 2025 00:00:00").getTime();
+        const targetComunicari = new Date("Mar 10, 2025 00:00:00").getTime();
+        const targetLicenta = new Date("Jun 30, 2025 00:00:00").getTime();
+
+        // Actualizează contoarele la fiecare secundă
+        setInterval(function() {
+            updateCountdown(targetAnUniversitar, "daysAnUniversitar", "hoursAnUniversitar", "minutesAnUniversitar", "secondsAnUniversitar");
+            updateCountdown(targetComunicari, "daysComunicari", "hoursComunicari", "minutesComunicari", "secondsComunicari");
+            updateCountdown(targetLicenta, "daysLicenta", "hoursLicenta", "minutesLicenta", "secondsLicenta");
+        }, 1000);
+
+        // Apelez funcțiile o dată la început pentru a afișa imediat valorile corecte
+        updateCountdown(targetAnUniversitar, "daysAnUniversitar", "hoursAnUniversitar", "minutesAnUniversitar", "secondsAnUniversitar");
+        updateCountdown(targetComunicari, "daysComunicari", "hoursComunicari", "minutesComunicari", "secondsComunicari");
+        updateCountdown(targetLicenta, "daysLicenta", "hoursLicenta", "minutesLicenta", "secondsLicenta");
+    </script>
+</body>
+</html>
