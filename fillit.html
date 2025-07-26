@@ -58,6 +58,71 @@
         document.getElementById("displayText").textContent = inputText;
     }
 </script>
+ <meta charset="UTF-8">
+  <title>Centre de donare Transilvania</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Centre de donare din Transilvania</h2>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Inițializează harta
+    const map = L.map('map').setView([46.7712, 23.6236], 7); // Coordonate centrul Transilvaniei
+
+    // Adaugă tile-uri (harta de bază)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marker-e pentru centrele de donare
+    const centre = [
+      {
+        oras: "Cluj-Napoca",
+        coord: [46.7712, 23.6236],
+        detalii: "Centrul Regional de Transfuzie Sanguină Cluj"
+      },
+      {
+        oras: "Târgu Mureș",
+        coord: [46.5428, 24.5586],
+        detalii: "Centrul de Transfuzie Mureș"
+      },
+      {
+        oras: "Sibiu",
+        coord: [45.7928, 24.1521],
+        detalii: "Centrul de Transfuzie Sanguină Sibiu"
+      },
+      {
+        oras: "Brașov",
+        coord: [45.6579, 25.6012],
+        detalii: "Centrul de Transfuzie Sanguină Brașov"
+      },
+      {
+        oras: "Oradea",
+        coord: [47.0722, 21.9211],
+        detalii: "Centrul de Transfuzie Sanguină Oradea"
+      }
+    ];
+
+    // Adaugă marker-e pe hartă
+    centre.forEach(loc => {
+      L.marker(loc.coord)
+        .addTo(map)
+        .bindPopup(`<strong>${loc.oras}</strong><br>${loc.detalii}`);
+    });
+  </script>
 <iframe src="https://www.google.com/maps/d/embed?mid=XYZ" width="100%" height="400"></iframe>
 <footer>
     <p>&copy; 2025 Alexandra Dumitrescu</p>
