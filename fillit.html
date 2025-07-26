@@ -250,6 +250,194 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulare Grupă Sanguină</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff7f7;
+      color: #333;
+      text-align: center;
+      padding: 2rem;
+    }
+    .test-area {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .spot {
+      border: 2px solid #999;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle at center, #f2f2f2, #ccc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 2px 2px 10px rgba(0, 0, 0, 0.1);
+      perspective: 500px;
+    }
+    .label {
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+    .drop {
+      width: 0;
+      height: 0;
+      background: #a00;
+      border-radius: 50%;
+      opacity: 0;
+      transform: translateY(-40px) scale(0.2);
+      transition: all 0.8s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .drop.visible {
+      width: 50px;
+      height: 50px;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .agglutinate {
+      background: radial-gradient(circle, #600 20%, #a00 60%, transparent 90%);
+      background-size: 15px 15px;
+      animation: agglutinate 1.2s infinite alternate;
+    }
+    @keyframes agglutinate {
+      from { filter: blur(0); }
+      to { filter: blur(1px); }
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      background: #e63946;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    #guess-section {
+      margin-top: 2rem;
+    }
+    select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Simulează Testul de Grupă Sanguină</h1>
+  <p>Observă reacțiile și ghicește grupa de sânge corectă!</p>
+
+  <div class="test-area">
+    <div>
+      <div class="spot" id="spot-a"><div class="drop" id="drop-a"></div></div>
+      <div class="label">Anti-A</div>
+    </div>
+    <div>
+      <div class="spot" id="spot-b"><div class="drop" id="drop-b"></div></div>
+      <div class="label">Anti-B</div>
+    </div>
+    <div>
+      <div class="spot" id="spot-rh"><div class="drop" id="drop-rh"></div></div>
+      <div class="label">Anti-Rh</div>
+    </div>
+  </div>
+
+  <button onclick="runTest()">🩸 Adaugă picătura de sânge</button>
+
+  <div id="guess-section" style="display:none">
+    <p>Ce grupă de sânge crezi că este?</p>
+    <select id="guess">
+      <option value="A+">A+</option>
+      <option value="A-">A-</option>
+      <option value="B+">B+</option>
+      <option value="B-">B-</option>
+      <option value="AB+">AB+</option>
+      <option value="AB-">AB-</option>
+      <option value="O+">O+</option>
+      <option value="O-">O-</option>
+    </select>
+    <button onclick="checkGuess()">Verifică răspunsul</button>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    const bloodTypes = {
+      "A+": [true, false, true],
+      "A-": [true, false, false],
+      "B+": [false, true, true],
+      "B-": [false, true, false],
+      "AB+": [true, true, true],
+      "AB-": [true, true, false],
+      "O+": [false, false, true],
+      "O-": [false, false, false],
+    };
+
+    let chosenType2 = null;
+
+    function runTest() {
+      document.getElementById("result").innerText = "";
+      document.getElementById("guess-section").style.display = "none";
+
+      const types = Object.keys(bloodTypes);
+      chosenType2 = types[Math.floor(Math.random() * types.length)];
+      const [a, b, rh] = bloodTypes[chosenType2];
+
+      const dropA = document.getElementById("drop-a");
+      const dropB = document.getElementById("drop-b");
+      const dropRh = document.getElementById("drop-rh");
+
+      dropA.className = "drop";
+      dropB.className = "drop";
+      dropRh.className = "drop";
+
+      setTimeout(() => {
+        dropA.classList.add("visible");
+        dropA.classList.toggle("agglutinate", a);
+      }, 400);
+
+      setTimeout(() => {
+        dropB.classList.add("visible");
+        dropB.classList.toggle("agglutinate", b);
+      }, 800);
+
+      setTimeout(() => {
+        dropRh.classList.add("visible");
+        dropRh.classList.toggle("agglutinate", rh);
+        document.getElementById("guess-section").style.display = "block";
+      }, 1200);
+    }
+
+    function checkGuess() {
+      const userGuess = document.getElementById("guess").value;
+      const result = document.getElementById("result");
+
+      if (userGuess === chosenType2) {
+        result.innerText = `✅ Corect! Grupa era ${chosenType2}.`;
+        result.style.color = "green";
+      } else {
+        result.innerText = `❌ Incorect. Grupa era ${chosenType2}.`;
+        result.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
 </head><body>
     <h2>Harta Centrelor de Donare</h2>
 <iframe src="https://www.google.com/maps/d/embed?mid=XYZ" width="100%" height="400"></iframe>
