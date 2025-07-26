@@ -46,6 +46,23 @@
       width: 60%;
       height: 20px;
     }
+    .option {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: white;
+    }
+    .option:hover {
+      background-color: #ffe5e5;
+    }
+    .feedback {
+      font-weight: bold;
+      color: green;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -54,30 +71,33 @@
 
   <div id="scene1" class="scene active">
     <h2>1. Alege pacientul</h2>
-    <img src="https://via.placeholder.com/200x200?text=Pacient" alt="Pacient random" id="img1">
-    <br>
-    <button onclick="nextScene(1)">Continuă</button>
+    <div class="option" onclick="nextScene(1)">👩‍🦰 Ana</div>
+    <div class="option" onclick="nextScene(1)">👨‍🦱 Mihai</div>
+    <div class="option" onclick="nextScene(1)">🧑‍🦲 Alex</div>
   </div>
 
   <div id="scene2" class="scene">
-    <h2>2. Verifică identitatea și semnătura</h2>
+    <h2>2. Verifică identitatea</h2>
     <img src="https://via.placeholder.com/250x120?text=Buletin+semnat" id="img2">
     <br>
-    <button onclick="nextScene(2)">Totul e în regulă!</button>
+    <p>Dă click pe semnătură pentru a verifica:</p>
+    <div class="option" onclick="showFeedback('Semnătura e validă!', 2)">✔ Semnează</div>
+    <div class="feedback" id="feedback2"></div>
   </div>
 
   <div id="scene3" class="scene">
     <h2>3. Măsoară hemoglobina</h2>
-    <img src="https://via.placeholder.com/250x100?text=Rezultat+normal" id="img3">
-    <br>
-    <button onclick="nextScene(3)">Valori acceptabile</button>
+    <p>Alege valoarea corectă:</p>
+    <div class="option" onclick="wrongChoice(this)">8.5 g/dL</div>
+    <div class="option" onclick="rightChoice(3)">13.7 g/dL</div>
+    <div class="option" onclick="wrongChoice(this)">18.0 g/dL</div>
+    <div class="feedback" id="feedback3"></div>
   </div>
 
   <div id="scene4" class="scene">
     <h2>4. Montează acul</h2>
-    <img src="https://via.placeholder.com/250x180?text=Montare+acul" id="img4">
-    <br>
-    <button onclick="nextScene(4)">Conectat!</button>
+    <p>Apasă pentru a conecta acul:</p>
+    <img src="https://via.placeholder.com/250x180?text=Montare+acul" id="img4" onclick="nextScene(4)">
   </div>
 
   <div id="scene5" class="scene">
@@ -109,6 +129,22 @@
         currentScene.classList.remove('active');
         nextScene.classList.add('active');
       }, 600);
+    }
+
+    function showFeedback(message, current) {
+      document.getElementById(`feedback${current}`).innerText = message;
+      setTimeout(() => nextScene(current), 1000);
+    }
+
+    function rightChoice(current) {
+      document.getElementById(`feedback${current}`).innerText = "✔ Corect!";
+      setTimeout(() => nextScene(current), 1000);
+    }
+
+    function wrongChoice(el) {
+      el.style.backgroundColor = '#ffcccc';
+      const id = el.parentElement.querySelector('.feedback').id;
+      document.getElementById(id).innerText = "✖ Încearcă din nou!";
     }
 
     function startCollection() {
