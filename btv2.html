@@ -1,445 +1,455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Type Game 3D: Transylvania Nocturne</title>
+    <title>Blood Type 3D: Transylvania Nocturne Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
+        /* CSS păstrează tema gotică și stilizează interfața 2D */
         body {
             margin: 0;
-            overflow: hidden; /* Hide scrollbars */
-            background-color: #1a1a1a; /* Dark background */
-            font-family: 'MedievalSharp', cursive, Arial, sans-serif; /* Global font */
-            color: #f5f5dc; /* Global text color (off-white) */
+            font-family: 'MedievalSharp', cursive, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f5f5dc;
+            overflow: hidden; /* Previne scrollbar-urile */
         }
-        canvas {
-            display: block;
-            position: absolute; /* Canvas fills the whole screen */
-            top: 0;
-            left: 0;
-            z-index: 0; /* Background layer for 3D scene */
-        }
-        #info {
+
+        #info-panel {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            color: #e0b34d; /* Gold color for instruction */
-            font-family: 'MedievalSharp', cursive, sans-serif;
-            font-size: 2.2em; /* Larger instruction text */
-            text-align: center;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
-            z-index: 10; /* Above canvas */
-            width: 80%; /* Ensure text fits */
-            pointer-events: none; /* Allows clicks to pass through to the canvas */
-            user-select: none; /* Prevent text selection */
-        }
-        #controls-2d {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10; /* Above canvas */
-            background: rgba(43, 0, 0, 0.8); /* Dark blood red with transparency */
-            padding: 25px; /* More padding */
-            border-radius: 15px;
+            width: 90%;
+            max-width: 850px;
+            background-color: rgba(43, 0, 0, 0.85); /* Fundal semi-transparent */
             border: 2px solid #5a0000;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             text-align: center;
-            min-width: 400px; /* Ensure a decent width */
-            display: none; /* Hidden initially */
+            z-index: 10;
+            backdrop-filter: blur(5px); /* Efect de sticlă mată */
         }
-        #controls-2d h2 {
-            font-family: 'MedievalSharp', cursive, sans-serif;
-            color: #e0b34d; /* Gold for headings */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
-            margin-bottom: 25px; /* More space */
-            font-size: 2em; /* Larger heading */
+
+        h1 {
+            color: #e0b34d;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-top: 0;
+            font-size: 2.2em;
         }
+
+        p {
+             color: #e0e0e0;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        canvas {
+            display: block;
+        }
+
+        .controls {
+            margin-top: 15px;
+        }
+
         button {
-            background-color: #8b0000; /* Vampire dark red */
-            color: #f5f5dc; /* Off-white text */
-            padding: 15px 30px; /* Larger buttons */
-            border: 2px solid #a00000; /* Lighter red border */
-            border-radius: 8px; /* Slightly rounded corners */
-            font-size: 1.3em; /* Larger font */
+            background-color: #8b0000;
+            color: #f5f5dc;
+            padding: 12px 25px;
+            border: 2px solid #a00000;
+            border-radius: 8px;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            margin: 8px;
+            transition: all 0.3s ease;
+            margin: 5px;
             font-family: 'MedievalSharp', cursive, sans-serif;
             box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
         }
+
         button:hover {
             background-color: #a00000;
             transform: translateY(-2px);
             box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.6);
         }
-        button:active {
-            transform: translateY(0);
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-        }
+
         select {
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #5a0000;
-            margin: 0 12px 20px;
-            font-size: 1.2em; /* Larger select font */
-            background-color: #3a1a1a; /* Dark background for select */
-            color: #f5f5dc; /* Light text */
-            appearance: none; /* Hide default arrow */
-            /* Custom arrow SVG */
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23f5f5dc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-6.5H18.5c-4.9%200-9.2%202.4-11.5%206.5l133.5%20141.8c3.6%203.6%208%205.5%2012.8%205.5s9.2-1.9%2012.8-5.5L287%2069.4z%22%2F%3E%3C%2Fsvg%3E');
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 12px;
-            cursor: pointer;
-        }
-        select option {
+            margin: 0 10px;
+            font-size: 1em;
             background-color: #3a1a1a;
             color: #f5f5dc;
+            font-family: 'MedievalSharp', cursive, sans-serif;
         }
-        #feedback {
-            margin-top: 20px; /* More space */
-            font-size: 1.4em; /* Larger feedback text */
+        
+        .guess-section {
+             margin-top: 15px;
+             display: none; /* Ascuns inițial */
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 1.2em;
             font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            min-height: 25px;
         }
-        .correct { color: #4CAF50; } /* Green */
-        .incorrect { color: #f44336; } /* Red */
+
+        .feedback.correct { color: #4CAF50; }
+        .feedback.incorrect { color: #f44336; }
+
     </style>
 </head>
 <body>
-    <div id="info">Click on the test papers to add blood!</div>
-    <div id="controls-2d">
-        <h2>Guess the Blood Type:</h2>
-        <select id="bloodTypeSelect">
-            <option value="">Choose Type</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="AB">AB</option>
-            <option value="O">O</option>
-        </select>
-        <select id="rhFactorSelect">
-            <option value="">Choose Rh</option>
-            <option value="Positive">Positive</option>
-            <option value="Negative">Negative</option>
-        </select>
-        <button id="checkButton">Check</button>
-        <div id="feedback"></div>
-        <button id="resetButton" style="display:none;">New Test</button>
+
+    <div id="info-panel">
+        <h1>Determinarea Grupei de Sânge (3D)</h1>
+        <p id="instruction">Trage eprubeta cu sânge pe fiecare tester pentru a începe analiza.</p>
+        
+        <div class="controls">
+            <div class="guess-section">
+                <select id="bloodTypeSelect">
+                    <option value="">Alege Grupa</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="0">O</option>
+                </select>
+                <select id="rhFactorSelect">
+                    <option value="">Alege Rh</option>
+                    <option value="Positive">Pozitiv</option>
+                    <option value="Negative">Negativ</option>
+                </select>
+                <button id="checkButton">Verifică</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <button id="resetButton" style="display: none;">Test Nou</button>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/examples/js/controls/OrbitControls.js"></script>
+    <div id="canvas-container"></div>
 
-    <script>
-        // --- Three.js Global Variables ---
-        let scene, camera, renderer, controls;
-        let testPapers = []; // Array to store Three.js Mesh objects for test papers
-        let bloodDrops = {}; // Map to store Three.js Mesh objects for blood drops
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.166.1/build/three.module.js"
+            }
+        }
+    </script>
 
-        // Raycaster for detecting clicks on 3D objects
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
+    <script type="module">
+        import * as THREE from 'three';
 
-        // --- Game Logic Variables ---
+        // --- Variabile Globale ---
+        let scene, camera, renderer, raycaster, pointer;
+        let table, bloodVial, testSlides = [], bloodDrops = [];
+        let draggingObject = null;
+        let intersectionPlane;
+
+        // --- Starea Jocului ---
+        let currentBloodType = {};
+        const dropsPlaced = { A: false, B: false, D: false };
+        let totalDropsPlaced = 0;
+
         const agglutinationRules = {
-            'A+': { A: true, B: false, D: true },
-            'A-': { A: true, B: false, D: false },
-            'B+': { A: false, B: true, D: true },
-            'B-': { A: false, B: true, D: false },
-            'AB+': { A: true, B: true, D: true },
-            'AB-': { A: true, B: true, D: false },
-            'O+': { A: false, B: false, D: true },
-            'O-': { A: false, B: false, D: false }
+            'A+': { A: true, B: false, D: true }, 'A-': { A: true, B: false, D: false },
+            'B+': { A: false, B: true, D: true }, 'B-': { A: false, B: true, D: false },
+            'AB+': { A: true, B: true, D: true },'AB-': { A: true, B: true, D: false },
+            'O+': { A: false, B: false, D: true },'O-': { A: false, B: false, D: false }
         };
-        let currentBloodType = {}; // Stores the randomly generated blood type for the current test
-        let bloodAddedCount = 0; // Tracks how many blood drops have been "added"
-        let allowAddingBlood = true; // Flag to control when blood can be added
 
-        // --- DOM Elements (UI) ---
-        const mainInstruction = document.getElementById('info');
-        const feedbackDiv = document.getElementById('feedback');
+        // --- Elemente UI ---
         const checkButton = document.getElementById('checkButton');
         const resetButton = document.getElementById('resetButton');
-        const bloodTypeSelect = document.getElementById('bloodTypeSelect');
-        const rhFactorSelect = document.getElementById('rhFactorSelect');
-        const controls2D = document.getElementById('controls-2d');
+        const guessSection = document.querySelector('.guess-section');
+        const feedbackDiv = document.getElementById('feedback');
+        const instructionP = document.getElementById('instruction');
 
-        // --- Three.js Initialization Function ---
+        // --- Inițializare ---
         function init() {
-            // 1. Scene: Container for all 3D objects
+            // Scena
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a); // Dark background for the theme
+            scene.background = new THREE.Color(0x1a1a1a);
 
-            // 2. Camera: Defines the perspective from which the scene is viewed
+            // Camera
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 4, 5); // Position camera above and slightly in front of the papers
-            camera.lookAt(0, 0.5, 0); // Point camera slightly above the center of the papers
+            camera.position.set(0, 15, 25);
+            camera.lookAt(0, 0, 0);
 
-            // 3. Renderer: Renders the scene onto the <canvas> element using WebGL
-            renderer = new THREE.WebGLRenderer({ antialias: true }); // Antialias for smoother edges
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement); // Add canvas to the document body
+            renderer.shadowMap.enabled = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // 4. OrbitControls: Allows user to pan, zoom, and rotate the camera with mouse
-            // Useful for debugging and general scene exploration
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; // For a smoother, more natural feel
-            controls.dampingFactor = 0.25;
-            controls.screenSpacePanning = false; // Prevents camera from panning horizontally
-            controls.maxPolarAngle = Math.PI / 2.1; // Restrict camera from going below the "ground"
-
-            // 5. Lights: Illuminate the scene
-            const ambientLight = new THREE.AmbientLight(0x404040, 2.5); // Soft white light, slightly brighter
+            // Lumini
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
             scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5); // Main white light source, brighter
-            directionalLight.position.set(0, 10, 5); // Position from top-front
-            directionalLight.target.position.set(0, 0, 0); // Pointing towards the center
-            scene.add(directionalLight);
-            scene.add(directionalLight.target);
-
-            // Optional: A subtle reddish point light for thematic atmosphere
-            const pointLight = new THREE.PointLight(0xff0000, 0.8, 10); // Reddish glow, moderate intensity
-            pointLight.position.set(0, 3, 0); // Position above the center
+            const pointLight = new THREE.PointLight(0xffffff, 2, 100);
+            pointLight.position.set(0, 30, 10);
+            pointLight.castShadow = true;
             scene.add(pointLight);
 
-            // 6. Textures for paper (using the provided texture URL)
-            const textureLoader = new THREE.TextureLoader();
-            const paperTexture = textureLoader.load('https://www.transparenttextures.com/patterns/cream-paper.png',
-                // Callback for successful load
-                function (texture) {
-                    console.log('Texture loaded successfully!');
-                    // This is where you would typically create materials/meshes that use this texture
-                    // For our case, materials are created below, but this confirms load.
-                },
-                // Callback for progress
-                undefined,
-                // Callback for errors
-                function (err) {
-                    console.error('An error happened loading the texture:', err);
-                }
+            // Raycaster pentru interacțiune
+            raycaster = new THREE.Raycaster();
+            pointer = new THREE.Vector2();
+            
+            // Plan invizibil pentru drag-and-drop
+            intersectionPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(100, 100),
+                new THREE.MeshBasicMaterial({ visible: false })
             );
-            paperTexture.wrapS = THREE.RepeatWrapping; // Repeat texture horizontally
-            paperTexture.wrapT = THREE.RepeatWrapping; // Repeat texture vertically
-            paperTexture.repeat.set(0.5, 0.5); // Adjust repeat for better tiling on smaller papers
+            intersectionPlane.rotation.x = -Math.PI / 2;
+            intersectionPlane.position.y = 5; // La înălțimea la care tragem eprubeta
+            scene.add(intersectionPlane);
 
-            // 7. Create Test Papers (3D Objects)
-            const paperMaterial = new THREE.MeshPhongMaterial({
-                color: 0x3a1a1a, // Dark reddish-brown
-                map: paperTexture, // Apply texture
-                shininess: 10 // Adds a slight sheen
-            });
+            createEnvironment();
+            createInteractiveObjects();
+            startNewTest();
 
-            const positions = [
-                { x: -2.5, y: 0, z: 0, label: 'Anti-A', id: 'dropA' },
-                { x: 0, y: 0, z: 0, label: 'Anti-B', id: 'dropB' },
-                { x: 2.5, y: 0, z: 0, label: 'Anti-D (Rh)', id: 'dropD' }
-            ];
+            // Evenimente
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('pointerdown', onPointerDown);
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+            checkButton.addEventListener('click', checkAnswer);
+            resetButton.addEventListener('click', startNewTest);
 
-            positions.forEach(pos => {
-                const paperGeometry = new THREE.BoxGeometry(2, 0.05, 2); // Flat, thin box for paper
-                const paper = new THREE.Mesh(paperGeometry, paperMaterial);
-                paper.position.set(pos.x, pos.y, pos.z);
-                paper.rotation.x = Math.PI / 18; // Slight tilt
-                paper.rotation.y = Math.PI / 36;
-                paper.userData = { id: pos.id, hasBlood: false }; // Custom data for raycasting and game logic
-                scene.add(paper);
-                testPapers.push(paper); // Add to array for easy access
-
-                // Create placeholder for blood drop (3D Sphere)
-                const bloodGeometry = new THREE.SphereGeometry(0.4, 32, 16); // Moderate size, round shape
-                const bloodMaterial = new THREE.MeshPhongMaterial({
-                    color: 0x8b0000, // Dark rich red for blood
-                    transparent: true,
-                    opacity: 0.9, // Slightly transparent
-                    shininess: 50 // Makes it look wet/glossy
-                });
-                const blood = new THREE.Mesh(bloodGeometry, bloodMaterial);
-                blood.position.set(pos.x, pos.y + 0.1, pos.z); // Slightly above paper surface
-                blood.scale.set(0.01, 0.01, 0.01); // Invisible initially (scaled down)
-                blood.visible = false; // Hidden initially
-                bloodDrops[pos.id] = blood; // Store reference to the drop mesh
-                scene.add(blood);
-            });
-
-            // 8. Event Listeners
-            window.addEventListener('resize', onWindowResize, false); // Handle window resizing
-            renderer.domElement.addEventListener('click', onCanvasClick, false); // Listen for clicks on the canvas
-            // Use renderer.domElement for click events to ensure clicks are captured by Three.js
-            // and not by elements under the canvas.
-
-            resetGame(); // Initialize game state on load
-            animate(); // Start the animation loop
+            animate();
         }
 
-        // --- Event Handlers ---
+        // --- Creare Obiecte Scenă ---
+        function createEnvironment() {
+            // Masa
+            const tableGeometry = new THREE.BoxGeometry(60, 2, 40);
+            const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1a1a, roughness: 0.8 });
+            table = new THREE.Mesh(tableGeometry, tableMaterial);
+            table.receiveShadow = true;
+            scene.add(table);
+
+            // Creare testere
+            testSlides.push(createTexturedSlide('Anti-A', -15));
+            testSlides.push(createTexturedSlide('Anti-B', 0));
+            testSlides.push(createTexturedSlide('Anti-D (Rh)', 15));
+            testSlides.forEach(slide => scene.add(slide));
+        }
+
+        function createTexturedSlide(text, xPos) {
+            const slideGroup = new THREE.Group();
+            slideGroup.position.x = xPos;
+            slideGroup.position.y = 1.1;
+
+            const slideGeometry = new THREE.BoxGeometry(10, 0.2, 10);
+            const slideMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.8
+            });
+            const slideMesh = new THREE.Mesh(slideGeometry, slideMaterial);
+            slideMesh.castShadow = true;
+            slideMesh.receiveShadow = true;
+            slideGroup.add(slideMesh);
+
+            // Textura pentru text
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 128;
+            context.font = "bold 40px 'MedievalSharp'";
+            context.fillStyle = '#2b0000';
+            context.textAlign = 'center';
+            context.fillText(text, 128, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+
+            const labelMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            const labelGeometry = new THREE.PlaneGeometry(8, 4);
+            const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+            labelMesh.rotation.x = -Math.PI / 2;
+            labelMesh.position.y = 0.11;
+            slideGroup.add(labelMesh);
+            
+            slideGroup.userData.type = text.includes('Anti-A') ? 'A' : (text.includes('Anti-B') ? 'B' : 'D');
+            return slideGroup;
+        }
+
+        function createInteractiveObjects() {
+            const vialMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.1, metalness: 0.2 });
+            const vialGeometry = new THREE.CylinderGeometry(1.5, 1.5, 6, 32);
+            bloodVial = new THREE.Mesh(vialGeometry, vialMaterial);
+            bloodVial.castShadow = true;
+            bloodVial.name = "bloodVial";
+            scene.add(bloodVial);
+        }
+
+        // --- Logica Jocului ---
+        function startNewTest() {
+            // Resetare
+            bloodDrops.forEach(drop => scene.remove(drop));
+            bloodDrops = [];
+            totalDropsPlaced = 0;
+            dropsPlaced.A = dropsPlaced.B = dropsPlaced.D = false;
+
+            // Resetare UI
+            guessSection.style.display = 'none';
+            resetButton.style.display = 'none';
+            feedbackDiv.textContent = '';
+            feedbackDiv.className = 'feedback';
+            instructionP.style.display = 'block';
+
+            // Poziționare eprubetă
+            bloodVial.position.set(0, 4, 15);
+            bloodVial.visible = true;
+            draggingObject = null;
+
+            // Generare grupă nouă
+            const bloodTypes = Object.keys(agglutinationRules);
+            const randomType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
+            currentBloodType.full = randomType;
+            currentBloodType.type = randomType.replace('+', '').replace('-', '');
+            currentBloodType.rh = randomType.includes('+') ? 'Positive' : 'Negative';
+
+            console.log(`Test nou început. Grupa corectă: ${currentBloodType.full}`);
+        }
+
+        function placeBloodDrop(targetSlide) {
+            const slideType = targetSlide.userData.type;
+
+            // Verifică dacă a fost deja plasată o picătură
+            if (dropsPlaced[slideType]) return;
+            dropsPlaced[slideType] = true;
+            totalDropsPlaced++;
+
+            // Creează picătura
+            const dropGeometry = new THREE.SphereGeometry(2, 32, 16);
+            const normalMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.3, transparent: true, opacity: 0.9 });
+            const agglutinatedMaterial = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.9 });
+
+            const drop = new THREE.Mesh(dropGeometry, normalMaterial);
+            drop.position.set(targetSlide.position.x, 1.3, targetSlide.position.z);
+            drop.castShadow = true;
+            scene.add(drop);
+            bloodDrops.push(drop);
+
+            // Verifică aglutinarea
+            const rule = agglutinationRules[currentBloodType.full];
+            if (rule[slideType]) {
+                setTimeout(() => {
+                    drop.material = agglutinatedMaterial;
+                }, 500);
+            }
+
+            // Verifică dacă s-a terminat plasarea
+            if (totalDropsPlaced === 3) {
+                instructionP.style.display = 'none';
+                guessSection.style.display = 'block';
+            }
+        }
+        
+        function checkAnswer() {
+            const userBloodType = document.getElementById('bloodTypeSelect').value;
+            const userRhFactor = document.getElementById('rhFactorSelect').value;
+
+            if (!userBloodType || !userRhFactor) {
+                feedbackDiv.textContent = 'Te rog alege și grupa și Rh-ul!';
+                feedbackDiv.className = 'feedback incorrect';
+                return;
+            }
+
+            const guessedFullType = userBloodType + (userRhFactor === 'Positive' ? '+' : '-');
+            
+            if (guessedFullType.replace('O','0') === currentBloodType.full.replace('O','0')) {
+                feedbackDiv.textContent = `Corect! Grupa de sânge este ${currentBloodType.full}.`;
+                feedbackDiv.className = 'feedback correct';
+            } else {
+                feedbackDiv.textContent = `Incorect. Răspunsul corect era ${currentBloodType.full}.`;
+                feedbackDiv.className = 'feedback incorrect';
+            }
+            resetButton.style.display = 'inline-block';
+            guessSection.style.display = 'none';
+        }
+
+
+        // --- Evenimente Mouse & Raycasting ---
+        function updatePointer(event) {
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onPointerDown(event) {
+            updatePointer(event);
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects([bloodVial]);
+
+            if (intersects.length > 0) {
+                draggingObject = intersects[0].object;
+            }
+        }
+
+        function onPointerMove(event) {
+            if (draggingObject) {
+                updatePointer(event);
+                raycaster.setFromCamera(pointer, camera);
+                const intersects = raycaster.intersectObject(intersectionPlane);
+
+                if (intersects.length > 0) {
+                    const point = intersects[0].point;
+                    draggingObject.position.x = point.x;
+                    draggingObject.position.z = point.z;
+                }
+            }
+        }
+
+        function onPointerUp(event) {
+            if (draggingObject) {
+                updatePointer(event);
+                raycaster.setFromCamera(pointer, camera);
+                const intersects = raycaster.intersectObjects(testSlides, true);
+
+                if (intersects.length > 0) {
+                    // Găsește grupul principal al testerului
+                    let targetSlide = intersects[0].object;
+                    while(targetSlide.parent && !targetSlide.userData.type) {
+                        targetSlide = targetSlide.parent;
+                    }
+                    placeBloodDrop(targetSlide);
+                }
+
+                draggingObject = null;
+                // După ce s-a terminat plasarea, eprubeta dispare
+                if (totalDropsPlaced === 3) {
+                    bloodVial.visible = false;
+                } else {
+                    // Resetează poziția eprubetei
+                    bloodVial.position.set(0, 4, 15);
+                }
+            }
+        }
+
+
+        // --- Funcții Utilitare & Loop ---
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function onCanvasClick(event) {
-            if (!allowAddingBlood) return; // Prevent clicks if not in the "add blood" phase
-
-            // Calculate mouse position in normalized device coordinates (-1 to +1)
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-            // Update the picking ray with the camera and mouse position
-            raycaster.setFromCamera(mouse, camera);
-
-            // Calculate objects intersecting the picking ray
-            const intersects = raycaster.intersectObjects(testPapers); // Check for intersection with our test papers
-
-            if (intersects.length > 0) {
-                const clickedPaper = intersects[0].object; // Get the first intersected object (the paper)
-                if (!clickedPaper.userData.hasBlood) { // Check if blood has already been added to this paper
-                    addBloodDrop(clickedPaper.userData.id); // Call function to add blood
-                    clickedPaper.userData.hasBlood = true; // Mark paper as having blood
-                }
-            }
-        }
-
-        // --- Game Logic Functions ---
-        function addBloodDrop(dropId) {
-            const drop = bloodDrops[dropId];
-            if (drop) {
-                drop.visible = true; // Make the drop visible
-                // Animate drop appearance using TWEEN.js (scale from tiny to full size)
-                new TWEEN.Tween(drop.scale)
-                    .to({ x: 1, y: 1, z: 1 }, 500) // Animate to scale 1 over 500ms
-                    .easing(TWEEN.Easing.Back.Out) // Use a "back" easing for a bouncy effect
-                    .start(); // Start the animation
-
-                bloodAddedCount++; // Increment counter
-
-                if (bloodAddedCount === 3) { // If all three drops are added
-                    mainInstruction.textContent = "All blood drops added. Observing reactions...";
-                    // Delay before starting agglutination to let the drops fully appear
-                    setTimeout(startAgglutinationProcess, 1000);
-                }
-            }
-        }
-
-        function startAgglutinationProcess() {
-            allowAddingBlood = false; // Prevent further blood adding clicks
-
-            // Determine the random blood type for this test
-            const bloodTypes = Object.keys(agglutinationRules);
-            const randomType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
-            currentBloodType.full = randomType; // e.g., "A+"
-            currentBloodType.type = randomType.slice(0, -1); // e.g., "A"
-            currentBloodType.rh = randomType.slice(-1) === '+' ? 'Positive' : 'Negative'; // e.g., "Positive"
-
-            const agglA = agglutinationRules[randomType].A;
-            const agglB = agglutinationRules[randomType].B;
-            const agglD = agglutinationRules[randomType].D;
-
-            // Start agglutination animations for each drop with delays
-            setTimeout(() => {
-                if (agglA) animateAgglutination(bloodDrops.dropA);
-            }, 500); // Anti-A reaction after 0.5s
-
-            setTimeout(() => {
-                if (agglB) animateAgglutination(bloodDrops.dropB);
-            }, 1500); // Anti-B reaction after 1.5s
-
-            setTimeout(() => {
-                if (agglD) animateAgglutination(bloodDrops.dropD);
-                // After the last animation starts, show the guessing controls after a delay
-                setTimeout(() => {
-                    controls2D.style.display = 'block'; // Make 2D controls visible
-                    mainInstruction.textContent = "Observe the mysterious agglutination reactions and unveil the secret of the blood.";
-                }, 1000); // Give time for the last reaction to become visible
-            }, 2500); // Anti-D reaction after 2.5s
-        }
-
-        function animateAgglutination(dropMesh) {
-            // Animate color change to agglutinated state (orange-red)
-            new TWEEN.Tween(dropMesh.material.color)
-                .to(new THREE.Color(0xe67e22), 2000) // Animate to orange-red over 2 seconds
-                .start();
-
-            // Simulate "granules" / reaction by pulsing the scale and slightly adjusting opacity
-            new TWEEN.Tween(dropMesh.scale)
-                .to({ x: 1.08, y: 1.08, z: 1.08 }, 1000) // Grow slightly
-                .yoyo(true) // Go back and forth
-                .repeat(Infinity) // Repeat indefinitely
-                .start();
-
-            new TWEEN.Tween(dropMesh.material)
-                .to({ opacity: 0.7 }, 1000) // Slight opacity change
-                .yoyo(true)
-                .repeat(Infinity)
-                .start();
-        }
-
-        function checkAnswer() {
-            const userBloodType = bloodTypeSelect.value;
-            const userRhFactor = rhFactorSelect.value;
-
-            if (!userBloodType || !userRhFactor) {
-                feedbackDiv.textContent = 'Please select both blood type and Rh factor!';
-                feedbackDiv.className = 'incorrect'; // Apply CSS class for styling
-                return;
-            }
-
-            // Construct the full guessed type (e.g., "A+" or "O-")
-            const guessedFullType = userBloodType + (userRhFactor === 'Positive' ? '+' : '-');
-
-            if (guessedFullType === currentBloodType.full) {
-                feedbackDiv.textContent = `Correct! The blood type is ${currentBloodType.type}${currentBloodType.rh === 'Positive' ? '+' : '-'}.`;
-                feedbackDiv.className = 'correct';
-            } else {
-                feedbackDiv.textContent = `Incorrect. The blood type is ${currentBloodType.type}${currentBloodType.rh === 'Positive' ? '+' : '-'}. You guessed ${userBloodType}${userRhFactor === 'Positive' ? '+' : '-'}.`;
-                feedbackDiv.className = 'incorrect';
-            }
-            resetButton.style.display = 'block'; // Show reset button after checking
-        }
-
-        function resetGame() {
-            mainInstruction.textContent = 'Click on each test paper to add blood!';
-            feedbackDiv.textContent = '';
-            controls2D.style.display = 'none'; // Hide guessing controls
-            resetButton.style.display = 'none';
-            bloodTypeSelect.value = ''; // Reset dropdowns
-            rhFactorSelect.value = '';
-            bloodAddedCount = 0; // Reset blood added counter
-            allowAddingBlood = true; // Allow adding blood again
-
-            // Reset state of all test papers and blood drops
-            testPapers.forEach(paper => {
-                paper.userData.hasBlood = false; // Mark paper as empty
-            });
-            for (const id in bloodDrops) {
-                const drop = bloodDrops[id];
-                drop.visible = false; // Hide drop
-                drop.scale.set(0.01, 0.01, 0.01); // Scale back to invisible
-                drop.material.color.set(0x8b0000); // Reset color to original blood red
-                drop.material.opacity = 0.9; // Reset opacity
-            }
-            // Stop all active TWEEN animations to prevent them from interfering with a new game
-            TWEEN.removeAll();
-        }
-
-        // --- Three.js Animation Loop ---
         function animate() {
-            requestAnimationFrame(animate); // Request next animation frame
-            controls.update(); // Update OrbitControls (if enabled for user interaction)
-            TWEEN.update(); // Update all active TWEEN animations
-            renderer.render(scene, camera); // Render the scene
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
         }
 
-        // --- Initialize the Game when the DOM is fully loaded ---
-        document.addEventListener('DOMContentLoaded', init); // Call init function on page load
+        // --- Start ---
+        init();
 
-        // UI Event Listeners (outside of init as they are for 2D DOM elements)
-        checkButton.addEventListener('click', checkAnswer);
-        resetButton.addEventListener('click', resetGame);
     </script>
 </body>
 </html>
