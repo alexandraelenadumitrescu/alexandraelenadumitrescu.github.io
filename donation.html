@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulează Donarea de Sânge</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f8f9fa;
+      padding: 2rem;
+      text-align: center;
+    }
+    .step {
+      display: none;
+      margin-top: 2rem;
+    }
+    .step.active {
+      display: block;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 2rem;
+      background: #d90429;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    img {
+      max-width: 200px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🩸 Simulează Procesul de Donare de Sânge</h1>
+  <p>Ajută pacientul pas cu pas!</p>
+
+  <div id="step1" class="step active">
+    <h2>1. Alege pacientul</h2>
+    <img src="https://via.placeholder.com/150x150?text=Pacient" alt="Pacient random">
+    <br>
+    <button onclick="nextStep(1)">Continuă</button>
+  </div>
+
+  <div id="step2" class="step">
+    <h2>2. Verifică identitatea și semnătura</h2>
+    <img src="https://via.placeholder.com/200x100?text=Buletin+semnat">
+    <br>
+    <button onclick="nextStep(2)">Totul e în regulă!</button>
+  </div>
+
+  <div id="step3" class="step">
+    <h2>3. Măsoară hemoglobina</h2>
+    <img src="https://via.placeholder.com/200x80?text=Rezultat+normal">
+    <br>
+    <button onclick="nextStep(3)">Valori acceptabile</button>
+  </div>
+
+  <div id="step4" class="step">
+    <h2>4. Montează acul</h2>
+    <img src="https://via.placeholder.com/200x150?text=Montare+acul">
+    <br>
+    <button onclick="nextStep(4)">Conectat!</button>
+  </div>
+
+  <div id="step5" class="step">
+    <h2>5. Colectează sângele</h2>
+    <progress id="progress" value="0" max="100" style="width: 60%; height: 20px;"></progress>
+    <br>
+    <button onclick="startCollection()">Începe colectarea</button>
+  </div>
+
+  <div id="step6" class="step">
+    <h2>✅ Donarea s-a încheiat!</h2>
+    <p>Felicitări, ai salvat 3 vieți!</p>
+    <img src="https://via.placeholder.com/200x150?text=Sac+plin">
+    <br>
+    <button onclick="location.reload()">Reîncepe</button>
+  </div>
+
+  <script>
+    function nextStep(current) {
+      document.getElementById(`step${current}`).classList.remove('active');
+      document.getElementById(`step${current + 1}`).classList.add('active');
+    }
+
+    function startCollection() {
+      const progress = document.getElementById("progress");
+      let value = 0;
+      const interval = setInterval(() => {
+        value += 5;
+        progress.value = value;
+        if (value >= 100) {
+          clearInterval(interval);
+          nextStep(5);
+        }
+      }, 200);
+    }
+  </script>
+</body>
+</html>
