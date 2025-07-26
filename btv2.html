@@ -208,7 +208,20 @@
 
             // 6. Textures for paper (using the provided texture URL)
             const textureLoader = new THREE.TextureLoader();
-            const paperTexture = textureLoader.load('https://www.transparenttextures.com/patterns/cream-paper.png');
+            const paperTexture = textureLoader.load('https://www.transparenttextures.com/patterns/cream-paper.png',
+                // Callback for successful load
+                function (texture) {
+                    console.log('Texture loaded successfully!');
+                    // This is where you would typically create materials/meshes that use this texture
+                    // For our case, materials are created below, but this confirms load.
+                },
+                // Callback for progress
+                undefined,
+                // Callback for errors
+                function (err) {
+                    console.error('An error happened loading the texture:', err);
+                }
+            );
             paperTexture.wrapS = THREE.RepeatWrapping; // Repeat texture horizontally
             paperTexture.wrapT = THREE.RepeatWrapping; // Repeat texture vertically
             paperTexture.repeat.set(0.5, 0.5); // Adjust repeat for better tiling on smaller papers
