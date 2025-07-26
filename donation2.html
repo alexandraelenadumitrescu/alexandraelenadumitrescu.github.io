@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulează Donarea de Sânge</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f8f9fa;
+      padding: 2rem;
+      text-align: center;
+      overflow-x: hidden;
+    }
+    .scene {
+      display: none;
+      margin-top: 2rem;
+      animation: fadeIn 1s ease forwards;
+    }
+    .scene.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 2rem;
+      background: #d90429;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    img {
+      max-width: 300px;
+      margin-top: 1rem;
+      transition: transform 0.5s ease;
+    }
+    img.animate {
+      transform: scale(1.05) rotate(1deg);
+    }
+    progress {
+      width: 60%;
+      height: 20px;
+    }
+    .option {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: white;
+    }
+    .option:hover {
+      background-color: #ffe5e5;
+    }
+    .feedback {
+      font-weight: bold;
+      color: green;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🩸 Simulează Procesul de Donare de Sânge</h1>
+  <p>Ajută pacientul pas cu pas!</p>
+
+  <div id="scene1" class="scene active">
+    <h2>1. Alege pacientul</h2>
+    <div class="option" onclick="nextScene(1)">
+      <img src="https://i.imgur.com/FtEMF4U.png" alt="Ana">
+      <p>Ana</p>
+    </div>
+    <div class="option" onclick="nextScene(1)">
+      <img src="https://i.imgur.com/znfMI2Q.png" alt="Mihai">
+      <p>Mihai</p>
+    </div>
+    <div class="option" onclick="nextScene(1)">
+      <img src="https://i.imgur.com/7h0sSYz.png" alt="Alex">
+      <p>Alex</p>
+    </div>
+  </div>
+
+  <div id="scene2" class="scene">
+    <h2>2. Verifică identitatea</h2>
+    <img src="https://i.imgur.com/HBKHNMF.png" id="img2" alt="Buletin semnat">
+    <p>Dă click pe semnătură pentru a verifica:</p>
+    <div class="option" onclick="showFeedback('Semnătura e validă!', 2)">✔ Semnează</div>
+    <div class="feedback" id="feedback2"></div>
+  </div>
+
+  <div id="scene3" class="scene">
+    <h2>3. Măsoară hemoglobina</h2>
+    <img src="https://i.imgur.com/8IoHEKT.png" alt="Test hemoglobină">
+    <p>Alege valoarea corectă:</p>
+    <div class="option" onclick="wrongChoice(this)">8.5 g/dL</div>
+    <div class="option" onclick="rightChoice(3)">13.7 g/dL</div>
+    <div class="option" onclick="wrongChoice(this)">18.0 g/dL</div>
+    <div class="feedback" id="feedback3"></div>
+  </div>
+
+  <div id="scene4" class="scene">
+    <h2>4. Montează acul</h2>
+    <p>Apasă pentru a conecta acul:</p>
+    <img src="https://i.imgur.com/Lg3efYv.png" id="img4" alt="Montare ac" onclick="nextScene(4)">
+  </div>
+
+  <div id="scene5" class="scene">
+    <h2>5. Colectează sângele</h2>
+    <img src="https://i.imgur.com/TGbxtWo.png" alt="Colectare sânge">
+    <progress id="progress" value="0" max="100"></progress>
+    <br>
+    <button onclick="startCollection()">Începe colectarea</button>
+  </div>
+
+  <div id="scene6" class="scene">
+    <h2>✅ Donarea s-a încheiat!</h2>
+    <p>Felicitări, ai salvat 3 vieți!</p>
+    <img src="https://i.imgur.com/WYTxbdz.png" alt="Sac plin de sânge">
+    <br>
+    <button onclick="location.reload()">Reîncepe</button>
+  </div>
+
+  <script>
+    function nextScene(current) {
+      const currentScene = document.getElementById(`scene${current}`);
+      const nextScene = document.getElementById(`scene${current + 1}`);
+
+      const img = document.querySelector(`#scene${current} img`);
+      if (img) {
+        img.classList.add('animate');
+      }
+
+      setTimeout(() => {
+        currentScene.classList.remove('active');
+        nextScene.classList.add('active');
+      }, 600);
+    }
+
+    function showFeedback(message, current) {
+      document.getElementById(`feedback${current}`).innerText = message;
+      setTimeout(() => nextScene(current), 1000);
+    }
+
+    function rightChoice(current) {
+      document.getElementById(`feedback${current}`).innerText = "✔ Corect!";
+      setTimeout(() => nextScene(current), 1000);
+    }
+
+    function wrongChoice(el) {
+      el.style.backgroundColor = '#ffcccc';
+      const id = el.parentElement.querySelector('.feedback').id;
+      document.getElementById(id).innerText = "✖ Încearcă din nou!";
+    }
+
+    function startCollection() {
+      const progress = document.getElementById("progress");
+      let value = 0;
+      const interval = setInterval(() => {
+        value += 5;
+        progress.value = value;
+        if (value >= 100) {
+          clearInterval(interval);
+          nextScene(5);
+        }
+      }, 150);
+    }
+  </script>
+</body>
+</html>
