@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Type Game 3D (Three.js)</title>
+    <title>Blood Type Game 3D: Transylvania Nocturne</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            overflow: hidden;
-            background-color: #1a1a1a;
-            font-family: 'MedievalSharp', cursive, Arial, sans-serif; /* Set global font */
-            color: #f5f5dc; /* Set global text color */
+            overflow: hidden; /* Hide scrollbars */
+            background-color: #1a1a1a; /* Dark background */
+            font-family: 'MedievalSharp', cursive, Arial, sans-serif; /* Global font */
+            color: #f5f5dc; /* Global text color (off-white) */
         }
         canvas {
             display: block;
             position: absolute; /* Canvas fills the whole screen */
             top: 0;
             left: 0;
-            z-index: 0; /* Background layer */
+            z-index: 0; /* Background layer for 3D scene */
         }
         #info {
             position: absolute;
@@ -27,12 +27,13 @@
             transform: translateX(-50%);
             color: #e0b34d; /* Gold color for instruction */
             font-family: 'MedievalSharp', cursive, sans-serif;
-            font-size: 2em; /* Larger instruction */
+            font-size: 2.2em; /* Larger instruction text */
             text-align: center;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
             z-index: 10; /* Above canvas */
-            width: 80%; /* Ensure it doesn't wrap awkwardly */
+            width: 80%; /* Ensure text fits */
             pointer-events: none; /* Allows clicks to pass through to the canvas */
+            user-select: none; /* Prevent text selection */
         }
         #controls-2d {
             position: absolute;
@@ -41,18 +42,20 @@
             transform: translateX(-50%);
             z-index: 10; /* Above canvas */
             background: rgba(43, 0, 0, 0.8); /* Dark blood red with transparency */
-            padding: 20px;
+            padding: 25px; /* More padding */
             border-radius: 15px;
             border: 2px solid #5a0000;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
             text-align: center;
+            min-width: 400px; /* Ensure a decent width */
+            display: none; /* Hidden initially */
         }
         #controls-2d h2 {
             font-family: 'MedievalSharp', cursive, sans-serif;
-            color: #e0b34d;
+            color: #e0b34d; /* Gold for headings */
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
-            margin-bottom: 20px;
-            font-size: 1.8em;
+            margin-bottom: 25px; /* More space */
+            font-size: 2em; /* Larger heading */
         }
         button {
             background-color: #8b0000; /* Vampire dark red */
@@ -60,7 +63,7 @@
             padding: 15px 30px; /* Larger buttons */
             border: 2px solid #a00000; /* Lighter red border */
             border-radius: 8px; /* Slightly rounded corners */
-            font-size: 1.2em; /* Larger font */
+            font-size: 1.3em; /* Larger font */
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             margin: 8px;
@@ -81,10 +84,11 @@
             border-radius: 8px;
             border: 1px solid #5a0000;
             margin: 0 12px 20px;
-            font-size: 1.1em;
-            background-color: #3a1a1a;
-            color: #f5f5dc;
-            appearance: none;
+            font-size: 1.2em; /* Larger select font */
+            background-color: #3a1a1a; /* Dark background for select */
+            color: #f5f5dc; /* Light text */
+            appearance: none; /* Hide default arrow */
+            /* Custom arrow SVG */
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23f5f5dc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-6.5H18.5c-4.9%200-9.2%202.4-11.5%206.5l133.5%20141.8c3.6%203.6%208%205.5%2012.8%205.5s9.2-1.9%2012.8-5.5L287%2069.4z%22%2F%3E%3C%2Fsvg%3E');
             background-repeat: no-repeat;
             background-position: right 10px center;
@@ -96,13 +100,13 @@
             color: #f5f5dc;
         }
         #feedback {
-            margin-top: 15px;
-            font-size: 1.2em;
+            margin-top: 20px; /* More space */
+            font-size: 1.4em; /* Larger feedback text */
             font-weight: bold;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
-        .correct { color: #4CAF50; }
-        .incorrect { color: #f44336; }
+        .correct { color: #4CAF50; } /* Green */
+        .incorrect { color: #f44336; } /* Red */
     </style>
 </head>
 <body>
@@ -128,15 +132,19 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // --- Three.js Setup ---
-        let scene, camera, renderer;
-        let testPapers = [];
+        // --- Three.js Global Variables ---
+        let scene, camera, renderer, controls;
+        let testPapers = []; // Array to store Three.js Mesh objects for test papers
         let bloodDrops = {}; // Map to store Three.js Mesh objects for blood drops
+
+        // Raycaster for detecting clicks on 3D objects
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
+        // --- Game Logic Variables ---
         const agglutinationRules = {
             'A+': { A: true, B: false, D: true },
             'A-': { A: true, B: false, D: false },
@@ -147,10 +155,11 @@
             'O+': { A: false, B: false, D: true },
             'O-': { A: false, B: false, D: false }
         };
-        let currentBloodType = {};
-        let bloodAddedCount = 0;
-        let allowAddingBlood = true; // Control flag for adding blood
+        let currentBloodType = {}; // Stores the randomly generated blood type for the current test
+        let bloodAddedCount = 0; // Tracks how many blood drops have been "added"
+        let allowAddingBlood = true; // Flag to control when blood can be added
 
+        // --- DOM Elements (UI) ---
         const mainInstruction = document.getElementById('info');
         const feedbackDiv = document.getElementById('feedback');
         const checkButton = document.getElementById('checkButton');
@@ -159,45 +168,57 @@
         const rhFactorSelect = document.getElementById('rhFactorSelect');
         const controls2D = document.getElementById('controls-2d');
 
+        // --- Three.js Initialization Function ---
         function init() {
-            // Scene
+            // 1. Scene: Container for all 3D objects
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a); // Match body background
+            scene.background = new THREE.Color(0x1a1a1a); // Dark background for the theme
 
-            // Camera (Adjusted for better view)
+            // 2. Camera: Defines the perspective from which the scene is viewed
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 4, 5); // Position camera slightly higher and closer
-            camera.lookAt(0, 0.5, 0); // Look slightly above the center of the papers
+            camera.position.set(0, 4, 5); // Position camera above and slightly in front of the papers
+            camera.lookAt(0, 0.5, 0); // Point camera slightly above the center of the papers
 
-            // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            // 3. Renderer: Renders the scene onto the <canvas> element using WebGL
+            renderer = new THREE.WebGLRenderer({ antialias: true }); // Antialias for smoother edges
             renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+            document.body.appendChild(renderer.domElement); // Add canvas to the document body
 
-            // Lights (More pronounced for visibility)
-            const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light, slightly brighter
+            // 4. OrbitControls: Allows user to pan, zoom, and rotate the camera with mouse
+            // Useful for debugging and general scene exploration
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // For a smoother, more natural feel
+            controls.dampingFactor = 0.25;
+            controls.screenSpacePanning = false; // Prevents camera from panning horizontally
+            controls.maxPolarAngle = Math.PI / 2.1; // Restrict camera from going below the "ground"
+
+            // 5. Lights: Illuminate the scene
+            const ambientLight = new THREE.AmbientLight(0x404040, 2.5); // Soft white light, slightly brighter
             scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 3); // White light from top, brighter
-            directionalLight.position.set(0, 10, 5);
-            directionalLight.target.position.set(0, 0, 0);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5); // Main white light source, brighter
+            directionalLight.position.set(0, 10, 5); // Position from top-front
+            directionalLight.target.position.set(0, 0, 0); // Pointing towards the center
             scene.add(directionalLight);
             scene.add(directionalLight.target);
 
-            // Optional: Add a subtle point light for highlights (vampire theme)
-            const pointLight = new THREE.PointLight(0xff0000, 1, 10); // Reddish glow
-            pointLight.position.set(0, 3, 0);
+            // Optional: A subtle reddish point light for thematic atmosphere
+            const pointLight = new THREE.PointLight(0xff0000, 0.8, 10); // Reddish glow, moderate intensity
+            pointLight.position.set(0, 3, 0); // Position above the center
             scene.add(pointLight);
 
-            // Textures for paper (using the provided textures)
+            // 6. Textures for paper (using the provided texture URL)
             const textureLoader = new THREE.TextureLoader();
             const paperTexture = textureLoader.load('https://www.transparenttextures.com/patterns/cream-paper.png');
-            paperTexture.wrapS = THREE.RepeatWrapping;
-            paperTexture.wrapT = THREE.RepeatWrapping;
+            paperTexture.wrapS = THREE.RepeatWrapping; // Repeat texture horizontally
+            paperTexture.wrapT = THREE.RepeatWrapping; // Repeat texture vertically
             paperTexture.repeat.set(0.5, 0.5); // Adjust repeat for better tiling on smaller papers
 
-            // Create Test Papers
-            // Use a material that reacts to light for depth
-            const paperMaterial = new THREE.MeshPhongMaterial({ color: 0x3a1a1a, map: paperTexture, shininess: 5 }); // Phong for shininess
+            // 7. Create Test Papers (3D Objects)
+            const paperMaterial = new THREE.MeshPhongMaterial({
+                color: 0x3a1a1a, // Dark reddish-brown
+                map: paperTexture, // Apply texture
+                shininess: 10 // Adds a slight sheen
+            });
 
             const positions = [
                 { x: -2.5, y: 0, z: 0, label: 'Anti-A', id: 'dropA' },
@@ -206,42 +227,50 @@
             ];
 
             positions.forEach(pos => {
-                const paperGeometry = new THREE.BoxGeometry(2, 0.05, 2); // Thinner paper
+                const paperGeometry = new THREE.BoxGeometry(2, 0.05, 2); // Flat, thin box for paper
                 const paper = new THREE.Mesh(paperGeometry, paperMaterial);
                 paper.position.set(pos.x, pos.y, pos.z);
                 paper.rotation.x = Math.PI / 18; // Slight tilt
                 paper.rotation.y = Math.PI / 36;
-                paper.userData = { id: pos.id, hasBlood: false }; // Custom data
+                paper.userData = { id: pos.id, hasBlood: false }; // Custom data for raycasting and game logic
                 scene.add(paper);
-                testPapers.push(paper);
+                testPapers.push(paper); // Add to array for easy access
 
-                // Create placeholder for blood drop, hidden initially
-                const bloodGeometry = new THREE.SphereGeometry(0.4, 32, 16); // Slightly smaller, less flat
-                const bloodMaterial = new THREE.MeshPhongMaterial({ color: 0x8b0000, transparent: true, opacity: 0.9, shininess: 30 }); // More realistic blood
+                // Create placeholder for blood drop (3D Sphere)
+                const bloodGeometry = new THREE.SphereGeometry(0.4, 32, 16); // Moderate size, round shape
+                const bloodMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x8b0000, // Dark rich red for blood
+                    transparent: true,
+                    opacity: 0.9, // Slightly transparent
+                    shininess: 50 // Makes it look wet/glossy
+                });
                 const blood = new THREE.Mesh(bloodGeometry, bloodMaterial);
-                blood.position.set(pos.x, pos.y + 0.1, pos.z); // Slightly above paper
-                blood.scale.set(0.01, 0.01, 0.01); // Invisible initially
-                blood.visible = false;
-                bloodDrops[pos.id] = blood;
+                blood.position.set(pos.x, pos.y + 0.1, pos.z); // Slightly above paper surface
+                blood.scale.set(0.01, 0.01, 0.01); // Invisible initially (scaled down)
+                blood.visible = false; // Hidden initially
+                bloodDrops[pos.id] = blood; // Store reference to the drop mesh
                 scene.add(blood);
             });
 
-            // Event Listeners
-            window.addEventListener('resize', onWindowResize, false);
-            window.addEventListener('click', onDocumentClick, false);
+            // 8. Event Listeners
+            window.addEventListener('resize', onWindowResize, false); // Handle window resizing
+            renderer.domElement.addEventListener('click', onCanvasClick, false); // Listen for clicks on the canvas
+            // Use renderer.domElement for click events to ensure clicks are captured by Three.js
+            // and not by elements under the canvas.
 
-            resetGame(); // Initial setup
-            animate();
+            resetGame(); // Initialize game state on load
+            animate(); // Start the animation loop
         }
 
+        // --- Event Handlers ---
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function onDocumentClick(event) {
-            if (!allowAddingBlood) return;
+        function onCanvasClick(event) {
+            if (!allowAddingBlood) return; // Prevent clicks if not in the "add blood" phase
 
             // Calculate mouse position in normalized device coordinates (-1 to +1)
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -251,89 +280,89 @@
             raycaster.setFromCamera(mouse, camera);
 
             // Calculate objects intersecting the picking ray
-            const intersects = raycaster.intersectObjects(testPapers);
+            const intersects = raycaster.intersectObjects(testPapers); // Check for intersection with our test papers
 
             if (intersects.length > 0) {
-                const clickedPaper = intersects[0].object;
-                if (!clickedPaper.userData.hasBlood) {
-                    addBloodDrop(clickedPaper.userData.id);
-                    clickedPaper.userData.hasBlood = true;
+                const clickedPaper = intersects[0].object; // Get the first intersected object (the paper)
+                if (!clickedPaper.userData.hasBlood) { // Check if blood has already been added to this paper
+                    addBloodDrop(clickedPaper.userData.id); // Call function to add blood
+                    clickedPaper.userData.hasBlood = true; // Mark paper as having blood
                 }
             }
         }
 
+        // --- Game Logic Functions ---
         function addBloodDrop(dropId) {
             const drop = bloodDrops[dropId];
             if (drop) {
-                drop.visible = true;
-                // Animate drop appearance (scale from small to full)
+                drop.visible = true; // Make the drop visible
+                // Animate drop appearance using TWEEN.js (scale from tiny to full size)
                 new TWEEN.Tween(drop.scale)
-                    .to({ x: 1, y: 1, z: 1 }, 500)
-                    .easing(TWEEN.Easing.Back.Out)
-                    .start();
-                bloodAddedCount++;
+                    .to({ x: 1, y: 1, z: 1 }, 500) // Animate to scale 1 over 500ms
+                    .easing(TWEEN.Easing.Back.Out) // Use a "back" easing for a bouncy effect
+                    .start(); // Start the animation
 
-                if (bloodAddedCount === 3) {
+                bloodAddedCount++; // Increment counter
+
+                if (bloodAddedCount === 3) { // If all three drops are added
                     mainInstruction.textContent = "All blood drops added. Observing reactions...";
+                    // Delay before starting agglutination to let the drops fully appear
                     setTimeout(startAgglutinationProcess, 1000);
                 }
             }
         }
 
         function startAgglutinationProcess() {
-            allowAddingBlood = false;
+            allowAddingBlood = false; // Prevent further blood adding clicks
+
+            // Determine the random blood type for this test
             const bloodTypes = Object.keys(agglutinationRules);
             const randomType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
-            currentBloodType.full = randomType;
-            currentBloodType.type = randomType.slice(0, -1);
-            currentBloodType.rh = randomType.slice(-1) === '+' ? 'Positive' : 'Negative';
+            currentBloodType.full = randomType; // e.g., "A+"
+            currentBloodType.type = randomType.slice(0, -1); // e.g., "A"
+            currentBloodType.rh = randomType.slice(-1) === '+' ? 'Positive' : 'Negative'; // e.g., "Positive"
 
             const agglA = agglutinationRules[randomType].A;
             const agglB = agglutinationRules[randomType].B;
             const agglD = agglutinationRules[randomType].D;
 
-            // Start agglutination animations with delays
+            // Start agglutination animations for each drop with delays
             setTimeout(() => {
                 if (agglA) animateAgglutination(bloodDrops.dropA);
-            }, 500);
+            }, 500); // Anti-A reaction after 0.5s
 
             setTimeout(() => {
                 if (agglB) animateAgglutination(bloodDrops.dropB);
-            }, 1500);
+            }, 1500); // Anti-B reaction after 1.5s
 
             setTimeout(() => {
                 if (agglD) animateAgglutination(bloodDrops.dropD);
-                // After last animation, show guess controls
+                // After the last animation starts, show the guessing controls after a delay
                 setTimeout(() => {
-                    controls2D.style.display = 'block';
+                    controls2D.style.display = 'block'; // Make 2D controls visible
                     mainInstruction.textContent = "Observe the mysterious agglutination reactions and unveil the secret of the blood.";
-                }, 1000);
-            }, 2500);
+                }, 1000); // Give time for the last reaction to become visible
+            }, 2500); // Anti-D reaction after 2.5s
         }
 
         function animateAgglutination(dropMesh) {
-            // Change color to agglutinated (orange-red)
+            // Animate color change to agglutinated state (orange-red)
             new TWEEN.Tween(dropMesh.material.color)
-                .to(new THREE.Color(0xe67e22), 2000)
+                .to(new THREE.Color(0xe67e22), 2000) // Animate to orange-red over 2 seconds
                 .start();
 
-            // Simulate "granules" - a more sophisticated approach would be needed for true 3D particles.
-            // For now, we simulate a pulsing glow/scale change and slight opacity change.
+            // Simulate "granules" / reaction by pulsing the scale and slightly adjusting opacity
             new TWEEN.Tween(dropMesh.scale)
-                .to({ x: 1.08, y: 1.08, z: 1.08 }, 1000)
-                .yoyo(true)
-                .repeat(Infinity)
+                .to({ x: 1.08, y: 1.08, z: 1.08 }, 1000) // Grow slightly
+                .yoyo(true) // Go back and forth
+                .repeat(Infinity) // Repeat indefinitely
                 .start();
 
             new TWEEN.Tween(dropMesh.material)
-                .to({ opacity: 0.8 }, 1000) // Slight opacity change to make it look different
+                .to({ opacity: 0.7 }, 1000) // Slight opacity change
                 .yoyo(true)
                 .repeat(Infinity)
                 .start();
-
-            // Add a temporary glow effect (using a point light, might be overkill for each drop)
-            // Or better, adjust shininess/emissive properties.
-            // For simplicity, we just rely on the color change and scale for visual cue.
         }
 
         function checkAnswer() {
@@ -342,10 +371,11 @@
 
             if (!userBloodType || !userRhFactor) {
                 feedbackDiv.textContent = 'Please select both blood type and Rh factor!';
-                feedbackDiv.className = 'incorrect'; // Use class for styling
+                feedbackDiv.className = 'incorrect'; // Apply CSS class for styling
                 return;
             }
 
+            // Construct the full guessed type (e.g., "A+" or "O-")
             const guessedFullType = userBloodType + (userRhFactor === 'Positive' ? '+' : '-');
 
             if (guessedFullType === currentBloodType.full) {
@@ -355,44 +385,46 @@
                 feedbackDiv.textContent = `Incorrect. The blood type is ${currentBloodType.type}${currentBloodType.rh === 'Positive' ? '+' : '-'}. You guessed ${userBloodType}${userRhFactor === 'Positive' ? '+' : '-'}.`;
                 feedbackDiv.className = 'incorrect';
             }
-            resetButton.style.display = 'block';
+            resetButton.style.display = 'block'; // Show reset button after checking
         }
 
         function resetGame() {
             mainInstruction.textContent = 'Click on each test paper to add blood!';
             feedbackDiv.textContent = '';
-            controls2D.style.display = 'none'; // Hide guess controls
+            controls2D.style.display = 'none'; // Hide guessing controls
             resetButton.style.display = 'none';
-            bloodTypeSelect.value = '';
+            bloodTypeSelect.value = ''; // Reset dropdowns
             rhFactorSelect.value = '';
-            bloodAddedCount = 0;
-            allowAddingBlood = true;
+            bloodAddedCount = 0; // Reset blood added counter
+            allowAddingBlood = true; // Allow adding blood again
 
+            // Reset state of all test papers and blood drops
             testPapers.forEach(paper => {
-                paper.userData.hasBlood = false;
+                paper.userData.hasBlood = false; // Mark paper as empty
             });
             for (const id in bloodDrops) {
                 const drop = bloodDrops[id];
-                drop.visible = false;
-                drop.scale.set(0.01, 0.01, 0.01);
-                // Reset material properties and stop ongoing tweens
-                drop.material.color.set(0x8b0000); // Original blood color
+                drop.visible = false; // Hide drop
+                drop.scale.set(0.01, 0.01, 0.01); // Scale back to invisible
+                drop.material.color.set(0x8b0000); // Reset color to original blood red
                 drop.material.opacity = 0.9; // Reset opacity
-                TWEEN.removeAll(); // Stop all tweens to ensure a clean reset for next game
             }
+            // Stop all active TWEEN animations to prevent them from interfering with a new game
+            TWEEN.removeAll();
         }
 
-        // Animation loop
+        // --- Three.js Animation Loop ---
         function animate() {
-            requestAnimationFrame(animate);
-            TWEEN.update(); // Update tweens for animations
-            renderer.render(scene, camera);
+            requestAnimationFrame(animate); // Request next animation frame
+            controls.update(); // Update OrbitControls (if enabled for user interaction)
+            TWEEN.update(); // Update all active TWEEN animations
+            renderer.render(scene, camera); // Render the scene
         }
 
-        // --- Initialize the Game ---
-        init();
+        // --- Initialize the Game when the DOM is fully loaded ---
+        document.addEventListener('DOMContentLoaded', init); // Call init function on page load
 
-        // --- UI Event Listeners ---
+        // UI Event Listeners (outside of init as they are for 2D DOM elements)
         checkButton.addEventListener('click', checkAnswer);
         resetButton.addEventListener('click', resetGame);
     </script>
