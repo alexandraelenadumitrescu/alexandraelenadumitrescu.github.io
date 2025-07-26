@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorul de Transfuzii 3D: Ediția Nocturnă (Îmbunătățit)</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-color: #8b0000;
+            --accent-color: #e0b34d;
+            --text-color: #f5f5dc;
+            --bg-color: #1a1a1a;
+            --dark-red: #5a0000;
+            --highlight-color: #00ff00; /* Culoare pentru evidențiere */
+        }
+
+        body {
+            margin: 0;
+            font-family: 'MedievalSharp', cursive, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 850px;
+            background-color: rgba(43, 0, 0, 0.85);
+            border: 2px solid var(--dark-red);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-top: 0;
+            font-size: 2.2em;
+        }
+
+        #instructions {
+            color: #e0e0e0;
+            font-size: 1.3em;
+            min-height: 40px;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        button {
+            background-color: var(--main-color);
+            color: var(--text-color);
+            padding: 12px 25px;
+            border: 2px solid #a00000;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-family: 'MedievalSharp', cursive, sans-serif;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #a00000;
+            transform: translateY(-2px);
+            box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        button:disabled {
+            background-color: #555;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--dark-red);
+            margin: 0 10px;
+            font-size: 1em;
+            background-color: #3a1a1a;
+            color: var(--text-color);
+            font-family: 'MedievalSharp', cursive, sans-serif;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        #final-feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 100;
+            text-align: center;
+        }
+        #final-feedback-text {
+            font-size: 3.5em;
+            font-weight: bold;
+            text-shadow: 3px 3px 8px black;
+            padding: 20px;
+        }
+        #final-feedback-overlay.success { background: rgba(49, 115, 52, 0.85); }
+        #final-feedback-overlay.error { background: rgba(169, 50, 38, 0.85); }
+    </style>
+</head>
+<body>
+
+    <div id="info-panel">
+        <h1>Laboratorul de Transfuzii 3D</h1>
+        <p id="instructions">Trage seringa pe brațul pacientului pentru a recolta sânge.</p>
+        
+        <div id="confirmation-wrapper" class="hidden">
+            <select id="blood-type-select"></select>
+            <button id="confirm-type-button">Confirmă Grupa</button>
+        </div>
+        
+        <div id="final-feedback-overlay" class="hidden">
+            <div id="final-feedback-text"></div>
+            <button id="next-patient-button">Pacient Următor</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.166.1/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- CONSTANTE ȘI DATE JOC ---
+        const ALL_BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+        const COMPATIBILITY_MAP = {
+            'A+': ['A+', 'A-', 'O+', 'O-'], 'A-': ['A-', 'O-'],
+            'B+': ['B+', 'B-', 'O+', 'O-'], 'B-': ['B-', 'O-'],
+            'AB+': ALL_BLOOD_TYPES, 'AB-': ['A-', 'B-', 'AB-', 'O-'],
+            'O+': ['O+', 'O-'], 'O-': ['O-']
+        };
+        const AGGLUTINATION_RULES = {
+            'A+': { A: true, B: false, Rh: true },  'A-': { A: true, B: false, Rh: false },
+            'B+': { A: false, B: true, Rh: true },  'B-': { A: false, B: true, Rh: false },
+            'AB+': { A: true, B: true, Rh: true }, 'AB-': { A: true, B: true, Rh: false },
+            'O+': { A: false, B: false, Rh: true }, 'O-': { A: false, B: false, Rh: false }
+        };
+        const HIGHLIGHT_COLOR = 0x00ff00;
+
+        // --- VARIABILE GLOBALE THREE.JS & JOC ---
+        let scene, camera, renderer, raycaster, pointer;
+        let table, patientArmGroup, syringe, bloodVial, testSlides = [], bloodDrops = [], bloodBags = [];
+        let draggingObject = null, intersectionPlane;
+        let hoveredTarget = { object: null, originalMaterial: null };
+
+
+        // --- STAREA JOCULUI ---
+        let gameState = {
+            patientBloodType: '',
+            phase: 'collect_blood',
+            testsDone: { A: false, B: false, Rh: false }
+        };
+
+        // --- ELEMENTE UI ---
+        const instructions = document.getElementById('instructions');
+        const confirmationWrapper = document.getElementById('confirmation-wrapper');
+        const bloodTypeSelect = document.getElementById('blood-type-select');
+        const confirmTypeButton = document.getElementById('confirm-type-button');
+        const finalFeedbackOverlay = document.getElementById('final-feedback-overlay');
+        const finalFeedbackText = document.getElementById('final-feedback-text');
+        const nextPatientButton = document.getElementById('next-patient-button');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        // --- INIȚIALIZARE ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            // NOUĂ POZIȚIE A CAMEREI pentru vizibilitate mai bună
+            camera.position.set(0, 45, 40); 
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            canvasContainer.appendChild(renderer.domElement);
+            
+            // ILUMINARE ÎMBUNĂTĂȚITĂ
+            const ambientLight = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 3.5, 200); // Intensitate crescută
+            pointLight.position.set(0, 50, 20);
+            pointLight.castShadow = true;
+            scene.add(pointLight);
+            const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5); // Lumină nouă
+            scene.add(hemiLight);
+
+            raycaster = new THREE.Raycaster();
+            pointer = new THREE.Vector2();
+            intersectionPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(200, 200),
+                new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide })
+            );
+            intersectionPlane.rotation.x = -Math.PI / 2;
+            intersectionPlane.position.y = 10;
+            scene.add(intersectionPlane);
+
+            createEnvironment();
+            createInteractiveObjects();
+            startNewPatient();
+
+            window.addEventListener('resize', onWindowResize);
+            canvasContainer.addEventListener('pointerdown', onPointerDown);
+            canvasContainer.addEventListener('pointermove', onPointerMove);
+            canvasContainer.addEventListener('pointerup', onPointerUp);
+            confirmTypeButton.addEventListener('click', checkGuessedType);
+            nextPatientButton.addEventListener('click', startNewPatient);
+
+            animate();
+        }
+
+        // --- CREARE OBIECTE SCENĂ ---
+        function createEnvironment() {
+            const tableGeometry = new THREE.BoxGeometry(100, 2, 50);
+            const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1a1a, roughness: 0.8 });
+            table = new THREE.Mesh(tableGeometry, tableMaterial);
+            table.receiveShadow = true;
+            table.position.y = -1;
+            scene.add(table);
+            
+            testSlides.push(createSlide('Anti-A', -25, 'A'));
+            testSlides.push(createSlide('Anti-B', 0, 'B'));
+            testSlides.push(createSlide('Anti-Rh', 25, 'Rh'));
+            testSlides.forEach(slide => scene.add(slide));
+        }
+        
+        function createSlide(text, xPos, type) {
+            const slideGroup = new THREE.Group();
+            slideGroup.position.set(xPos, 0.1, 0);
+
+            const slideGeometry = new THREE.BoxGeometry(15, 0.2, 15);
+            const slideMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc, roughness: 0.2, transparent: true, opacity: 0.8
+            });
+            const slideMesh = new THREE.Mesh(slideGeometry, slideMaterial);
+            slideMesh.receiveShadow = true;
+            slideMesh.userData.originalMaterial = slideMaterial; // Stocăm materialul original
+            slideGroup.add(slideMesh);
+
+            // ... codul pentru label rămâne la fel ...
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256; canvas.height = 128;
+            context.font = "bold 40px 'MedievalSharp'";
+            context.fillStyle = '#2b0000';
+            context.textAlign = 'center';
+            context.fillText(text, 128, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+            const label = new THREE.Mesh( new THREE.PlaneGeometry(12, 6), new THREE.MeshBasicMaterial({ map: texture, transparent: true }) );
+            label.rotation.x = -Math.PI / 2;
+            label.position.y = 0.11;
+            slideGroup.add(label);
+            
+            slideGroup.userData = { isSlide: true, type: type, visualMesh: slideMesh };
+            return slideGroup;
+        }
+
+        function createInteractiveObjects() {
+            // GRUP PENTRU BRAȚ + HITBOX MĂRIT
+            patientArmGroup = new THREE.Group();
+            patientArmGroup.position.set(-35, 5, 10);
+            scene.add(patientArmGroup);
+
+            const armGeometry = new THREE.CylinderGeometry(4, 4, 20, 32);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: 0xbe9b85 });
+            const patientArmMesh = new THREE.Mesh(armGeometry, armMaterial);
+            patientArmMesh.castShadow = true;
+            patientArmMesh.rotation.z = Math.PI / 4;
+            patientArmMesh.userData.originalMaterial = armMaterial;
+            patientArmGroup.add(patientArmMesh);
+            
+            // HITBOX INVIZIBIL MĂRIT
+            const hitboxGeometry = new THREE.CylinderGeometry(8, 8, 25, 8); // semnificativ mai mare
+            const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
+            const patientArmHitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+            patientArmHitbox.rotation.z = Math.PI / 4;
+            patientArmHitbox.userData = { isPatientArm: true, visualMesh: patientArmMesh };
+            patientArmGroup.add(patientArmHitbox);
+            
+            // Seringa
+            syringe = new THREE.Group();
+            const barrel = new THREE.Mesh( new THREE.CylinderGeometry(1, 1, 10, 16), new THREE.MeshStandardMaterial({ color: 0xcccccc, transparent: true, opacity: 0.9 }) );
+            const plunger = new THREE.Mesh( new THREE.CylinderGeometry(0.8, 0.8, 12, 16), new THREE.MeshStandardMaterial({ color: 0x555555, transparent: true, opacity: 0.9 }) );
+            plunger.position.y = 3;
+            syringe.add(barrel, plunger);
+            syringe.castShadow = true;
+            syringe.userData = { isSyringe: true, parts: [barrel, plunger] };
+            scene.add(syringe);
+            
+            bloodVial = new THREE.Mesh( new THREE.CylinderGeometry(1.5, 1.5, 8, 32), new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.9 }) );
+            bloodVial.castShadow = true;
+            bloodVial.userData = { isVial: true };
+            scene.add(bloodVial);
+        }
+        
+        function createBloodBag(type, position) {
+             const bagGroup = new THREE.Group();
+            
+            const bagGeom = new THREE.BoxGeometry(6, 9, 2);
+            const bagMat = new THREE.MeshStandardMaterial({color: 0xd9534f, transparent: true, opacity: 0.9});
+            const bagMesh = new THREE.Mesh(bagGeom, bagMat);
+            bagMesh.castShadow = true;
+            bagGroup.add(bagMesh);
+
+             // ... cod label ...
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 128; canvas.height = 128;
+            ctx.font = "bold 60px 'MedievalSharp'";
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(type, 64, 80);
+            const texture = new THREE.CanvasTexture(canvas);
+            const label = new THREE.Mesh( new THREE.PlaneGeometry(6, 6), new THREE.MeshBasicMaterial({ map: texture, transparent: true }) );
+            label.position.z = 1.01;
+            bagGroup.add(label);
+
+            bagGroup.position.copy(position);
+            bagGroup.userData = { isBloodBag: true, type: type, parts: [bagMesh] };
+            scene.add(bagGroup);
+            return bagGroup;
+        }
+
+        // --- Logica Jocului (majoritatea neschimbată) ---
+        function startNewPatient() {
+            gameState.patientBloodType = ALL_BLOOD_TYPES[Math.floor(Math.random() * ALL_BLOOD_TYPES.length)];
+            console.log("Pacient nou. Grupa (secret):", gameState.patientBloodType);
+            gameState.phase = 'collect_blood';
+            gameState.testsDone = { A: false, B: false, Rh: false };
+            draggingObject = null;
+            bloodDrops.forEach(drop => scene.remove(drop)); bloodDrops = [];
+            bloodBags.forEach(bag => scene.remove(bag)); bloodBags = [];
+            syringe.position.set(-15, 10, 15);
+            syringe.visible = true;
+            syringe.userData.parts.forEach(p => p.material.opacity = 0.9);
+            bloodVial.visible = false;
+            finalFeedbackOverlay.classList.add('hidden');
+            confirmationWrapper.classList.add('hidden');
+            updateInstructions('1. Trage seringa pe brațul pacientului pentru a recolta sânge.');
+            bloodTypeSelect.innerHTML = '';
+            ALL_BLOOD_TYPES.forEach(type => { const option = document.createElement('option'); option.value = type; option.textContent = type; bloodTypeSelect.appendChild(option); });
+        }
+
+        function updateInstructions(text) { instructions.textContent = text; }
+        
+        function advancePhase(newPhase) {
+            gameState.phase = newPhase;
+            console.log("Fază nouă:", newPhase);
+            switch(newPhase) {
+                case 'test_blood':
+                    syringe.visible = false;
+                    bloodVial.position.set(-15, 6, 15);
+                    bloodVial.visible = true;
+                    bloodVial.material.opacity = 0.9;
+                    updateInstructions('2. Trage eprubeta pe fiecare lamelă pentru a adăuga sânge.');
+                    break;
+                case 'determine_type':
+                    bloodVial.visible = false;
+                    updateInstructions('3. Analizează rezultatele și selectează grupa sanguină.');
+                    confirmationWrapper.classList.remove('hidden');
+                    break;
+                case 'transfuse':
+                     updateInstructions('4. Corect! Acum alege o pungă de sânge compatibilă și trage-o pe pacient.');
+                     confirmationWrapper.classList.add('hidden');
+                     populateBloodBank();
+                    break;
+            }
+        }
+        
+        // ... funcțiile placeBloodDrop, checkGuessedType, populateBloodBank, checkTransfusion rămân la fel ...
+        function placeBloodDrop(targetSlide) { const slideType = targetSlide.userData.type; if (gameState.testsDone[slideType]) return; gameState.testsDone[slideType] = true; const dropGeometry = new THREE.SphereGeometry(3, 32, 16); const normalMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.3 }); const agglutinatedMaterial = new THREE.MeshPhysicalMaterial({ color: 0x8b0000, roughness: 0.8, transmission: 0.5, thickness: 1.0 }); const drop = new THREE.Mesh(dropGeometry, normalMaterial); drop.position.set(targetSlide.position.x, 1, targetSlide.position.z); drop.castShadow = true; scene.add(drop); bloodDrops.push(drop); const rule = AGGLUTINATION_RULES[gameState.patientBloodType]; if (rule[slideType]) { setTimeout(() => { drop.material = agglutinatedMaterial; for (let i = 0; i < 5; i++) { const clump = new THREE.Mesh( new THREE.SphereGeometry(0.5 + Math.random() * 0.5), new THREE.MeshBasicMaterial({ color: 0x5a0000 }) ); clump.position.set( (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3 ); drop.add(clump); } }, 500); } if (Object.values(gameState.testsDone).every(Boolean)) { advancePhase('determine_type'); } }
+        function checkGuessedType() { const userChoice = bloodTypeSelect.value; if (userChoice === gameState.patientBloodType) { advancePhase('transfuse'); } else { alert('Grupă sanguină incorectă! Analizează din nou lamelele.'); } }
+        function populateBloodBank() { const shuffledTypes = [...ALL_BLOOD_TYPES].sort(() => Math.random() - 0.5); shuffledTypes.forEach((type, index) => { const x = -30 + (index % 4) * 20; const z = (index < 4) ? -15 : -30; const pos = new THREE.Vector3(x, 10, z); bloodBags.push(createBloodBag(type, pos)); }); }
+        function checkTransfusion(donorType) { const isCompatible = COMPATIBILITY_MAP[gameState.patientBloodType].includes(donorType); finalFeedbackOverlay.classList.remove('hidden'); if(isCompatible) { finalFeedbackOverlay.className = 'success'; finalFeedbackText.innerHTML = `Felicitări!<br>Transfuzia cu grupa ${donorType} este compatibilă.<br>Pacientul e salvat!`; } else { finalFeedbackOverlay.className = 'error'; finalFeedbackText.innerHTML = `PERICOL!<br>Transfuzia cu grupa ${donorType} este incompatibilă!<br>Procedură eșuată.`; } bloodBags.forEach(bag => bag.visible = false); }
+        
+        // --- EVENIMENTE MOUSE & RAYCASTING (LOGICA NOUĂ) ---
+        function updatePointer(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        function onPointerDown(event) {
+            updatePointer(event);
+            raycaster.setFromCamera(pointer, camera);
+            
+            let objectsToIntersect = [];
+            if(gameState.phase === 'collect_blood') objectsToIntersect = [syringe];
+            if(gameState.phase === 'test_blood') objectsToIntersect = [bloodVial];
+            if(gameState.phase === 'transfuse') objectsToIntersect = bloodBags;
+            
+            const intersects = raycaster.intersectObjects(objectsToIntersect, true);
+
+            if (intersects.length > 0) {
+                // Navigăm la grupul principal al obiectului
+                draggingObject = objectsToIntersect.length > 1 ? intersects[0].object.parent : intersects[0].object;
+                if (draggingObject.userData.isSyringe || draggingObject.userData.isBloodBag) { // Corecție pentru seringă și pungi
+                   if(intersects[0].object.parent !== scene) draggingObject = intersects[0].object.parent;
+                }
+                
+                canvasContainer.style.cursor = 'grabbing';
+                // Facem obiectul semi-transparent la drag
+                const parts = draggingObject.userData.parts || [draggingObject];
+                parts.forEach(p => p.material.opacity = 0.5);
+            }
+        }
+
+        function onPointerMove(event) {
+            if (draggingObject) {
+                updatePointer(event);
+                raycaster.setFromCamera(pointer, camera);
+                
+                // Mută obiectul
+                const planeIntersects = raycaster.intersectObject(intersectionPlane);
+                if (planeIntersects.length > 0) {
+                    const point = planeIntersects[0].point;
+                    draggingObject.position.x = point.x;
+                    draggingObject.position.z = point.z;
+                }
+                
+                // Verifică țintele (hover)
+                let dropTargets = [];
+                if(gameState.phase === 'collect_blood' || gameState.phase === 'transfuse') dropTargets = [patientArmGroup.children.find(c => c.userData.isPatientArm)];
+                if(gameState.phase === 'test_blood') dropTargets = testSlides;
+
+                const targetIntersects = raycaster.intersectObjects(dropTargets, true);
+
+                if (targetIntersects.length > 0) {
+                    let hitObject = targetIntersects[0].object;
+                    // Navigăm la obiectul vizual corect (cel care are material)
+                    let visualMesh = hitObject.userData.visualMesh || (hitObject.parent.userData ? hitObject.parent.userData.visualMesh : null) || hitObject;
+
+                    if (hoveredTarget.object !== visualMesh) {
+                        clearHover();
+                        hoveredTarget.object = visualMesh;
+                        hoveredTarget.originalMaterial = visualMesh.userData.originalMaterial;
+                        visualMesh.material = new THREE.MeshStandardMaterial({ color: HIGHLIGHT_COLOR, emissive: HIGHLIGHT_COLOR, emissiveIntensity: 0.5 });
+                    }
+                } else {
+                    clearHover();
+                }
+            }
+        }
+
+        function onPointerUp(event) {
+            if (draggingObject) {
+                // Restore dragging object opacity
+                const parts = draggingObject.userData.parts || [draggingObject];
+                parts.forEach(p => p.material.opacity = 0.9);
+
+                // Verifică dacă am eliberat peste o țintă evidențiată
+                if (hoveredTarget.object) {
+                    if (gameState.phase === 'collect_blood' && hoveredTarget.object.parent.userData.isPatientArm) {
+                        advancePhase('test_blood');
+                    } else if (gameState.phase === 'test_blood' && hoveredTarget.object.parent.userData.isSlide) {
+                        placeBloodDrop(hoveredTarget.object.parent);
+                    } else if (gameState.phase === 'transfuse' && hoveredTarget.object.parent.userData.isPatientArm) {
+                        checkTransfusion(draggingObject.userData.type);
+                        draggingObject.visible = false;
+                    }
+                }
+
+                clearHover();
+                draggingObject = null;
+                canvasContainer.style.cursor = 'grab';
+            }
+        }
+
+        function clearHover() {
+            if (hoveredTarget.object) {
+                hoveredTarget.object.material = hoveredTarget.originalMaterial;
+                hoveredTarget.object = null;
+                hoveredTarget.originalMaterial = null;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
