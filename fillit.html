@@ -123,6 +123,135 @@
         .bindPopup(`<strong>${loc.oras}</strong><br>${loc.detalii}`);
     });
   </script>
+  <!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulare Grupă Sanguină</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff7f7;
+      color: #333;
+      text-align: center;
+      padding: 2rem;
+    }
+    .test-area {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .spot {
+      border: 2px solid #999;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .label {
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+    .drop {
+      width: 50px;
+      height: 50px;
+      background: #a00;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .agglutinate {
+      background-image: radial-gradient(circle, #600 20%, transparent 21%);
+      background-size: 15px 15px;
+    }
+    .visible {
+      opacity: 1;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      background: #e63946;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Simulează Testul de Grupă Sanguină</h1>
+  <p>Apasă pe buton pentru a adăuga sânge pe testele Anti-A, Anti-B și Anti-Rh.</p>
+
+  <div class="test-area">
+    <div>
+      <div class="spot" id="spot-a"><div class="drop" id="drop-a"></div></div>
+      <div class="label">Anti-A</div>
+    </div>
+    <div>
+      <div class="spot" id="spot-b"><div class="drop" id="drop-b"></div></div>
+      <div class="label">Anti-B</div>
+    </div>
+    <div>
+      <div class="spot" id="spot-rh"><div class="drop" id="drop-rh"></div></div>
+      <div class="label">Anti-Rh</div>
+    </div>
+  </div>
+
+  <button onclick="runTest()">🩸 Adaugă picătura de sânge</button>
+  <div id="result"></div>
+
+  <script>
+    const bloodTypes = {
+      "A+": [true, false, true],
+      "A-": [true, false, false],
+      "B+": [false, true, true],
+      "B-": [false, true, false],
+      "AB+": [true, true, true],
+      "AB-": [true, true, false],
+      "O+": [false, false, true],
+      "O-": [false, false, false],
+    };
+
+    let chosenType = null;
+
+    function runTest() {
+      // Alege random un tip de sânge
+      const types = Object.keys(bloodTypes);
+      chosenType = types[Math.floor(Math.random() * types.length)];
+      const [a, b, rh] = bloodTypes[chosenType];
+
+      const dropA = document.getElementById("drop-a");
+      const dropB = document.getElementById("drop-b");
+      const dropRh = document.getElementById("drop-rh");
+
+      dropA.classList.add("visible");
+      dropA.classList.toggle("agglutinate", a);
+
+      dropB.classList.add("visible");
+      dropB.classList.toggle("agglutinate", b);
+
+      dropRh.classList.add("visible");
+      dropRh.classList.toggle("agglutinate", rh);
+
+      document.getElementById("result").innerText = `Grupa de sânge: ${chosenType}`;
+    }
+  </script>
+</body>
+</html>
+</head><body>
+    <h2>Harta Centrelor de Donare</h2>
 <iframe src="https://www.google.com/maps/d/embed?mid=XYZ" width="100%" height="400"></iframe>
 <footer>
     <p>&copy; 2025 Alexandra Dumitrescu</p>
