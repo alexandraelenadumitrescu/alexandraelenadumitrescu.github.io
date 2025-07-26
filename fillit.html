@@ -377,7 +377,7 @@
   <div id="result"></div>
 
   <script>
-    const bloodTypes = {
+    const bloodTypes2 = {
       "A+": [true, false, true],
       "A-": [true, false, false],
       "B+": [false, true, true],
@@ -394,9 +394,9 @@
       document.getElementById("result").innerText = "";
       document.getElementById("guess-section").style.display = "none";
 
-      const types = Object.keys(bloodTypes);
+      const types = Object.keys(bloodTypes2);
       chosenType2 = types[Math.floor(Math.random() * types.length)];
-      const [a, b, rh] = bloodTypes[chosenType2];
+      const [a, b, rh] = bloodTypes2[chosenType2];
 
       const dropA = document.getElementById("drop-a");
       const dropB = document.getElementById("drop-b");
