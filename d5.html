@@ -3,499 +3,592 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joc Drag & Drop: Laboratorul de Transfuzii</title>
+    <title>Laboratorul de Transfuzii 3D: Ediția Nocturnă</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #e6f0ff;
-            --main-color: #0056b3;
-            --accent-color: #d9534f;
-            --success-color: #5cb85c;
-            --white: #fff;
-            --gray: #f0f0f0;
-            --dark-gray: #aaa;
+            --main-color: #8b0000;
+            --accent-color: #e0b34d;
+            --text-color: #f5f5dc;
+            --bg-color: #1a1a1a;
+            --dark-red: #5a0000;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            font-family: 'MedievalSharp', cursive, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow: hidden;
         }
 
-        .game-world {
-            display: flex;
-            gap: 20px;
-            width: 95%;
-            max-width: 1000px;
-            height: 650px;
-            background: var(--white);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .left-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .right-panel {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .patient-area {
-            width: 180px;
-            height: 250px;
-            background-color: #fde0d5; /* Skin tone */
-            border: 2px solid #fbcab9;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            color: #c58c79;
-            position: relative;
-        }
-        .patient-area::before {
-            content: "Brațul Pacientului";
+        #info-panel {
             position: absolute;
-            top: 10px;
-            font-size: 0.6em;
-            font-weight: bold;
-        }
-        .patient-area.drop-hover {
-            border-color: var(--main-color);
-            box-shadow: 0 0 15px var(--main-color);
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 850px;
+            background-color: rgba(43, 0, 0, 0.85);
+            border: 2px solid var(--dark-red);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            z-index: 10;
+            backdrop-filter: blur(5px);
         }
 
-        .tool-area {
-            text-align: center;
+        h1 {
+            color: var(--accent-color);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-top: 0;
+            font-size: 2.2em;
+        }
+
+        #instructions {
+            color: #e0e0e0;
+            font-size: 1.3em;
+            min-height: 40px;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
         }
         
-        .syringe {
-            font-size: 5em;
-            cursor: grab;
-            transition: transform 0.2s;
+        canvas {
+            display: block;
         }
-        .syringe.dragging {
-            opacity: 0.5;
-            transform: scale(1.1);
+        
+        button {
+            background-color: var(--main-color);
+            color: var(--text-color);
+            padding: 12px 25px;
+            border: 2px solid #a00000;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-family: 'MedievalSharp', cursive, sans-serif;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
         }
-        .syringe.disabled {
-            opacity: 0.3;
+
+        button:hover:not(:disabled) {
+            background-color: #a00000;
+            transform: translateY(-2px);
+            box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        button:disabled {
+            background-color: #555;
+            color: #999;
             cursor: not-allowed;
         }
 
-        .lab-bench {
-            flex-grow: 1;
-            background-color: var(--gray);
-            border-radius: 10px;
-            padding: 15px;
-            position: relative;
-        }
-        
-        .instructions {
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--main-color);
+        select {
             padding: 10px;
             border-radius: 8px;
-            background: #d9e8ff;
-            margin-bottom: 20px;
+            border: 1px solid var(--dark-red);
+            margin: 0 10px;
+            font-size: 1em;
+            background-color: #3a1a1a;
+            color: var(--text-color);
+            font-family: 'MedievalSharp', cursive, sans-serif;
         }
         
-        .reagents-area, .slides-area {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .reagent-bottle {
-            text-align: center;
-            cursor: grab;
-        }
-        .reagent-bottle .icon {
-            font-size: 4em;
-        }
-        .reagent-bottle .label {
-            font-weight: bold;
-            background: var(--white);
-            padding: 2px 8px;
-            border-radius: 5px;
-        }
-        #reagent-a .icon { color: #3498db; }
-        #reagent-b .icon { color: #f1c40f; }
-        #reagent-rh .icon { color: #9b59b6; }
-        
-        .test-slide {
-            width: 100px;
-            height: 100px;
-            border: 3px dashed var(--dark-gray);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.5);
-            transition: all 0.3s;
-        }
-        .test-slide.filled {
-            border-style: solid;
-            background-color: #ffcccc; /* Light red for blood */
-        }
-        .test-slide.drop-hover {
-            transform: scale(1.1);
-            border-color: var(--main-color);
-        }
-        .test-slide.agglutinated {
-            background-image: radial-gradient(circle, #c0392b 10%, #d9534f 15%, #c0392b 20%, #d9534f 25%, #c0392b 30%, transparent 40%),
-                              radial-gradient(circle at 80% 80%, #c0392b 10%, #d9534f 15%, transparent 20%),
-                              radial-gradient(circle at 20% 80%, #c0392b 5%, #d9534f 10%, transparent 15%),
-                              radial-gradient(circle at 50% 20%, #c0392b 5%, #d9534f 10%, transparent 15%);
-            background-color: #ffcccc;
+        .hidden {
+            display: none !important;
         }
         
-        .confirmation-area {
-            text-align: center;
-            padding: 10px;
-        }
-        
-        .blood-bank {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 10px;
-            background-color: #d4eaff;
-            border-radius: 10px;
-        }
-
-        .blood-bag {
-            width: 60px;
-            height: 90px;
-            border: 2px solid #a21c1c;
-            background-color: #d9534f;
-            border-radius: 5px 5px 30px 30px;
-            position: relative;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2em;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: grab;
-        }
-        .blood-bag::before {
-            content: '';
-            position: absolute;
-            top: -12px;
-            width: 4px;
-            height: 10px;
-            background: #a21c1c;
-        }
-
-        .button {
-            background-color: var(--main-color);
-            color: white; border: none; padding: 10px 18px;
-            border-radius: 8px; font-size: 1em; cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .button:hover { background-color: #004494; }
-        .button:disabled { background-color: var(--dark-gray); cursor: not-allowed; }
-
-        .hidden { display: none !important; }
-
-        /* Final Feedback Overlay */
-        #final-feedback {
+        #final-feedback-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             color: white;
             z-index: 100;
+            text-align: center;
         }
         #final-feedback-text {
-            font-size: 2.5em;
+            font-size: 3.5em;
             font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
+            text-shadow: 3px 3px 8px black;
             padding: 20px;
         }
-        #final-feedback.success { background: rgba(92, 184, 92, 0.85); }
-        #final-feedback.error { background: rgba(217, 83, 79, 0.85); }
-
+        #final-feedback-overlay.success { background: rgba(49, 115, 52, 0.85); }
+        #final-feedback-overlay.error { background: rgba(169, 50, 38, 0.85); }
     </style>
 </head>
 <body>
 
-    <div class="game-world">
-        <div class="left-panel">
-            <div class="patient-area" id="patient-dropzone">
-                </div>
-            <div class="tool-area">
-                <div class="syringe" id="collect-syringe" draggable="true">💉</div>
-            </div>
+    <div id="info-panel">
+        <h1>Laboratorul de Transfuzii 3D</h1>
+        <p id="instructions">Trage seringa pe brațul pacientului pentru a recolta sânge.</p>
+        
+        <div id="confirmation-wrapper" class="hidden">
+            <select id="blood-type-select"></select>
+            <button id="confirm-type-button">Confirmă Grupa</button>
         </div>
-
-        <div class="right-panel">
-            <div class="lab-bench">
-                <div class="instructions" id="instructions">1. Trage seringa pe brațul pacientului pentru a recolta sânge.</div>
-                
-                <div id="reagents-wrapper" class="hidden">
-                    <div class="reagents-area">
-                        <div class="reagent-bottle" id="reagent-a" draggable="true"><div class="icon">💧</div><div class="label">Anti-A</div></div>
-                        <div class="reagent-bottle" id="reagent-b" draggable="true"><div class="icon">💧</div><div class="label">Anti-B</div></div>
-                        <div class="reagent-bottle" id="reagent-rh" draggable="true"><div class="icon">💧</div><div class="label">Anti-Rh</div></div>
-                    </div>
-                </div>
-
-                <div class="slides-area">
-                    <div class="test-slide" data-slide="a"></div>
-                    <div class="test-slide" data-slide="b"></div>
-                    <div class="test-slide" data-slide="rh"></div>
-                </div>
-
-                <div id="confirmation-wrapper" class="confirmation-area hidden">
-                    <select id="blood-type-select" class="button"></select>
-                    <button id="confirm-type-button" class="button">Confirmă Grupa</button>
-                </div>
-
-                <div id="blood-bank-wrapper" class="hidden">
-                     <p style="text-align:center; font-weight: bold;">Trage punga compatibilă pe pacient.</p>
-                     <div id="blood-bank" class="blood-bank"></div>
-                </div>
-
-                 <div id="final-feedback" class="hidden">
-                    <div id="final-feedback-text"></div>
-                    <button id="next-patient-button" class="button">Pacient Următor</button>
-                </div>
-            </div>
+        
+        <div id="final-feedback-overlay" class="hidden">
+            <div id="final-feedback-text"></div>
+            <button id="next-patient-button">Pacient Următor</button>
         </div>
     </div>
 
-<script>
-// --- LOGICA JAVASCRIPT A JOCULUI ---
+    <div id="canvas-container"></div>
 
-const ALL_BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-const COMPATIBILITY_MAP = {
-    'A+': ['A+', 'A-', 'O+', 'O-'], 'A-': ['A-', 'O-'],
-    'B+': ['B+', 'B-', 'O+', 'O-'], 'B-': ['B-', 'O-'],
-    'AB+': ALL_BLOOD_TYPES, 'AB-': ['A-', 'B-', 'AB-', 'O-'],
-    'O+': ['O+', 'O-'], 'O-': ['O-']
-};
-
-// Elemente DOM
-const instructions = document.getElementById('instructions');
-const collectSyringe = document.getElementById('collect-syringe');
-const patientDropzone = document.getElementById('patient-dropzone');
-const testSlides = document.querySelectorAll('.test-slide');
-const reagentsWrapper = document.getElementById('reagents-wrapper');
-const reagentBottles = document.querySelectorAll('.reagent-bottle');
-const confirmationWrapper = document.getElementById('confirmation-wrapper');
-const bloodTypeSelect = document.getElementById('blood-type-select');
-const confirmTypeButton = document.getElementById('confirm-type-button');
-const bloodBankWrapper = document.getElementById('blood-bank-wrapper');
-const bloodBank = document.getElementById('blood-bank');
-const finalFeedback = document.getElementById('final-feedback');
-const finalFeedbackText = document.getElementById('final-feedback-text');
-const nextPatientButton = document.getElementById('next-patient-button');
-
-// Starea jocului
-let gameState = {
-    patientBloodType: '',
-    phase: 'collect_blood', // collect_blood -> test_blood -> determine_type -> transfuse
-    draggedItem: null,
-    tests: { a: false, b: false, rh: false }
-};
-
-// --- FUNCȚIILE PRINCIPALE ALE JOCULUI ---
-
-function initGame() {
-    // Alege o grupă de sânge aleatorie pentru noul pacient
-    gameState.patientBloodType = ALL_BLOOD_TYPES[Math.floor(Math.random() * ALL_BLOOD_TYPES.length)];
-    console.log("Pacient nou. Grupa (secret):", gameState.patientBloodType);
-
-    // Resetează starea și interfața
-    gameState.phase = 'collect_blood';
-    gameState.tests = { a: false, b: false, rh: false };
-
-    instructions.textContent = '1. Trage seringa pe brațul pacientului pentru a recolta sânge.';
-    
-    // Resetează seringa de recoltare
-    collectSyringe.classList.remove('disabled');
-    collectSyringe.draggable = true;
-
-    // Ascunde elementele de joc
-    reagentsWrapper.classList.add('hidden');
-    confirmationWrapper.classList.add('hidden');
-    bloodBankWrapper.classList.add('hidden');
-    finalFeedback.classList.add('hidden');
-
-    // Golește lamelele
-    testSlides.forEach(slide => {
-        slide.className = 'test-slide';
-    });
-
-    // Populează select-ul cu grupe
-    bloodTypeSelect.innerHTML = '';
-    ALL_BLOOD_TYPES.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        bloodTypeSelect.appendChild(option);
-    });
-}
-
-function updateInstructions(text) {
-    instructions.textContent = text;
-}
-
-function checkAllTestsDone() {
-    return gameState.tests.a && gameState.tests.b && gameState.tests.rh;
-}
-
-// --- LOGICA PENTRU DRAG & DROP ---
-
-// Când începe tragerea unui element
-document.addEventListener('dragstart', (e) => {
-    if (e.target.draggable) {
-        gameState.draggedItem = e.target;
-        setTimeout(() => e.target.classList.add('dragging'), 0);
-    }
-});
-
-// Când se termină tragerea
-document.addEventListener('dragend', (e) => {
-    if (gameState.draggedItem) {
-        gameState.draggedItem.classList.remove('dragging');
-        gameState.draggedItem = null;
-    }
-});
-
-// Permite plasarea pe o zonă
-document.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    const dropTarget = e.target.closest('.test-slide, .patient-area');
-    if (dropTarget) {
-        dropTarget.classList.add('drop-hover');
-    }
-});
-
-// Elimină efectul vizual la ieșire
-document.addEventListener('dragleave', (e) => {
-    const dropTarget = e.target.closest('.test-slide, .patient-area');
-    if (dropTarget) {
-        dropTarget.classList.remove('drop-hover');
-    }
-});
-
-
-// Când un element este plasat
-document.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const dropTarget = e.target.closest('.test-slide, .patient-area');
-    if (!dropTarget || !gameState.draggedItem) return;
-    
-    dropTarget.classList.remove('drop-hover');
-    const draggedId = gameState.draggedItem.id;
-
-    // Faza 1: Recoltarea sângelui
-    if (gameState.phase === 'collect_blood' && draggedId === 'collect-syringe' && dropTarget === patientDropzone) {
-        gameState.phase = 'test_blood';
-        updateInstructions('2. Trage fiecare ser (Anti-A, Anti-B, Anti-Rh) pe câte o lamelă.');
-        
-        collectSyringe.classList.add('disabled');
-        collectSyringe.draggable = false;
-        
-        testSlides.forEach(slide => slide.classList.add('filled'));
-        reagentsWrapper.classList.remove('hidden');
-    }
-
-    // Faza 2: Testarea sângelui
-    if (gameState.phase === 'test_blood' && draggedId.startsWith('reagent-') && dropTarget.matches('.test-slide.filled')) {
-        const reagentType = draggedId.split('-')[1]; // a, b, sau rh
-        const patientType = gameState.patientBloodType;
-
-        if (reagentType === 'a' && patientType.includes('A')) dropTarget.classList.add('agglutinated');
-        if (reagentType === 'b' && patientType.includes('B')) dropTarget.classList.add('agglutinated');
-        if (reagentType === 'rh' && patientType.includes('+')) dropTarget.classList.add('agglutinated');
-
-        gameState.tests[reagentType] = true;
-        gameState.draggedItem.draggable = false;
-        gameState.draggedItem.style.opacity = '0.3';
-        gameState.draggedItem.style.cursor = 'not-allowed';
-
-
-        if (checkAllTestsDone()) {
-            gameState.phase = 'determine_type';
-            updateInstructions('3. Analizează rezultatele și selectează grupa sanguină corectă.');
-            confirmationWrapper.classList.remove('hidden');
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.166.1/build/three.module.js"
+            }
         }
-    }
-    
-    // Faza 4: Transfuzia
-    if (gameState.phase === 'transfuse' && draggedId.startsWith('bag-') && dropTarget === patientDropzone) {
-        const donorType = draggedId.split('-')[1];
-        const isCompatible = COMPATIBILITY_MAP[gameState.patientBloodType].includes(donorType);
+    </script>
 
-        finalFeedback.classList.remove('hidden');
-        if (isCompatible) {
-            finalFeedback.className = 'success';
-            finalFeedbackText.textContent = 'Felicitări! Transfuzia este compatibilă. Pacientul este salvat!';
-        } else {
-            finalFeedback.className = 'error';
-            finalFeedbackText.textContent = 'Pericol! Transfuzie incompatibilă! Procedură eșuată.';
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- CONSTANTE ȘI DATE JOC ---
+        const ALL_BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+        const COMPATIBILITY_MAP = {
+            'A+': ['A+', 'A-', 'O+', 'O-'], 'A-': ['A-', 'O-'],
+            'B+': ['B+', 'B-', 'O+', 'O-'], 'B-': ['B-', 'O-'],
+            'AB+': ALL_BLOOD_TYPES, 'AB-': ['A-', 'B-', 'AB-', 'O-'],
+            'O+': ['O+', 'O-'], 'O-': ['O-']
+        };
+        const AGGLUTINATION_RULES = {
+            'A+': { A: true, B: false, Rh: true },  'A-': { A: true, B: false, Rh: false },
+            'B+': { A: false, B: true, Rh: true },  'B-': { A: false, B: true, Rh: false },
+            'AB+': { A: true, B: true, Rh: true }, 'AB-': { A: true, B: true, Rh: false },
+            'O+': { A: false, B: false, Rh: true }, 'O-': { A: false, B: false, Rh: false }
+        };
+
+        // --- VARIABILE GLOBALE THREE.JS & JOC ---
+        let scene, camera, renderer, raycaster, pointer;
+        let table, patientArm, syringe, bloodVial, testSlides = [], bloodDrops = [], bloodBags = [];
+        let draggingObject = null, intersectionPlane;
+
+        // --- STAREA JOCULUI ---
+        let gameState = {
+            patientBloodType: '',
+            phase: 'collect_blood', // collect_blood -> test_blood -> determine_type -> transfuse
+            testsDone: { A: false, B: false, Rh: false }
+        };
+
+        // --- ELEMENTE UI ---
+        const instructions = document.getElementById('instructions');
+        const confirmationWrapper = document.getElementById('confirmation-wrapper');
+        const bloodTypeSelect = document.getElementById('blood-type-select');
+        const confirmTypeButton = document.getElementById('confirm-type-button');
+        const finalFeedbackOverlay = document.getElementById('final-feedback-overlay');
+        const finalFeedbackText = document.getElementById('final-feedback-text');
+        const nextPatientButton = document.getElementById('next-patient-button');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        // --- INIȚIALIZARE ---
+        function init() {
+            // Scena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 30, 40);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            canvasContainer.appendChild(renderer.domElement);
+
+            // Lumini
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 2, 200);
+            pointLight.position.set(0, 50, 20);
+            pointLight.castShadow = true;
+            scene.add(pointLight);
+
+            // Utilitare Raycasting
+            raycaster = new THREE.Raycaster();
+            pointer = new THREE.Vector2();
+            intersectionPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(200, 200),
+                new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide })
+            );
+            intersectionPlane.rotation.x = -Math.PI / 2;
+            intersectionPlane.position.y = 10; // Dragging height
+            scene.add(intersectionPlane);
+
+            createEnvironment();
+            createInteractiveObjects();
+            startNewPatient();
+
+            // Evenimente
+            window.addEventListener('resize', onWindowResize);
+            canvasContainer.addEventListener('pointerdown', onPointerDown);
+            canvasContainer.addEventListener('pointermove', onPointerMove);
+            canvasContainer.addEventListener('pointerup', onPointerUp);
+            confirmTypeButton.addEventListener('click', checkGuessedType);
+            nextPatientButton.addEventListener('click', startNewPatient);
+
+            animate();
         }
-        bloodBankWrapper.classList.add('hidden');
-    }
-});
 
-
-// --- GESTIONAREA BUTOANELOR ---
-
-confirmTypeButton.addEventListener('click', () => {
-    const userChoice = bloodTypeSelect.value;
-    if (userChoice === gameState.patientBloodType) {
-        gameState.phase = 'transfuse';
-        updateInstructions('4. Corect! Acum alege o pungă de sânge compatibilă și trage-o pe pacient.');
-        confirmationWrapper.classList.add('hidden');
+        // --- CREARE OBIECTE SCENĂ ---
+        function createEnvironment() {
+            // Masa
+            const tableGeometry = new THREE.BoxGeometry(100, 2, 50);
+            const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1a1a, roughness: 0.8 });
+            table = new THREE.Mesh(tableGeometry, tableMaterial);
+            table.receiveShadow = true;
+            table.position.y = -1;
+            scene.add(table);
+            
+            // Lamele de test
+            testSlides.push(createSlide('Anti-A', -25, 'A'));
+            testSlides.push(createSlide('Anti-B', 0, 'B'));
+            testSlides.push(createSlide('Anti-Rh', 25, 'Rh'));
+            testSlides.forEach(slide => scene.add(slide));
+        }
         
-        // Populează banca de sânge
-        bloodBank.innerHTML = '';
-        const shuffledTypes = [...ALL_BLOOD_TYPES].sort(() => Math.random() - 0.5);
-        shuffledTypes.forEach(type => {
-            const bag = document.createElement('div');
-            bag.className = 'blood-bag';
-            bag.id = `bag-${type}`;
-            bag.textContent = type;
-            bag.draggable = true;
-            bloodBank.appendChild(bag);
-        });
-        bloodBankWrapper.classList.remove('hidden');
-    } else {
-        alert('Grupă sanguină incorectă! Analizează din nou lamelele.');
-    }
-});
+        function createSlide(text, xPos, type) {
+            const slideGroup = new THREE.Group();
+            slideGroup.position.set(xPos, 0.1, 0);
 
-nextPatientButton.addEventListener('click', initGame);
+            const slideGeometry = new THREE.BoxGeometry(15, 0.2, 15);
+            const slideMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc, roughness: 0.2, transparent: true, opacity: 0.8
+            });
+            const slideMesh = new THREE.Mesh(slideGeometry, slideMaterial);
+            slideMesh.receiveShadow = true;
+            slideGroup.add(slideMesh);
 
-// Pornirea jocului
-initGame();
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256; canvas.height = 128;
+            context.font = "bold 40px 'MedievalSharp'";
+            context.fillStyle = '#2b0000';
+            context.textAlign = 'center';
+            context.fillText(text, 128, 64);
+            const texture = new THREE.CanvasTexture(canvas);
 
-</script>
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(12, 6),
+                new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+            );
+            label.rotation.x = -Math.PI / 2;
+            label.position.y = 0.11;
+            slideGroup.add(label);
+            
+            slideGroup.userData = { isSlide: true, type: type };
+            return slideGroup;
+        }
+
+        function createInteractiveObjects() {
+            // Brațul pacientului
+            const armGeometry = new THREE.CylinderGeometry(4, 4, 20, 32);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: 0xbe9b85 });
+            patientArm = new THREE.Mesh(armGeometry, armMaterial);
+            patientArm.castShadow = true;
+            patientArm.position.set(-35, 5, 10);
+            patientArm.rotation.z = Math.PI / 4;
+            patientArm.userData = { isPatientArm: true };
+            scene.add(patientArm);
+
+            // Seringa
+            syringe = new THREE.Group();
+            const barrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(1, 1, 10, 16),
+                new THREE.MeshStandardMaterial({ color: 0xcccccc, transparent: true, opacity: 0.7 })
+            );
+            const plunger = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.8, 0.8, 12, 16),
+                new THREE.MeshStandardMaterial({ color: 0x555555 })
+            );
+            plunger.position.y = 3;
+            syringe.add(barrel, plunger);
+            syringe.castShadow = true;
+            syringe.userData = { isSyringe: true };
+            scene.add(syringe);
+            
+            // Eprubeta cu sânge (inițial invizibilă)
+            bloodVial = new THREE.Mesh(
+                 new THREE.CylinderGeometry(1.5, 1.5, 8, 32),
+                 new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.1, metalness: 0.2 })
+            );
+            bloodVial.castShadow = true;
+            bloodVial.userData = { isVial: true };
+            scene.add(bloodVial);
+        }
+        
+        function createBloodBag(type, position) {
+            const bagGroup = new THREE.Group();
+            
+            const bagGeom = new THREE.BoxGeometry(6, 9, 2);
+            const bagMat = new THREE.MeshStandardMaterial({color: 0xd9534f});
+            const bagMesh = new THREE.Mesh(bagGeom, bagMat);
+            bagMesh.castShadow = true;
+            bagGroup.add(bagMesh);
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 128; canvas.height = 128;
+            ctx.font = "bold 60px 'MedievalSharp'";
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(type, 64, 80);
+            const texture = new THREE.CanvasTexture(canvas);
+            
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(6, 6),
+                new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+            );
+            label.position.z = 1.01;
+            bagGroup.add(label);
+            
+            bagGroup.position.copy(position);
+            bagGroup.userData = { isBloodBag: true, type: type };
+            scene.add(bagGroup);
+            return bagGroup;
+        }
+
+        // --- LOGICA PRINCIPALĂ A JOCULUI ---
+        function startNewPatient() {
+            // Alege o grupă nouă
+            gameState.patientBloodType = ALL_BLOOD_TYPES[Math.floor(Math.random() * ALL_BLOOD_TYPES.length)];
+            console.log("Pacient nou. Grupa (secret):", gameState.patientBloodType);
+
+            // Resetează starea
+            gameState.phase = 'collect_blood';
+            gameState.testsDone = { A: false, B: false, Rh: false };
+            draggingObject = null;
+
+            // Curăță obiectele vechi de pe scenă
+            bloodDrops.forEach(drop => scene.remove(drop));
+            bloodDrops = [];
+            bloodBags.forEach(bag => scene.remove(bag));
+            bloodBags = [];
+            
+            // Resetează obiectele interactive
+            syringe.position.set(-15, 10, 15);
+            syringe.visible = true;
+            bloodVial.visible = false;
+            
+            // Resetează UI
+            finalFeedbackOverlay.classList.add('hidden');
+            confirmationWrapper.classList.add('hidden');
+            updateInstructions('1. Trage seringa pe brațul pacientului pentru a recolta sânge.');
+            
+            // Populează select-ul
+            bloodTypeSelect.innerHTML = '';
+            ALL_BLOOD_TYPES.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type; option.textContent = type;
+                bloodTypeSelect.appendChild(option);
+            });
+        }
+
+        function updateInstructions(text) {
+            instructions.textContent = text;
+        }
+        
+        function advancePhase(newPhase) {
+            gameState.phase = newPhase;
+            console.log("Fază nouă:", newPhase);
+
+            switch(newPhase) {
+                case 'test_blood':
+                    syringe.visible = false;
+                    bloodVial.position.set(-15, 6, 15);
+                    bloodVial.visible = true;
+                    updateInstructions('2. Trage eprubeta pe fiecare lamelă pentru a adăuga sânge.');
+                    break;
+                case 'determine_type':
+                    bloodVial.visible = false;
+                    updateInstructions('3. Analizează rezultatele și selectează grupa sanguină.');
+                    confirmationWrapper.classList.remove('hidden');
+                    break;
+                case 'transfuse':
+                     updateInstructions('4. Corect! Acum alege o pungă de sânge compatibilă și trage-o pe pacient.');
+                     confirmationWrapper.classList.add('hidden');
+                     populateBloodBank();
+                    break;
+            }
+        }
+        
+        function placeBloodDrop(targetSlide) {
+            const slideType = targetSlide.userData.type;
+            if (gameState.testsDone[slideType]) return;
+
+            gameState.testsDone[slideType] = true;
+            
+            const dropGeometry = new THREE.SphereGeometry(3, 32, 16);
+            const normalMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.3 });
+            const agglutinatedMaterial = new THREE.MeshPhysicalMaterial({ color: 0x8b0000, roughness: 0.8, transmission: 0.5, thickness: 1.0 });
+
+            const drop = new THREE.Mesh(dropGeometry, normalMaterial);
+            drop.position.set(targetSlide.position.x, 1, targetSlide.position.z);
+            drop.castShadow = true;
+            scene.add(drop);
+            bloodDrops.push(drop);
+
+            const rule = AGGLUTINATION_RULES[gameState.patientBloodType];
+            if (rule[slideType]) {
+                setTimeout(() => {
+                    drop.material = agglutinatedMaterial;
+                    // Adăugăm "cocoloașe" pentru a simula aglutinarea
+                    for (let i = 0; i < 5; i++) {
+                        const clump = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.5 + Math.random() * 0.5),
+                            new THREE.MeshBasicMaterial({ color: 0x5a0000 })
+                        );
+                        clump.position.set(
+                            (Math.random() - 0.5) * 3,
+                            (Math.random() - 0.5) * 3,
+                            (Math.random() - 0.5) * 3
+                        );
+                        drop.add(clump);
+                    }
+                }, 500);
+            }
+            
+            if (Object.values(gameState.testsDone).every(Boolean)) {
+                advancePhase('determine_type');
+            }
+        }
+
+        function checkGuessedType() {
+            const userChoice = bloodTypeSelect.value;
+            if (userChoice === gameState.patientBloodType) {
+                advancePhase('transfuse');
+            } else {
+                alert('Grupă sanguină incorectă! Analizează din nou lamelele.');
+            }
+        }
+
+        function populateBloodBank() {
+            const shuffledTypes = [...ALL_BLOOD_TYPES].sort(() => Math.random() - 0.5);
+            shuffledTypes.forEach((type, index) => {
+                const x = -30 + (index % 4) * 20;
+                const z = (index < 4) ? -15 : -30;
+                const pos = new THREE.Vector3(x, 10, z);
+                bloodBags.push(createBloodBag(type, pos));
+            });
+        }
+        
+        function checkTransfusion(donorType) {
+            const isCompatible = COMPATIBILITY_MAP[gameState.patientBloodType].includes(donorType);
+            finalFeedbackOverlay.classList.remove('hidden');
+            
+            if(isCompatible) {
+                 finalFeedbackOverlay.className = 'success';
+                 finalFeedbackText.innerHTML = `Felicitări!<br>Transfuzia cu grupa ${donorType} este compatibilă.<br>Pacientul e salvat!`;
+            } else {
+                finalFeedbackOverlay.className = 'error';
+                finalFeedbackText.innerHTML = `PERICOL!<br>Transfuzia cu grupa ${donorType} este incompatibilă!<br>Procedură eșuată.`;
+            }
+            
+            // Ascunde obiectele de pe masă
+            bloodBags.forEach(bag => bag.visible = false);
+        }
+
+        // --- EVENIMENTE MOUSE & RAYCASTING ---
+        function updatePointer(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        function onPointerDown(event) {
+            updatePointer(event);
+            raycaster.setFromCamera(pointer, camera);
+            
+            let objectsToIntersect = [];
+            if(gameState.phase === 'collect_blood') objectsToIntersect = [syringe];
+            if(gameState.phase === 'test_blood') objectsToIntersect = [bloodVial];
+            if(gameState.phase === 'transfuse') objectsToIntersect = bloodBags;
+            
+            const intersects = raycaster.intersectObjects(objectsToIntersect, true);
+
+            if (intersects.length > 0) {
+                draggingObject = objectsToIntersect.length > 1 ? intersects[0].object.parent : intersects[0].object;
+                canvasContainer.style.cursor = 'grabbing';
+            }
+        }
+
+        function onPointerMove(event) {
+            if (draggingObject) {
+                updatePointer(event);
+                raycaster.setFromCamera(pointer, camera);
+                const intersects = raycaster.intersectObject(intersectionPlane);
+
+                if (intersects.length > 0) {
+                    const point = intersects[0].point;
+                    draggingObject.position.x = point.x;
+                    draggingObject.position.z = point.z;
+                }
+            }
+        }
+
+        function onPointerUp(event) {
+            if (draggingObject) {
+                let dropTarget = null;
+                raycaster.setFromCamera(pointer, camera);
+                
+                // --- Logica de Drop pentru fiecare fază ---
+
+                if (gameState.phase === 'collect_blood' && draggingObject.userData.isSyringe) {
+                    const intersects = raycaster.intersectObject(patientArm, true);
+                    if (intersects.length > 0) advancePhase('test_blood');
+                }
+                
+                else if (gameState.phase === 'test_blood' && draggingObject.userData.isVial) {
+                    const intersects = raycaster.intersectObjects(testSlides, true);
+                     if (intersects.length > 0) {
+                         const targetSlide = intersects[0].object.parent; // Luăm grupul
+                         placeBloodDrop(targetSlide);
+                     }
+                }
+                
+                else if (gameState.phase === 'transfuse' && draggingObject.userData.isBloodBag) {
+                     const intersects = raycaster.intersectObject(patientArm, true);
+                      if (intersects.length > 0) {
+                         checkTransfusion(draggingObject.userData.type);
+                         draggingObject.visible = false;
+                      }
+                }
+
+                draggingObject = null;
+                canvasContainer.style.cursor = 'grab';
+            }
+        }
+
+        // --- LOOP-UL DE ANIMAȚIE & RESIZE ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // --- PORNIRE JOC ---
+        init();
+    </script>
 </body>
 </html>
