@@ -6,7 +6,7 @@
     <title>Blood Type 3D: Transylvania Nocturne Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
-        /* CSS-ul rămâne identic cu versiunea anterioară */
+        /* CSS-ul rămâne neschimbat */
         body {
             margin: 0;
             font-family: 'MedievalSharp', cursive, Arial, sans-serif;
@@ -158,7 +158,7 @@
         let currentBloodType = {};
         const dropsPlaced = { A: false, B: false, D: false };
         let totalDropsPlaced = 0;
-        const DROP_THRESHOLD = 8; // Distanța maximă pentru o plasare reușită
+        const DROP_THRESHOLD = 8;
 
         const agglutinationRules = {
             'A+': { A: true, B: false, D: true }, 'A-': { A: true, B: false, D: false },
@@ -275,7 +275,8 @@
         function createInteractiveObjects() {
             const vialMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.1, metalness: 0.2 });
             const vialGeometry = new THREE.CylinderGeometry(1.5, 1.5, 6, 32);
-            bloodVial = new THREE.Mesh(vialGeometry, vialGeometry);
+            // AICI A FOST CORECTATĂ EROAREA
+            bloodVial = new THREE.Mesh(vialGeometry, vialMaterial);
             bloodVial.castShadow = true;
             bloodVial.name = "bloodVial";
             scene.add(bloodVial);
@@ -393,7 +394,6 @@
                 let closestSlide = null;
                 let minDistance = Infinity;
 
-                // Găsește cel mai apropiat tester de eprubetă
                 for (const slide of testSlides) {
                     const distance = draggingObject.position.distanceTo(slide.position);
                     if (distance < minDistance) {
@@ -402,18 +402,15 @@
                     }
                 }
 
-                // Dacă cel mai apropiat tester este suficient de aproape, plasează picătura
                 if (closestSlide && minDistance < DROP_THRESHOLD) {
                     placeBloodDrop(closestSlide);
                 }
 
                 draggingObject = null;
                 
-                // După ce toate picăturile au fost plasate, eprubeta dispare
                 if (totalDropsPlaced === 3) {
                     bloodVial.visible = false;
                 } else {
-                    // Altfel, resetează poziția eprubetei
                     bloodVial.position.set(0, 4, 15);
                 }
             }
