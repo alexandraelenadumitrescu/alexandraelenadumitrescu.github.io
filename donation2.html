@@ -103,11 +103,34 @@
     <div class="feedback" id="feedback3"></div>
   </div>
 
+  
   <div id="scene4" class="scene">
-    <h2>4. Montează acul</h2>
-    <p>Apasă pentru a conecta acul:</p>
-    <img src="https://i.imgur.com/Lg3efYv.png" id="img4" alt="Montare ac" onclick="nextScene(4)">
+  <h2>4. Montează acul (Trage acul peste braț)</h2>
+  <div style="position: relative; width: 320px; margin: auto;">
+    <img src="https://i.imgur.com/Zk9mkDE.gif" id="needle" alt="Montare ac cartoon" draggable="true" style="width:100px; position: absolute; top: 10px; left: 0; cursor: grab;">
+    <img src="https://i.imgur.com/7h0sSYz.png" id="arm" alt="Braț pacient" style="width: 300px; position: absolute; top: 50px; left: 100px;">
   </div>
+  <p>Trage acul și pune-l pe braț pentru a continua.</p>
+</div>
+
+<script>
+  const needle = document.getElementById('needle');
+  const arm = document.getElementById('arm');
+
+  needle.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', 'needle');
+  });
+
+  arm.addEventListener('dragover', (e) => {
+    e.preventDefault(); // permite drop-ul
+  });
+
+  arm.addEventListener('drop', (e) => {
+    e.preventDefault();
+    nextScene(4);
+  });
+</script>
+
 
   <div id="scene5" class="scene">
     <h2>5. Colectează sângele</h2>
