@@ -10,13 +10,19 @@
       background-color: #f8f9fa;
       padding: 2rem;
       text-align: center;
+      overflow-x: hidden;
     }
-    .step {
+    .scene {
       display: none;
       margin-top: 2rem;
+      animation: fadeIn 1s ease forwards;
     }
-    .step.active {
+    .scene.active {
       display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     button {
       padding: 0.8rem 1.5rem;
@@ -29,8 +35,16 @@
       cursor: pointer;
     }
     img {
-      max-width: 200px;
+      max-width: 250px;
       margin-top: 1rem;
+      transition: transform 0.5s ease;
+    }
+    img.animate {
+      transform: scale(1.05) rotate(1deg);
+    }
+    progress {
+      width: 60%;
+      height: 20px;
     }
   </style>
 </head>
@@ -38,53 +52,63 @@
   <h1>🩸 Simulează Procesul de Donare de Sânge</h1>
   <p>Ajută pacientul pas cu pas!</p>
 
-  <div id="step1" class="step active">
+  <div id="scene1" class="scene active">
     <h2>1. Alege pacientul</h2>
-    <img src="https://via.placeholder.com/150x150?text=Pacient" alt="Pacient random">
+    <img src="https://via.placeholder.com/200x200?text=Pacient" alt="Pacient random" id="img1">
     <br>
-    <button onclick="nextStep(1)">Continuă</button>
+    <button onclick="nextScene(1)">Continuă</button>
   </div>
 
-  <div id="step2" class="step">
+  <div id="scene2" class="scene">
     <h2>2. Verifică identitatea și semnătura</h2>
-    <img src="https://via.placeholder.com/200x100?text=Buletin+semnat">
+    <img src="https://via.placeholder.com/250x120?text=Buletin+semnat" id="img2">
     <br>
-    <button onclick="nextStep(2)">Totul e în regulă!</button>
+    <button onclick="nextScene(2)">Totul e în regulă!</button>
   </div>
 
-  <div id="step3" class="step">
+  <div id="scene3" class="scene">
     <h2>3. Măsoară hemoglobina</h2>
-    <img src="https://via.placeholder.com/200x80?text=Rezultat+normal">
+    <img src="https://via.placeholder.com/250x100?text=Rezultat+normal" id="img3">
     <br>
-    <button onclick="nextStep(3)">Valori acceptabile</button>
+    <button onclick="nextScene(3)">Valori acceptabile</button>
   </div>
 
-  <div id="step4" class="step">
+  <div id="scene4" class="scene">
     <h2>4. Montează acul</h2>
-    <img src="https://via.placeholder.com/200x150?text=Montare+acul">
+    <img src="https://via.placeholder.com/250x180?text=Montare+acul" id="img4">
     <br>
-    <button onclick="nextStep(4)">Conectat!</button>
+    <button onclick="nextScene(4)">Conectat!</button>
   </div>
 
-  <div id="step5" class="step">
+  <div id="scene5" class="scene">
     <h2>5. Colectează sângele</h2>
-    <progress id="progress" value="0" max="100" style="width: 60%; height: 20px;"></progress>
+    <progress id="progress" value="0" max="100"></progress>
     <br>
     <button onclick="startCollection()">Începe colectarea</button>
   </div>
 
-  <div id="step6" class="step">
+  <div id="scene6" class="scene">
     <h2>✅ Donarea s-a încheiat!</h2>
     <p>Felicitări, ai salvat 3 vieți!</p>
-    <img src="https://via.placeholder.com/200x150?text=Sac+plin">
+    <img src="https://via.placeholder.com/250x180?text=Sac+plin">
     <br>
     <button onclick="location.reload()">Reîncepe</button>
   </div>
 
   <script>
-    function nextStep(current) {
-      document.getElementById(`step${current}`).classList.remove('active');
-      document.getElementById(`step${current + 1}`).classList.add('active');
+    function nextScene(current) {
+      const currentScene = document.getElementById(`scene${current}`);
+      const nextScene = document.getElementById(`scene${current + 1}`);
+
+      const img = document.querySelector(`#scene${current} img`);
+      if (img) {
+        img.classList.add('animate');
+      }
+
+      setTimeout(() => {
+        currentScene.classList.remove('active');
+        nextScene.classList.add('active');
+      }, 600);
     }
 
     function startCollection() {
@@ -95,9 +119,9 @@
         progress.value = value;
         if (value >= 100) {
           clearInterval(interval);
-          nextStep(5);
+          nextScene(5);
         }
-      }, 200);
+      }, 150);
     }
   </script>
 </body>
