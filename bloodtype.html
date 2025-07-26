@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc Grupa Sanguină (O Singură Pagină)</title>
+    <style>
+        /* Aici începe codul CSS din style.css */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            perspective: 1000px; /* Pentru efecte 3D */
+        }
+
+        .game-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .test-area {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            transform-style: preserve-3d; /* Permite elementelor copiilor să aibă transformări 3D */
+        }
+
+        .test-paper {
+            width: 150px;
+            height: 150px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 1px solid #ccc;
+            transform: rotateX(10deg) rotateY(10deg); /* O ușoară rotație 3D */
+            transition: transform 0.3s ease-out;
+        }
+
+        .test-paper:hover {
+            transform: rotateX(0deg) rotateY(0deg);
+        }
+
+        .drop {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #c0392b; /* Culoarea sângelui */
+            margin-bottom: 10px;
+            transition: background-color 2s ease-in-out; /* Pentru animația de aglutinare */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Stil pentru aglutinare - culoarea se deschide și apar "granule" */
+        .drop.agglutinated {
+            background-color: #e67e22; /* O culoare diferită pentru aglutinare */
+            animation: agglutinateEffect 2s forwards;
+        }
+
+        @keyframes agglutinateEffect {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Această parte e mai avansată, simulează granulația */
+        .drop.agglutinated::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.7) 10%, transparent 10%),
+                              radial-gradient(circle, rgba(255,255,255,0.7) 10%, transparent 10%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            animation: granuleEffect 2s infinite linear;
+        }
+
+        @keyframes granuleEffect {
+            from { background-position: 0 0, 10px 10px; }
+            to { background-position: 20px 20px, 30px 30px; }
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .guess-section {
+            margin-top: 20px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin: 0 10px 15px;
+            font-size: 1em;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            color: #28a745;
+        }
+
+        .feedback.incorrect {
+            color: #dc3545;
+        }
+        /* Aici se termină codul CSS */
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Determinarea Grupei Sanguine</h1>
+        <p>Observă reacțiile de aglutinare și alege grupa sanguină corectă.</p>
+
+        <div class="test-area">
+            <div class="test-paper anti-a">
+                <div class="drop" id="dropA"></div>
+                <span class="label">Anti-A</span>
+            </div>
+            <div class="test-paper anti-b">
+                <div class="drop" id="dropB"></div>
+                <span class="label">Anti-B</span>
+            </div>
+            <div class="test-paper anti-d">
+                <div class="drop" id="dropD"></div>
+                <span class="label">Anti-D (Rh)</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startButton">Începe Testul</button>
+            <div class="guess-section" style="display: none;">
+                <h2>Ghicește Grupa Sanguină:</h2>
+                <select id="bloodTypeSelect">
+                    <option value="">Alege Grupa</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="0">0</option>
+                </select>
+                <select id="rhFactorSelect">
+                    <option value="">Alege Rh</option>
+                    <option value="Positiv">Pozitiv</option>
+                    <option value="Negativ">Negativ</option>
+                </select>
+                <button id="checkButton">Verifică</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <button id="resetButton" style="display: none;">Începe un Test Nou</button>
+        </div>
+    </div>
+
+    <script>
+        /* Aici începe codul JavaScript din script.js */
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButton = document.getElementById('startButton');
+            const checkButton = document.getElementById('checkButton');
+            const resetButton = document.getElementById('resetButton');
+            const guessSection = document.querySelector('.guess-section');
+            const feedbackDiv = document.getElementById('feedback');
+            const bloodTypeSelect = document.getElementById('bloodTypeSelect');
+            const rhFactorSelect = document.getElementById('rhFactorSelect');
+
+            const dropA = document.getElementById('dropA');
+            const dropB = document.getElementById('dropB');
+            const dropD = document.getElementById('dropD');
+
+            let currentBloodType = {}; // Va stoca grupa sanguină generată aleatoriu
+
+            // Definește regulile de aglutinare
+            const agglutinationRules = {
+                'A+': { A: true, B: false, D: true },
+                'A-': { A: true, B: false, D: false },
+                'B+': { A: false, B: true, D: true },
+                'B-': { A: false, B: true, D: false },
+                'AB+': { A: true, B: true, D: true },
+                'AB-': { A: true, B: true, D: false },
+                '0+': { A: false, B: false, D: true },
+                '0-': { A: false, B: false, D: false }
+            };
+
+            function resetTest() {
+                dropA.classList.remove('agglutinated');
+                dropB.classList.remove('agglutinated');
+                dropD.classList.remove('agglutinated');
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('correct', 'incorrect');
+                guessSection.style.display = 'none';
+                startButton.style.display = 'block';
+                resetButton.style.display = 'none';
+                bloodTypeSelect.value = '';
+                rhFactorSelect.value = '';
+            }
+
+            function startTest() {
+                resetTest(); // Asigură-te că testul este curat la fiecare început
+                startButton.style.display = 'none';
+                guessSection.style.display = 'none'; // Ascunde secțiunea de ghicit până la finalizarea animației
+
+                // Generează o grupă sanguină aleatorie
+                const bloodTypes = Object.keys(agglutinationRules);
+                const randomType = bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
+                currentBloodType.full = randomType;
+                currentBloodType.type = randomType.slice(0, -1);
+                currentBloodType.rh = randomType.slice(-1) === '+' ? 'Pozitiv' : 'Negativ';
+
+                const agglA = agglutinationRules[randomType].A;
+                const agglB = agglutinationRules[randomType].B;
+                const agglD = agglutinationRules[randomType].D;
+
+                // Animația de aglutinare
+                setTimeout(() => {
+                    if (agglA) {
+                        dropA.classList.add('agglutinated');
+                    }
+                }, 500); // Apare aglutinarea Anti-A după 0.5s
+
+                setTimeout(() => {
+                    if (agglB) {
+                        dropB.classList.add('agglutinated');
+                    }
+                }, 1500); // Apare aglutinarea Anti-B după 1.5s
+
+                setTimeout(() => {
+                    if (agglD) {
+                        dropD.classList.add('agglutinated');
+                    }
+                    // După ce toate animațiile au rulat, afișează secțiunea de ghicit
+                    setTimeout(() => {
+                        guessSection.style.display = 'block';
+                    }, 1000); // Dă un timp suplimentar pentru a procesa ultimul efect
+                }, 2500); // Apare aglutinarea Anti-D după 2.5s
+            }
+
+            function checkAnswer() {
+                const userBloodType = bloodTypeSelect.value;
+                const userRhFactor = rhFactorSelect.value;
+
+                if (!userBloodType || !userRhFactor) {
+                    feedbackDiv.textContent = 'Te rog, alege atât grupa sanguină, cât și factorul Rh!';
+                    feedbackDiv.className = 'feedback incorrect';
+                    return;
+                }
+
+                const guessedFullType = userBloodType + (userRhFactor === 'Pozitiv' ? '+' : '-');
+
+                if (guessedFullType === currentBloodType.full) {
+                    feedbackDiv.textContent = `Corect! Grupa sanguină este ${currentBloodType.type}${currentBloodType.rh === 'Pozitiv' ? '+' : '-'}.`;
+                    feedbackDiv.className = 'feedback correct';
+                } else {
+                    feedbackDiv.textContent = `Incorect. Grupa sanguină este ${currentBloodType.type}${currentBloodType.rh === 'Pozitiv' ? '+' : '-'}. Ai ghicit ${userBloodType}${userRhFactor === 'Pozitiv' ? '+' : '-'}.`;
+                    feedbackDiv.className = 'feedback incorrect';
+                }
+                resetButton.style.display = 'block';
+            }
+
+            startButton.addEventListener('click', startTest);
+            checkButton.addEventListener('click', checkAnswer);
+            resetButton.addEventListener('click', resetTest);
+
+            resetTest(); // Inițializează jocul la încărcare
+        });
+        /* Aici se termină codul JavaScript */
+    </script>
+</body>
+</html>
