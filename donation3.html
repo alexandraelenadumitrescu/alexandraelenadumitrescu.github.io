@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc: Simulare Transfuzie Sanguină</title>
+    <style>
+        /* --- STILURI CSS PENTRU ASPECTUL JOCULUI --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #d9534f;
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+        h2 {
+            font-size: 1.3em;
+            color: #0275d8;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .button {
+            background-color: #0275d8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #025aa5;
+            transform: translateY(-2px);
+        }
+        .button-reset {
+            background-color: #5cb85c;
+        }
+        .button-reset:hover {
+            background-color: #4a934a;
+        }
+        .lab-area {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+        .test-slide {
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+        .test-slide .label {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .blood-sample {
+            font-size: 2.5em;
+            line-height: 1;
+        }
+        .agglutinated .blood-sample {
+            color: #c9302c;
+            content: " clumps "; /* Using text to show agglutination */
+            font-size: 1.2em; /* Make it more visual */
+            font-weight: bold;
+        }
+        .normal .blood-sample {
+            color: #d9534f;
+        }
+        .feedback {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .feedback.success {
+            color: #28a745;
+            background-color: #e9f7ec;
+        }
+        .feedback.error {
+            color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .selection-grid, .transfusion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>🔬 Simulator Medical</h1>
+        
+        <div id="pasul1">
+            <h2>Pasul 1: Determinarea Grupei Sanguine</h2>
+            <p id="patient-status">Un nou pacient are nevoie de ajutor. Apasă butonul pentru a-i analiza sângele.</p>
+            <button id="startButton" class="button">Analizează Sângele Pacientului</button>
+            
+            <div id="labArea" class="lab-area hidden">
+                <div class="test-slide" id="test-a">
+                    <div class="label">Ser Anti-A</div>
+                    <div class="blood-sample">🩸</div>
+                </div>
+                <div class="test-slide" id="test-b">
+                    <div class="label">Ser Anti-B</div>
+                    <div class="blood-sample">🩸</div>
+                </div>
+                <div class="test-slide" id="test-rh">
+                    <div class="label">Ser Anti-Rh</div>
+                    <div class="blood-sample">🩸</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pasul2" class="hidden">
+            <h2>Ce grupă sanguină ai identificat?</h2>
+            <div id="bloodTypeSelection" class="selection-grid">
+                </div>
+        </div>
+
+        <div id="pasul3" class="hidden">
+            <h2>Pasul 2: Alege o pungă de sânge compatibilă</h2>
+            <div id="transfusionSelection" class="transfusion-grid">
+                 </div>
+        </div>
+
+        <div id="feedback" class="feedback hidden"></div>
+        <button id="resetButton" class="button button-reset hidden">Pacient Următor</button>
+
+    </div>
+
+    <script>
+    // --- LOGICA JAVASCRIPT A JOCULUI ---
+
+    // Elementele HTML cu care vom interacționa
+    const startButton = document.getElementById('startButton');
+    const resetButton = document.getElementById('resetButton');
+    const labArea = document.getElementById('labArea');
+    const feedbackDiv = document.getElementById('feedback');
+    const patientStatus = document.getElementById('patient-status');
+
+    const pasul1Div = document.getElementById('pasul1');
+    const pasul2Div = document.getElementById('pasul2');
+    const pasul3Div = document.getElementById('pasul3');
+
+    const testA = document.getElementById('test-a');
+    const testB = document.getElementById('test-b');
+    const testRh = document.getElementById('test-rh');
+
+    const bloodTypeSelectionDiv = document.getElementById('bloodTypeSelection');
+    const transfusionSelectionDiv = document.getElementById('transfusionSelection');
+    
+    // Datele jocului
+    const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    let pacientCurent = {};
+    let tipSangeDeterminat = '';
+
+    // Harta de compatibilitate: Cheia este primitorul, valoarea este o listă de donatori compatibili
+    const compatibilityMap = {
+        'A+': ['A+', 'A-', 'O+', 'O-'],
+        'A-': ['A-', 'O-'],
+        'B+': ['B+', 'B-', 'O+', 'O-'],
+        'B-': ['B-', 'O-'],
+        'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], // Primitor universal
+        'AB-': ['A-', 'B-', 'AB-', 'O-'],
+        'O+': ['O+', 'O-'],
+        'O-': ['O-'] // Donator universal (doar pentru globule roșii)
+    };
+    
+    // --- FUNCȚIILE JOCULUI ---
+
+    function initGame() {
+        // Generează un pacient nou cu o grupă de sânge aleatorie
+        const randomIndex = Math.floor(Math.random() * bloodTypes.length);
+        pacientCurent = { type: bloodTypes[randomIndex] };
+        
+        // Resetează starea vizuală
+        pasul1Div.style.display = 'block';
+        pasul2Div.classList.add('hidden');
+        pasul3Div.classList.add('hidden');
+        feedbackDiv.classList.add('hidden');
+        resetButton.classList.add('hidden');
+        labArea.classList.add('hidden');
+        startButton.classList.remove('hidden');
+        
+        patientStatus.textContent = 'Un nou pacient are nevoie de ajutor. Apasă butonul pentru a-i analiza sângele.';
+        
+        // Curăță butoanele vechi
+        bloodTypeSelectionDiv.innerHTML = '';
+        transfusionSelectionDiv.innerHTML = '';
+    }
+
+    function showLabResults() {
+        startButton.classList.add('hidden');
+        patientStatus.textContent = 'Rezultatele analizei sunt gata. Interpretează-le.';
+        labArea.classList.remove('hidden');
+
+        // Resetează aspectul eprubetelor
+        testA.className = 'test-slide normal';
+        testB.className = 'test-slide normal';
+        testRh.className = 'test-slide normal';
+        testA.querySelector('.blood-sample').textContent = '🩸';
+        testB.querySelector('.blood-sample').textContent = '🩸';
+        testRh.querySelector('.blood-sample').textContent = '🩸';
+
+        // Aplică aglutinarea în funcție de grupa sanguină
+        const type = pacientCurent.type;
+        if (type.includes('A')) {
+            testA.classList.add('agglutinated');
+            testA.querySelector('.blood-sample').textContent = ' clumps ';
+        }
+        if (type.includes('B')) {
+            testB.classList.add('agglutinated');
+            testB.querySelector('.blood-sample').textContent = ' clumps ';
+        }
+        if (type.includes('+')) {
+            testRh.classList.add('agglutinated');
+            testRh.querySelector('.blood-sample').textContent = ' clumps ';
+        }
+
+        showBloodTypeSelection();
+    }
+    
+    function showBloodTypeSelection() {
+        pasul2Div.classList.remove('hidden');
+        bloodTypeSelectionDiv.innerHTML = ''; // Curăță butoanele anterioare
+
+        bloodTypes.forEach(type => {
+            const button = document.createElement('button');
+            button.textContent = type;
+            button.className = 'button';
+            button.onclick = () => checkBloodType(type);
+            bloodTypeSelectionDiv.appendChild(button);
+        });
+    }
+
+    function checkBloodType(selectedType) {
+        if (selectedType === pacientCurent.type) {
+            tipSangeDeterminat = selectedType;
+            showFeedback(`✅ Corect! Pacientul are grupa sanguină ${tipSangeDeterminat}. Acum alege sângele pentru transfuzie.`, 'success');
+            pasul2Div.classList.add('hidden');
+            showTransfusionOptions();
+        } else {
+            showFeedback(`❌ Greșit. Mai încearcă. Analizează cu atenție reacțiile de aglutinare.`, 'error');
+        }
+    }
+
+    function showTransfusionOptions() {
+        pasul3Div.classList.remove('hidden');
+        transfusionSelectionDiv.innerHTML = ''; // Curăță
+        
+        // Amestecăm grupele pentru a le afișa în ordine aleatorie
+        const shuffledTypes = [...bloodTypes].sort(() => Math.random() - 0.5);
+
+        shuffledTypes.forEach(type => {
+            const button = document.createElement('button');
+            button.textContent = `Pungă ${type}`;
+            button.className = 'button';
+            button.onclick = () => checkCompatibility(type);
+            transfusionSelectionDiv.appendChild(button);
+        });
+    }
+    
+    function checkCompatibility(donorType) {
+        const compatibleDonors = compatibilityMap[tipSangeDeterminat];
+        
+        if (compatibleDonors.includes(donorType)) {
+            showFeedback(`✅ Excelent! Transfuzia cu sânge ${donorType} este compatibilă și pacientul este salvat!`, 'success');
+        } else {
+            showFeedback(`❌ Pericol! Sângele ${donorType} este INCOMPATIBIL cu ${tipSangeDeterminat}! Pacientul ar fi suferit o reacție severă!`, 'error');
+        }
+        
+        // Blochează continuarea jocului și afișează butonul de reset
+        pasul3Div.classList.add('hidden');
+        resetButton.classList.remove('hidden');
+    }
+
+    function showFeedback(message, type) {
+        feedbackDiv.textContent = message;
+        feedbackDiv.className = `feedback ${type}`; // aplică clasa 'success' sau 'error'
+        feedbackDiv.classList.remove('hidden');
+    }
+
+    // --- EVENIMENTE ---
+    startButton.addEventListener('click', showLabResults);
+    resetButton.addEventListener('click', initGame);
+
+    // Pornim jocul pentru prima dată
+    initGame();
+    
+    </script>
+</body>
+</html>
