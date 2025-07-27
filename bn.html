@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transylvania Blood Network</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Cinzel Decorative", serif;
+        background-color: #0d0d0d;
+        color: #f5f5f5;
+        overflow-x: hidden;
+        position: relative;
+        background-image: url("https://images.unsplash.com/photo-1542848906-8809e6c38b25?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      /* Overlay to darken the background image */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: -1;
+      }
+
+      /* NEW: Initial Welcome Overlay Styles */
+      #initial-welcome-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95); /* Foarte întunecat */
+        z-index: 100000; /* Extrem de mare pentru a fi deasupra la tot */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #f5f5f5;
+        text-align: center;
+        opacity: 1;
+        transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+        visibility: visible;
+      }
+
+      #initial-welcome-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none; /* Dezactivează interacțiunile când este ascuns */
+      }
+
+      #initial-welcome-overlay .welcome-image {
+        max-width: 80%;
+        max-height: 50vh; /* Ajustează după nevoie */
+        border: 3px solid #e60000;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+        border-radius: 8px;
+        margin-bottom: 30px;
+        object-fit: contain; /* Asigură că imaginea se potrivește bine */
+      }
+
+      #initial-welcome-overlay h2 {
+        color: #e60000;
+        font-size: 2.5em;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+      }
+
+      #initial-welcome-overlay p {
+        font-size: 1.2em;
+        color: #ccc;
+        margin-bottom: 40px;
+        font-family: "Dancing Script", cursive; /* Un pic mai sinistru */
+      }
+
+      #initial-welcome-overlay button {
+        background-color: #e60000;
+        color: #f5f5f5;
+        padding: 15px 30px;
+        border: 2px solid #ff3333;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.3em;
+        font-weight: bold;
+        letter-spacing: 1px;
+        transition: background-color 0.3s ease, transform 0.2s ease,
+          box-shadow 0.3s ease;
+      }
+
+      #initial-welcome-overlay button:hover {
+        background-color: #cc0000;
+        transform: scale(1.05);
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+      }
+
+      header {
+        background-color: #1a1a1a;
+        padding: 20px;
+        text-align: center;
+        font-size: 32px;
+        color: #e60000;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Styles for logo */
+      .header-logo {
+        height: 80px;
+        width: auto;
+        margin-right: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+      }
+
+      /* MODIFICĂRI PENTRU NAVIGARE AICI */
+      nav {
+        background-color: #1a1a1a;
+        padding: 10px 0; /* Ajustează padding-ul sus/jos */
+        text-align: center;
+        position: sticky;
+        top: 72px; /* Rămâne la fel, sub header */
+        z-index: 999;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        display: flex; /* Folosește flexbox pentru a aranja rândurile */
+        flex-direction: column; /* Pune rândurile unul sub altul */
+        align-items: center; /* Centrează rândurile pe orizontală */
+      }
+
+      .nav-row {
+        display: flex; /* Fiecare rând va folosi flexbox */
+        justify-content: center; /* Centrează link-urile în rând */
+        flex-wrap: wrap; /* Permite link-urilor să treacă pe rândul următor pe ecrane mici */
+        margin-bottom: 5px; /* Spațiu între rânduri */
+      }
+
+      .nav-row:last-child {
+        margin-bottom: 0; /* Nu adăuga spațiu după ultimul rând */
+      }
+
+      nav a {
+        color: #ccc;
+        margin: 0 15px; /* Spațiu între elementele de navigație */
+        text-decoration: none;
+        font-size: 1.1em;
+        transition: color 0.3s ease, text-shadow 0.3s ease; /* Adaugă tranziție și pentru shadow */
+        display: flex; /* Permite iconiței și textului să stea pe aceeași linie */
+        align-items: center; /* Centrează vertical iconița și textul */
+        white-space: nowrap; /* Previne ruperea textului pe mai multe rânduri */
+        padding: 5px 0; /* Un pic de padding pentru zonele de click */
+      }
+
+      nav a i {
+        margin-right: 8px; /* Spațiu între iconiță și text */
+        font-size: 1.2em; /* Mărimea iconiței */
+        color: #e60000; /* Culoarea iconiței, pentru a ieși în evidență */
+        transition: color 0.3s ease; /* Tranziție pentru culoarea iconiței */
+      }
+
+      nav a:hover {
+        color: #e60000;
+        text-shadow: 0 0 8px rgba(255, 0, 0, 0.7); /* Adaugă un shadow la hover */
+      }
+
+      nav a:hover i {
+        color: #ff3333; /* O nuanță mai deschisă la hover pentru iconiță */
+      }
+      /* SFÂRȘIT MODIFICĂRI PENTRU NAVIGARE */
+
+      section {
+        padding: 40px;
+        max-width: 700px;
+        margin: auto;
+        line-height: 1.6;
+        background-color: rgba(26, 26, 26, 0.8);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(230, 0, 0, 0.4);
+        margin-top: 30px;
+        position: relative;
+        z-index: 10;
+      }
+
+      h2 {
+        color: #e60000;
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 2em;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        padding: 12px;
+        margin-top: 10px;
+        width: calc(100% - 24px);
+        background: #2a2a2a;
+        color: #f5f5f5;
+        border: 1px solid #e60000;
+        border-radius: 5px;
+        font-family: "Cinzel Decorative", serif;
+        font-size: 1em;
+        transition: background 0.3s ease, border-color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #ff3333;
+        box-shadow: 0 0 8px rgba(255, 51, 51, 0.6);
+      }
+
+      button {
+        background-color: #e60000;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      button:hover {
+        background-color: #cc0000;
+      }
+
+      #letter {
+        background-color: rgba(26, 26, 26, 0.8);
+        padding: 20px;
+        border: 1px dashed #e60000;
+        margin-top: 20px;
+        border-radius: 8px;
+        box-shadow: inset 0 0 10px rgba(230, 0, 0, 0.3);
+        white-space: pre-wrap;
+      }
+
+      /* New styles for handwriting effect */
+      #output {
+        font-family: "Dancing Script", cursive;
+        font-size: 1.5em;
+        color: #ccc;
+        min-height: 200px;
+      }
+
+      /* Typing cursor effect */
+      .typing-cursor::after {
+        content: "|";
+        display: inline-block;
+        animation: blink-caret 0.75s infinite;
+      }
+
+      @keyframes blink-caret {
+        from,
+        to {
+          border-color: transparent;
+        }
+
+        50% {
+          border-color: #e60000;
+        }
+      }
+
+      /* Styles for background bats */
+      .bat {
+        position: fixed;
+        width: 60px;
+        height: auto;
+        pointer-events: none;
+        opacity: 0.7;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+        z-index: 5;
+      }
+
+      @keyframes flyToRight {
+        0% {
+          transform: translateX(0vw) translateY(var(--startY)) scaleX(1);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: translateX(50vw) translateY(var(--midY)) scaleX(1);
+        }
+
+        100% {
+          transform: translateX(100vw) translateY(var(--endY)) scaleX(1);
+          opacity: 0.7;
+        }
+      }
+
+      @keyframes flyToLeft {
+        0% {
+          transform: translateX(100vw) translateY(var(--startY)) scaleX(-1);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: translateX(50vw) translateY(var(--midY)) scaleX(-1);
+        }
+
+        100% {
+          transform: translateX(0vw) translateY(var(--endY)) scaleX(-1);
+          opacity: 0.7;
+        }
+      }
+
+      /* Blood Drop Animation */
+      .blood-drop {
+        position: absolute;
+        background-color: #e60000;
+        border-radius: 50%;
+        opacity: 0.8;
+        pointer-events: none;
+        animation: drip 1s ease-out forwards;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.7));
+      }
+
+      @keyframes drip {
+        0% {
+          transform: translateY(0) scale(0.5);
+          opacity: 0.8;
+        }
+
+        100% {
+          transform: translateY(50px) scale(1);
+          opacity: 0;
+        }
+      }
+
+      /* Mist Effect on Scroll */
+      .mist-overlay {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 0;
+        background: linear-gradient(to top, rgba(230, 0, 0, 0.2), transparent);
+        z-index: 20;
+        pointer-events: none;
+        transition: height 0.5s ease-out;
+      }
+
+      /* Mouse Glow */
+      #mouse-glow {
+        position: fixed;
+        width: 50px;
+        height: 50px;
+        background-color: rgba(255, 0, 0, 0.1);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        filter: blur(20px);
+        z-index: 50;
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+      }
+
+      /* Sound Toggle Button */
+      #sound-toggle-button {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background-color: #f5f5f5;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        z-index: 200;
+        transition: background-color 0.3s ease, transform 0.2s ease,
+          box-shadow 0.3s ease;
+      }
+
+      #sound-toggle-button:hover {
+        background-color: #e0e0e0;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+      }
+
+      /* Styles for sound button images */
+      #sound-toggle-button img {
+        width: 35px;
+        height: 35px;
+        display: block;
+        object-fit: contain;
+      }
+
+      /* Initially hide the sound-on icon - controlled by JS display property */
+      #sound-on-icon {
+        display: none;
+      }
+
+      /* Styles for the "Catch Vlad" game */
+      #bat-catcher-game {
+        background-color: rgba(26, 26, 26, 0.8);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(230, 0, 0, 0.4);
+        margin-top: 30px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      #game-area {
+        width: 100%;
+        height: 300px;
+        border: 2px dashed #e60000;
+        margin: 20px auto;
+        position: relative;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 5px;
+        cursor: crosshair;
+      }
+
+      /* Style for the game target image (now Vlad) */
+      .game-bat {
+        position: absolute;
+        width: 80px;
+        height: auto;
+        cursor: pointer;
+        transition: transform 0.1s ease-out;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+      }
+
+      .game-bat:hover {
+        transform: scale(1.1);
+      }
+
+      #game-info {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        color: #f5f5f5;
+      }
+
+      #game-start-button {
+        background-color: #008000;
+        transition: background-color 0.3s ease;
+      }
+
+      #game-start-button:hover {
+        background-color: #006400;
+      }
+
+      #game-start-button.disabled {
+        background-color: #555;
+        cursor: not-allowed;
+      }
+
+      /* Transition Overlay Styles (for game) */
+      #transition-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("dracula.jpeg");
+        background-size: cover;
+        background-position: center;
+        z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 1.5s ease-in-out;
+      }
+
+      /* Contact Form specific styles */
+      #contact-us form label {
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        color: #e60000;
+        font-weight: bold;
+      }
+
+      #contact-us textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      #contact-us .success-message {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: rgba(0, 128, 0, 0.3);
+        border: 1px solid #008000;
+        border-radius: 5px;
+        color: #f5f5f5;
+        text-align: center;
+        font-weight: bold;
+        display: none;
+      }
+
+      /* Quiz Styles */
+      #vampire-quiz {
+        background-color: rgba(26, 26, 26, 0.8);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(230, 0, 0, 0.4);
+        margin-top: 30px;
+        padding: 20px;
+      }
+
+      .quiz-question {
+        background-color: rgba(42, 42, 42, 0.7);
+        border: 1px solid #550000;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .quiz-question p {
+        font-size: 1.1em;
+        color: #f5f5f5;
+        margin-bottom: 15px;
+      }
+
+      .quiz-options {
+        display: grid;
+        gap: 10px;
+      }
+
+      .quiz-options label {
+        display: block;
+        background: #2a2a2a;
+        color: #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e60000;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .quiz-options label:hover {
+        background-color: #3a0000;
+        color: #fff;
+      }
+
+      .quiz-options input[type="radio"] {
+        margin-right: 10px;
+        accent-color: #e60000;
+      }
+
+      #submit-quiz {
+        background-color: #e60000;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+        font-weight: bold;
+        letter-spacing:
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="initial-welcome-overlay">
+      <img src="dracula.jpeg" alt="Dracula Welcome" class="welcome-image" />
+      <h2>Welcome to the Transylvania Blood Network.</h2>
+      <p>Prepare to delve into the shadows...</p>
+      <button id="enter-site-button">Enter at Your Own Risk</button>
+    </div>
+
+    <div id="bat-container"></div>
+    <div id="mouse-glow"></div>
+    <div class="mist-overlay" id="mist-overlay"></div>
+
+    <div id="transition-overlay"></div>
+
+    <audio id="bat-sound" loop>
+      <source src="Toccata-and-fugue-in-d-minor.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="drip-sound">
+      <source src="water-drip-72357.mp3" type="audio/mp3" />
+    </audio>
+    <audio id="chime-sound">
+      <source src="spooky-chimes-359877.mp3" type="audio/mp3" />
+    </audio>
+    <audio id="typing-sound">
+      <source src="typewriter-100-88009.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="wolf-howl-sound">
+      <source src="wolf-howl.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="evil-laugh-sound">
+      <source src="evil-laugh-89423.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <header>
+      <img
+        src="blood-donors-needed-halloween-dracula-volunteer-light-nikita-goel.jpg"
+        alt="Transylvania Blood Network Logo"
+        class="header-logo"
+      />
+      🩸 Transylvania Blood Network
+    </header>
+
+    <nav>
+      <div class="nav-row">
+        <a href="#home"><i class="fas fa-home"></i> Home</a>
+        <a href="#donate"><i class="fas fa-hand-holding-heart"></i> Donate</a>
+        <a href="#registered-donors"><i class="fas fa-users"></i> Donors</a>
+        <a href="#facts-cravings"><i class="fas fa-scroll"></i> Secrets</a>
+        <a href="#bat-catcher-game"><i class="fas fa-crosshairs"></i> Catch Vlad!</a>
+      </div>
+      <div class="nav-row">
+        <a href="#vampire-quiz"><i class="fas fa-question-circle"></i> Vampire Quiz</a>
+        <a href="#countdown-section"><i class="fas fa-moon"></i> Transformation</a>
+        <a href="#letter"><i class="fas fa-envelope-open-text"></i> Your Letter</a>
+        <a href="#contact-us"><i class="fas fa-paper-plane"></i> Contact</a>
+        <a href="#about"><i class="fas fa-info-circle"></i> About</a>
+      </div>
+    </nav>
+    <section id="home">
+      <h2>Welcome</h2>
+      <p>
+        Transylvania Blood Network connects generous donors with those who need
+        them most. But more than blood, we deliver humanity, wrapped in a veil
+        of ancient mystery. Every pulse, a story. Every drop, a destiny.
+      </p>
+    </section>
+
+    <section id="donate">
+      <h2>Become a Donor</h2>
+      <label for="name">Your Name</label>
+      <input type="text" id="name" placeholder="Enter your name..." />
+
+      <label for="group">Blood Group</label>
+      <select id="group">
+        <option>A+</option>
+        <option>A-</option>
+        <option>B+</option>
+        <option>B-</option>
+        <option>AB+</option>
+        <option>AB-</option>
+        <option>O+</option>
+        <option>O-</option>
+      </select>
+
+      <button onclick="submitDonor()">Generate Letter</button>
+    </section>
+
+    <section id="registered-donors">
+      <h2>Registered Donors & Blood Inventory</h2>
+      <div
+        id="donor-list-container"
+        style="
+          max-height: 300px;
+          overflow-y: auto;
+          border: 1px solid #e60000;
+          padding: 10px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+        "
+      >
+        <p id="no-donors-message" style="text-align: center; color: #ccc">
+          No donors registered yet.
+        </p>
+        <ul id="donor-list" style="list-style-type: none; padding: 0"></ul>
+      </div>
+      <div
+        id="blood-inventory"
+        style="
+          background-color: rgba(42, 42, 42, 0.8);
+          padding: 15px;
+          border-radius: 5px;
+          border: 1px solid #e60000;
+        "
+      >
+        <h3>Current Blood Inventory:</h3>
+        <p id="inventory-summary" style="color: #f5f5f5">
+          No blood data available.
+        </p>
+      </div>
+      <button
+        onclick="clearAllDonors()"
+        style="margin-top: 20px; background-color: #550000"
+      >
+        Clear All Donors (Local)
+      </button>
+    </section>
+
+    <section id="facts-cravings">
+      <h2>Transylvanian Secrets & Cravings</h2>
+      <h3>Random Vampire Fact:</h3>
+      <button onclick="displayRandomVampireFact()">Reveal a Secret</button>
+      <p
+        id="vampire-fact-output"
+        style="margin-top: 15px; font-style: italic; color: #ccc"
+      >
+        Click to uncover ancient truths.
+      </p>
+      <h3 style="margin-top: 30px">Blood Type Craving Compatibility:</h3>
+      <label for="craving-group">Select Blood Type:</label>
+      <select id="craving-group">
+        <option>A+</option>
+        <option>A-</option>
+        <option>B+</option>
+        <option>B-</option>
+        <option>AB+</option>
+        <option>AB-</option>
+        <option>O+</option>
+        <option>O-</option>
+      </select>
+      <button onclick="getBloodCraving()">Discover Cravings</button>
+      <p
+        id="craving-output"
+        style="margin-top: 15px; font-style: italic; color: #ccc"
+      >
+        What will your blood crave tonight?
+      </p>
+    </section>
+
+    <section id="bat-catcher-game">
+      <h2>Catch Vlad! (Minigame)</h2>
+      <p>
+        Test your reflexes and catch Vlad the Bat as many times as you can
+        within 30 seconds!
+      </p>
+      <div id="game-info">
+        <span id="score-display">Score: 0</span>
+        <span id="timer-display">Time: 30s</span>
+      </div>
+      <div id="game-area"></div>
+      <button id="game-start-button">Start Game</button>
+    </section>
+
+    <section id="vampire-quiz">
+      <h2>The Vampire Quiz</h2>
+      <div id="quiz-container">
+        </div>
+      <button id="submit-quiz">Submit Answers</button>
+      <div
+        id="quiz-results"
+        style="
+          margin-top: 20px;
+          font-weight: bold;
+          text-align: center;
+          color: #e60000;
+        "
+      ></div>
+    </section>
+
+    <section id="countdown-section">
+      <h2>Mystical Transformation Countdown</h2>
+      <p>
+        Upon your first successful blood donation, your transformation countdown
+        begins!
+      </p>
+      <div class="countdown-timer">
+        <div class="countdown-item">
+          <span id="days">00</span>
+          <label>Days</label>
+        </div>
+        <div class="countdown-item">
+          <span id="hours">00</span>
+          <label>Hours</label>
+        </div>
+        <div class="countdown-item">
+          <span id="minutes">00</span>
+          <label>Minutes</label>
+        </div>
+        <div class="countdown-item">
+          <span id="seconds">00</span>
+          <label>Seconds</label>
+        </div>
+      </div>
+      <p id="countdown-message" class="countdown-message">
+        Register as a donor to begin your mystical transformation countdown...
+      </p>
+    </section>
+
+    <section id="letter">
+      <h2>Your Ancient Letter</h2>
+      <div id="output">
+        </div>
+      <div id="donation-confirmation-box" class="confirmation-box">
+        Thank you for your donation! Your letter is being prepared.
+      </div>
+    </section>
+
+    <section id="contact-us">
+      <h2>Contact Us</h2>
+      <form id="contact-form">
+        <label for="contact-name">Your Name</label>
+        <input
+          type="text"
+          id="contact-name"
+          placeholder="Enter your name..."
+          required
+        />
+
+        <label for="contact-email">Your Email</label>
+        <input
+          type="email"
+          id="contact-email"
+          placeholder="Enter your email..."
+          required
+        />
+
+        <label for="contact-message">Your Message</label>
+        <textarea
+          id="contact-message"
+          placeholder="Type your message here..."
+          required
+        ></textarea>
+
+        <button type="submit">Send Message</button>
+        <div id="contact-success-message" class="success-message"></div>
+      </form>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <p>
+        This web app was created in a 48h hackathon by a team of beginner
+        developers from Romania. Inspired by our culture and humanity, we
+        believe every drop tells a story. And perhaps, awakens something more
+        primal within us all.
+      </p>
+    </section>
+
+    <button id="sound-toggle-button" aria-label="Toggle Sound">
+      <img
+        id="sound-off-icon"
+        src="haut-parleur-rouge-et-icone-sonore.png"
+        alt="Sound Off"
+      />
+      <img
+        id="sound-on-icon"
+        src="icone-du-son-et-du-haut-parleur-rouge.png"
+        alt="Sound On"
+      />
+    </button>
+
+    <div id="scroll-to-top-button" title="Go to top">⬆️</div>
+
+    <script>
+      // Initial Welcome Overlay
+      document.addEventListener("DOMContentLoaded", () => {
+        const initialWelcomeOverlay = document.getElementById(
+          "initial-welcome-overlay"
+        );
+        const enterSiteButton = document.getElementById("enter-site-button");
+        const batSound = document.getElementById("bat-sound"); // Assuming this is your background music
+
+        // --- IMPORTANT MODIFICATION FOR SOUND BUTTON VISIBILITY AND INITIAL SOUND STATE ---
+        const soundOnIcon = document.getElementById("sound-on-icon");
+        const soundOffIcon = document.getElementById("sound-off-icon");
+
+        // Initial state: sound is ON
+        isSoundOn = true; // Set isSoundOn to true globally
+
+        // Ensure that soundOnIcon is visible and soundOffIcon is hidden on initial load
+        if (soundOnIcon) soundOnIcon.style.display = "block"; // Show sound ON icon
+        if (soundOffIcon) soundOffIcon.style.display = "none"; // Hide sound OFF icon
+
+        // Attempt to play background sound (batSound) immediately on DOM load
+        // Modern browsers might still require user interaction, but this is the correct place to try
+        if (batSound) {
+          batSound.volume = 0.3; // Set initial volume
+          batSound.play().catch((e) => {
+            console.error("Audio play failed on initial load (might require user interaction):", e);
+            // If autoplay fails, hide sound on icon and show sound off icon
+            // and set isSoundOn to false, so the user knows sound is off and can click to enable
+            if (soundOnIcon) soundOnIcon.style.display = "none";
+            if (soundOffIcon) soundOffIcon.style.display = "block";
+            isSoundOn = false; // Reflect actual state if autoplay fails
+          });
+        }
+        // --- END OF IMPORTANT MODIFICATION ---
+
+
+        enterSiteButton.addEventListener("click", () => {
+          initialWelcomeOverlay.classList.add("hidden");
+          // No need to play batSound here anymore, it's handled on DOMContentLoaded
+        });
+
+        // Call the function to start the demo countdown when the DOM is loaded
+        startDemoCountdown();
+      });
+
+
+      // Sound Toggle Button
+      const soundToggleButton = document.getElementById("sound-toggle-button");
+      const soundOnIcon = document.getElementById("sound-on-icon");
+      const soundOffIcon = document.getElementById("sound-off-icon");
+      const batSound = document.getElementById("bat-sound");
+      const chimeSound = document.getElementById("chime-sound");
+      const typingSound = document.getElementById("typing-sound");
+      const evilLaughSound = document.getElementById("evil-laugh-sound");
+      const wolfHowlSound = document.getElementById("wolf-howl-sound");
+
+      let isSoundOn = true; // Initial state: sound ON
+
+      soundToggleButton.addEventListener("click", () => {
+        if (isSoundOn) {
+          // Turn sound OFF
+          if (batSound) batSound.pause();
+          if (chimeSound) chimeSound.pause();
+          if (typingSound) typingSound.pause();
+          if (evilLaughSound) evilLaughSound.pause();
+          if (wolfHowlSound) wolfHowlSound.pause();
+
+          if (soundOnIcon) soundOnIcon.style.display = "none";
+          if (soundOffIcon) soundOffIcon.style.display = "block";
+        } else {
+          // Turn sound ON
+          if (batSound) batSound.play().catch((e) => console.error("Audio play failed:", e));
+
+          if (soundOnIcon) soundOnIcon.style.display = "block";
+          if (soundOffIcon) soundOffIcon.style.display = "none";
+        }
+        isSoundOn = !isSoundOn; // Toggle the state
+      });
+
+      // Bat animation
+      const batContainer = document.getElementById("bat-container");
+      const numBats = 5; // Number of bats
+
+      function createBat() {
+        const bat = document.createElement("img");
+        bat.src = "halloween-flying-bat-sticker-u889c-x450.png"; // Make sure you have this image
+        bat.className = "bat";
+        batContainer.appendChild(bat);
+
+        const startY = Math.random() * window.innerHeight;
+        const endY = Math.random() * window.innerHeight;
+        const midY = Math.random() * window.innerHeight; // For more varied paths
+
+        bat.style.setProperty("--startY", `${startY}px`);
+        bat.style.setProperty("--endY", `${endY}px`);
+        bat.style.setProperty("--midY", `${midY}px`);
+
+        const duration = 10 + Math.random() * 10; // 10-20 seconds
+        bat.style.animationDuration = `${duration}s`;
+        bat.style.animationIterationCount = "infinite";
+        bat.style.left = `${-60}px`; // Start off-screen
+        bat.style.top = `${startY}px`;
+
+        // Randomly choose direction
+        if (Math.random() > 0.5) {
+          bat.style.animationName = "flyToRight";
+        } else {
+          bat.style.animationName = "flyToLeft";
+        }
+
+        // Restart animation when it ends
+        bat.addEventListener("animationiteration", () => {
+          bat.style.left = Math.random() > 0.5 ? `${-60}px` : `${window.innerWidth}px`;
+          bat.style.top = `${Math.random() * window.innerHeight}px`;
+          bat.style.animationName = Math.random() > 0.5 ? "flyToRight" : "flyToLeft";
+          bat.style.setProperty("--startY", `${Math.random() * window.innerHeight}px`);
+          bat.style.setProperty("--endY", `${Math.random() * window.innerHeight}px`);
+          bat.style.setProperty("--midY", `${Math.random() * window.innerHeight}px`);
+        });
+      }
+
+      for (let i = 0; i < numBats; i++) {
+        createBat();
+      }
+
+      // Blood Drip Animation on Mouse Click
+      document.addEventListener("click", (e) => {
+        const drop = document.createElement("div");
+        drop.className = "blood-drop";
+        drop.style.left = `${e.clientX}px`;
+        drop.style.top = `${e.clientY}px`;
+        document.body.appendChild(drop);
+
+        if (isSoundOn) {
+          const dripSound = document.getElementById("drip-sound");
+          if (dripSound) {
+            dripSound.currentTime = 0; // Rewind to start
+            dripSound.play().catch((e) => console.error("Drip sound play failed:", e));
+          }
+        }
+
+        drop.addEventListener("animationend", () => {
+          drop.remove();
+        });
+      });
+
+      // Mist Effect on Scroll
+      const mistOverlay = document.getElementById("mist-overlay");
+
+      window.addEventListener("scroll", () => {
+        const scrollPercentage = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        mistOverlay.style.height = `${scrollPercentage * 100}vh`; // Adjust as needed
+        mistOverlay.style.opacity = scrollPercentage * 0.7; // Adjust opacity
+      });
+
+      // Mouse Glow Effect
+      const mouseGlow = document.getElementById("mouse-glow");
+
+      document.addEventListener("mousemove", (e) => {
+        mouseGlow.style.left = `${e.clientX}px`;
+        mouseGlow.style.top = `${e.clientY}px`;
+        mouseGlow.style.opacity = 1;
+      });
+
+      document.addEventListener("mouseleave", () => {
+        mouseGlow.style.opacity = 0;
+      });
+
+
+      // Donor Registration and Letter Generation
+      const donors = JSON.parse(localStorage.getItem("transylvaniaDonors")) || [];
+      const bloodInventory = JSON.parse(localStorage.getItem("bloodInventory")) || {};
+
+      function updateDonorList() {
+        const donorList = document.getElementById("donor-list");
+        const noDonorsMessage = document.getElementById("no-donors-message");
+        donorList.innerHTML = ""; // Clear existing list
+
+        if (donors.length === 0) {
+          noDonorsMessage.style.display = "block";
+        } else {
+          noDonorsMessage.style.display = "none";
+          donors.forEach((donor, index) => {
+            const listItem = document.createElement("li");
+            listItem.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px dashed #550000;
+            `;
+            listItem.innerHTML = `
+                <span style="color: #f5f5f5;"><i class="fas fa-user-circle" style="color: #e60000; margin-right: 8px;"></i>${donor.name} (${donor.group})</span>
+                <button onclick="removeDonor(${index})" style="background-color: #770000; width: auto; padding: 5px 10px; margin-top: 0; font-size: 0.8em;">Remove</button>
+            `;
+            donorList.appendChild(listItem);
+          });
+        }
+      }
+
+      function updateBloodInventory() {
+        const inventorySummary = document.getElementById("inventory-summary");
+        let summaryText = "";
+        let hasData = false;
+
+        for (const group in bloodInventory) {
+          if (bloodInventory[group] > 0) {
+            summaryText += `${group}: ${bloodInventory[group]} units<br>`;
+            hasData = true;
+          }
+        }
+
+        if (!hasData) {
+          inventorySummary.textContent = "No blood data available.";
+        } else {
+          inventorySummary.innerHTML = summaryText;
+        }
+      }
+
+      function removeDonor(index) {
+        const removedDonorGroup = donors[index].group;
+        donors.splice(index, 1);
+        localStorage.setItem("transylvaniaDonors", JSON.stringify(donors));
+
+        // Decrease blood count in inventory
+        if (bloodInventory[removedDonorGroup]) {
+          bloodInventory[removedDonorGroup]--;
+          if (bloodInventory[removedDonorGroup] < 0) {
+            bloodInventory[removedDonorGroup] = 0; // Prevent negative
+          }
+          localStorage.setItem("bloodInventory", JSON.stringify(bloodInventory));
+        }
+
+        updateDonorList();
+        updateBloodInventory();
+      }
+
+      function clearAllDonors() {
+        if (confirm("Are you sure you want to clear all registered donors and blood inventory? This action cannot be undone.")) {
+          localStorage.removeItem("transylvaniaDonors");
+          localStorage.removeItem("bloodInventory");
+          donors.length = 0; // Clear the array reference
+          for (const group in bloodInventory) {
+            delete bloodInventory[group]; // Clear inventory object
+          }
+          updateDonorList();
+          updateBloodInventory();
+        }
+      }
+
+      // Function to simulate typing effect
+      function typeWriterEffect(element, text, speed) {
+        let i = 0;
+        element.textContent = ""; // Clear existing content
+        element.classList.add("typing-cursor"); // Add typing cursor
+
+        function type() {
+          if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            if (isSoundOn) {
+              // Play typing sound only if it's not already playing or has finished
+              if (typingSound.paused || typingSound.ended) {
+                typingSound.currentTime = 0; // Rewind to start
+                typingSound.play().catch((e) => console.error("Typing sound play failed:", e));
+              }
+            }
+            setTimeout(type, speed);
+          } else {
+            element.classList.remove("typing-cursor"); // Remove cursor
+            if (typingSound) typingSound.pause(); // Stop typing sound when done
+          }
+        }
+        type();
+      }
+
+
+      function submitDonor() {
+        const nameInput = document.getElementById("name");
+        const groupSelect = document.getElementById("group");
+        const name = nameInput.value.trim();
+        const group = groupSelect.value;
+        const outputDiv = document.getElementById("output");
+        const letterSection = document.getElementById("letter"); // Get the letter section
+
+        if (name && group) {
+          const newDonor = { name: name, group: group };
+          donors.push(newDonor);
+          localStorage.setItem("transylvaniaDonors", JSON.stringify(donors));
+
+          // Update blood inventory
+          bloodInventory[group] = (bloodInventory[group] || 0) + 1;
+          localStorage.setItem("bloodInventory", JSON.stringify(bloodInventory));
+
+          updateDonorList();
+          updateBloodInventory();
+
+          const letterContent = `Dearest ${name},
+
+The crimson moon beckons, and your generosity resonates through the ancient halls of Transylvania. Your offering of ${group} blood is a vital essence to our network, ensuring the continued vitality of those who dwell in the shadows and light.
+
+Your courage is noted, and your spirit, truly... *bloodylicious*.
+
+We await your next benevolent visit under the shroud of night.
+
+With eternal gratitude and a thirst for more,
+
+Count Vladislaus and The Transylvania Blood Network`;
+
+          typeWriterEffect(outputDiv, letterContent, 50);
+
+          // Show confirmation box
+          const confirmationBox = document.getElementById("donation-confirmation-box");
+          confirmationBox.classList.add("show");
+          setTimeout(() => {
+            confirmationBox.classList.remove("show");
+          }, 5000); // Hide after 5 seconds
+
+          // Play chime sound
+          if (isSoundOn) {
+            if (chimeSound) {
+              chimeSound.currentTime = 0;
+              chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
+            }
+          }
+
+          // Scroll to the letter section
+          letterSection.scrollIntoView({ behavior: "smooth" });
+
+          // Clear input fields after submission
+          nameInput.value = "";
+          groupSelect.value = "A+"; // Reset to default
+        } else {
+          outputDiv.textContent = "Please enter your name and select your blood group to generate your letter.";
+        }
+      }
+
+      // Initial load for donor list and inventory
+      updateDonorList();
+      updateBloodInventory();
+
+
+      // Transylvanian Secrets & Cravings (Facts & Compatibility)
+      const vampireFacts = [
+        "Vampires are often depicted as having a strong aversion to garlic.",
+        "The word 'vampire' first appeared in English in 1734.",
+        "Some folklore suggests vampires can only enter a home if invited.",
+        "Bram Stoker's Dracula was published in 1897.",
+        "In many cultures, a stake through the heart is a traditional way to kill a vampire.",
+        "Vampires are typically nocturnal creatures, avoiding sunlight.",
+        "The bat is a common animal associated with vampires, due to their nocturnal nature and blood-feeding habits (in some species).",
+        "Before the word 'vampire' became popular, creatures like the 'strigoi' (Romania) or 'upyr' (Slavic) were known.",
+        "Reflections in mirrors are said to not appear for vampires.",
+        "Vlad the Impaler, a historical figure, is often associated with the inspiration for Dracula.",
+      ];
+
+      function displayRandomVampireFact() {
+        const factOutput = document.getElementById("vampire-fact-output");
+        const randomIndex = Math.floor(Math.random() * vampireFacts.length);
+        const fact = vampireFacts[randomIndex];
+        factOutput.textContent = fact;
+        if (isSoundOn) {
+          if (chimeSound) {
+            chimeSound.currentTime = 0; // Rewind to start
+            chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
+          }
+        }
+      }
+
+      const bloodCravingCompatibility = {
+        "A+": "Craves sophisticated, well-balanced meals. Pairs well with a fine chianti.",
+        "A-": "Prefers rare, earthy flavors. A robust, gamey taste will satisfy.",
+        "B+": "Enjoys exotic and spicy concoctions. A hint of adventure is key.",
+        "B-": "Desires something unique and often misunderstood. A bit of bitterness can be intriguing.",
+        "AB+": "An adaptable palate, can enjoy almost anything. Perhaps a touch of metallic tang for variety.",
+        "AB-": "A mysterious craving for the unconventional. Hints of the supernatural often accompany this desire.",
+        "O+": "A universal hunger for rich, hearty sustenance. Comforting and familiar is often best.",
+        "O-": "The most ancient craving, pure and unadulterated. The essence of life itself.",
+      };
+
+      function getBloodCraving() {
+        const cravingGroup = document.getElementById("craving-group").value;
+        const cravingOutput = document.getElementById("craving-output");
+        cravingOutput.textContent = bloodCravingCompatibility[cravingGroup] || "No specific craving known for this type.";
+        if (isSoundOn) {
+          if (chimeSound) {
+            chimeSound.currentTime = 0; // Rewind to start
+            chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
+          }
+        }
+      }
+
+      // Bat Catcher Game
+      const gameArea = document.getElementById("game-area");
+      const scoreDisplay = document.getElementById("score-display");
+      const timerDisplay = document.getElementById("timer-display");
+      const gameStartButton = document.getElementById("game-start-button");
+      let score = 0;
+      let timeLeft = 30;
+      let gameInterval;
+      let batTimeout;
+      let isGameRunning = false;
+
+      function createVlad() {
+        if (!isGameRunning) return;
+        const vlad = document.createElement("img");
+        vlad.src = "Vlad_Tepes_002.jpg"; // Your Vlad image
+        vlad.className = "game-bat";
+        gameArea.appendChild(vlad);
+
+        const maxX = gameArea.clientWidth - vlad.offsetWidth;
+        const maxY = gameArea.clientHeight - vlad.offsetHeight;
+
+        const randomX = Math.floor(Math.random() * maxX);
+        const randomY = Math.floor(Math.random() * maxY);
+
+        vlad.style.left = `${randomX}px`;
+        vlad.style.top = `${randomY}px`;
+
+        vlad.addEventListener("click", () => {
+          if (isGameRunning) {
+            score++;
+            scoreDisplay.textContent = `Score: ${score}`;
+            vlad.remove(); // Remove clicked Vlad
+            clearTimeout(batTimeout); // Clear timeout for current Vlad
+            spawnNewVlad(); // Immediately spawn a new one
+          }
+        });
+
+        // Remove Vlad if not clicked within a time (makes game harder)
+        batTimeout = setTimeout(() => {
+          if (vlad.parentNode === gameArea) {
+            vlad.remove();
+            spawnNewVlad(); // Spawn a new one even if not clicked
+          }
+        }, 1500 - (score * 10)); // Make it faster as score increases, min 500ms
+      }
+
+      function spawnNewVlad() {
+        const existingVlad = gameArea.querySelector(".game-bat");
+        if (existingVlad) {
+          existingVlad.remove();
+        }
+        createVlad();
+      }
+
+      function startGame() {
+        score = 0;
+        scoreDisplay.textContent = `Score: ${score}`;
+        timeLeft = 30;
+        timerDisplay.textContent = `Time: ${timeLeft}s`;
+        isGameRunning = true;
+        gameStartButton.disabled = true;
+        gameStartButton.classList.add("disabled");
+
+        gameArea.innerHTML = ""; // Clear any previous bats
+        createVlad(); // Create the first Vlad
+
+        gameInterval = setInterval(() => {
+          timeLeft--;
+          timerDisplay.textContent = `Time: ${timeLeft}s`;
+
+          if (timeLeft <= 0) {
+            clearInterval(gameInterval);
+            isGameRunning = false;
+            gameStartButton.disabled = false;
+            gameStartButton.classList.remove("disabled");
+            gameArea.innerHTML = `<p style="color: #e60000; font-size: 1.5em;">Game Over! Your final score is: ${score}</p>`;
+            if (evilLaughSound && isSoundOn) {
+              evilLaughSound.currentTime = 0;
+              evilLaughSound.play().catch((e) => console.error("Evil laugh sound play failed:", e));
+            }
+            clearTimeout(batTimeout); // Ensure no more bats spawn after game over
+          }
+        }, 1000);
+      }
+
+      gameStartButton.addEventListener("click", startGame);
+
+      // Vampire Quiz
+      const quizQuestions = [
+        {
+          question: "Which of these is NOT a traditional way to ward off vampires?",
+          options: ["Garlic", "Holy Water", "Wooden Stake", "Silver Bullet"],
+          answer: "Silver Bullet",
+        },
+        {
+          question: "In Bram Stoker's 'Dracula', where does the Count originally reside?",
+          options: ["London", "Paris", "Transylvania", "Venice"],
+          answer: "Transylvania",
+        },
+        {
+          question: "Vampires are often said to have no reflection in:",
+          options: ["Water", "Mirrors", "Polished Metal", "Glass"],
+          answer: "Mirrors",
+        },
+        {
+          question: "Which animal is most commonly associated with vampires?",
+          options: ["Wolf", "Bat", "Owl", "Spider"],
+          answer: "Bat",
+        },
+        {
+          question: "What is the primary sustenance for a traditional vampire?",
+          options: ["Food", "Water", "Blood", "Sunlight"],
+          answer: "Blood",
+        },
+      ];
+
+      const quizContainer = document.getElementById("quiz-container");
+      const submitQuizButton = document.getElementById("submit-quiz");
+      const quizResultsDiv = document.getElementById("quiz-results");
+
+      function loadQuiz() {
+        quizContainer.innerHTML = "";
+        quizQuestions.forEach((q, index) => {
+          const questionDiv = document.createElement("div");
+          questionDiv.className = "quiz-question";
+          questionDiv.innerHTML = `
+            <p>${index + 1}. ${q.question}</p>
+            <div class="quiz-options">
+              ${q.options
+                .map(
+                  (option) => `
+                <label>
+                  <input type="radio" name="question${index}" value="${option}">
+                  ${option}
+                </label>
+              `
+                )
+                .join("")}
+            </div>
+          `;
+          quizContainer.appendChild(questionDiv);
+        });
+      }
+
+      function submitQuiz() {
+        let score = 0;
+        quizQuestions.forEach((q, index) => {
+          const selectedOption = document.querySelector(
+            `input[name="question${index}"]:checked`
+          );
+          if (selectedOption && selectedOption.value === q.answer) {
+            score++;
+          }
+        });
+        quizResultsDiv.textContent = `You scored ${score} out of ${quizQuestions.length}!`;
+
+        if (isSoundOn) {
+          if (chimeSound) {
+            chimeSound.currentTime = 0;
+            chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
+          }
+        }
+      }
+
+      submitQuizButton.addEventListener("click", submitQuiz);
+
+      // Load quiz on page load
+      loadQuiz();
+
+      // Countdown Timer
+      const daysSpan = document.getElementById("days");
+      const hoursSpan = document.getElementById("hours");
+      const minutesSpan = document.getElementById("minutes");
+      const secondsSpan = document.getElementById("seconds");
+      const countdownMessage = document.getElementById("countdown-message");
+
+      let targetDate = null; // This will be set when a donor registers
+
+      function updateCountdown() {
+        if (!targetDate) {
+          countdownMessage.textContent = "Register as a donor to begin your mystical transformation countdown...";
+          countdownMessage.classList.remove("countdown-finished");
+          daysSpan.textContent = "00";
+          hoursSpan.textContent = "00";
+          minutesSpan.textContent = "00";
+          secondsSpan.textContent = "00";
+          return;
+        }
+
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+          clearInterval(countdownInterval);
+          countdownMessage.textContent = "Transformation Complete! Welcome to the eternal night.";
+          countdownMessage.classList.add("countdown-finished");
+          daysSpan.textContent = "00";
+          hoursSpan.textContent = "00";
+          minutesSpan.textContent = "00";
+          secondsSpan.textContent = "00";
+
+          if (isSoundOn && evilLaughSound) {
+            evilLaughSound.currentTime = 0;
+            evilLaughSound.play().catch((e) => console.error("Evil laugh sound play failed:", e));
+          }
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        daysSpan.textContent = String(days).padStart(2, '0');
+        hoursSpan.textContent = String(hours).padStart(2, '0');
+        minutesSpan.textContent = String(minutes).padStart(2, '0');
+        secondsSpan.textContent = String(seconds).padStart(2, '0');
+
+        countdownMessage.textContent = "Register as a donor to begin your mystical transformation countdown...";
+        countdownMessage.classList.remove("countdown-finished");
+      }
+
+      function startDemoCountdown() {
+        // Set a target date, e.g., 3 days from now
+        const now = new Date();
+        targetDate = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from now
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      }
+
+      // Contact Form Submission
+      const contactForm = document.getElementById("contact-form");
+      const contactSuccessMessage = document.getElementById("contact-success-message");
+
+      contactForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        // In a real application, you would send this data to a server
+        console.log("Contact form submitted!");
+        contactSuccessMessage.textContent = "Message sent! We'll be in touch... eventually.";
+        contactSuccessMessage.style.display = "block";
+        contactForm.reset();
+
+        if (isSoundOn) {
+          if (wolfHowlSound) {
+            wolfHowlSound.currentTime = 0;
+            wolfHowlSound.play().catch((e) => console.error("Wolf howl sound play failed:", e));
+          }
+        }
+        setTimeout(() => {
+          contactSuccessMessage.style.display = "none";
+        }, 5000);
+      });
+
+      // Scroll to Top Button
+      const scrollToTopButton = document.createElement("button");
+      scrollToTopButton.id = "scroll-to-top-button";
+      scrollToTopButton.innerHTML = "⬆️";
+      scrollToTopButton.title = "Go to top";
+      document.body.appendChild(scrollToTopButton);
+
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 200) {
+          scrollToTopButton.style.display = "block";
+        } else {
+          scrollToTopButton.style.display = "none";
+        }
+      });
+
+      scrollToTopButton.addEventListener("click", () => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      });
+    </script>
+  </body>
+</html>
