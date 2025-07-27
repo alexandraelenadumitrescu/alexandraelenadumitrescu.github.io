@@ -142,7 +142,7 @@
         padding: 10px 0; /* Ajustează padding-ul sus/jos */
         text-align: center;
         position: sticky;
-        top: 125px; /* Rămâne la fel, sub header */
+        top: 72px; /* Rămâne la fel, sub header */
         z-index: 999;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
         display: flex; /* Folosește flexbox pentru a aranja rândurile */
@@ -517,7 +517,7 @@
         display: none;
       }
 
-      /* =========== START: NEW QUIZ STYLES =========== */
+      /* Quiz Styles */
       #vampire-quiz {
         background-color: rgba(26, 26, 26, 0.8);
         border-radius: 8px;
@@ -526,20 +526,19 @@
         padding: 20px;
       }
 
-      .quiz-question-container {
+      .quiz-question {
         background-color: rgba(42, 42, 42, 0.7);
         border: 1px solid #550000;
         border-radius: 5px;
-        padding: 20px;
+        padding: 15px;
         margin-bottom: 20px;
         text-align: left;
-        min-height: 250px;
       }
 
-      .quiz-question-container p {
-        font-size: 1.2em;
+      .quiz-question p {
+        font-size: 1.1em;
         color: #f5f5f5;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
       }
 
       .quiz-options {
@@ -551,122 +550,31 @@
         display: block;
         background: #2a2a2a;
         color: #ccc;
-        padding: 12px;
+        padding: 10px;
         border-radius: 8px;
         border: 1px solid #e60000;
         cursor: pointer;
         transition: all 0.3s ease;
-        position: relative;
-        padding-left: 45px; /* Spațiu pentru radio button custom */
       }
 
       .quiz-options label:hover {
         background-color: #3a0000;
         color: #fff;
-        border-color: #ff3333;
       }
 
       .quiz-options input[type="radio"] {
-        display: none; /* Ascundem radio button-ul original */
-      }
-      
-      /* Stil pentru radio button custom */
-      .quiz-options label::before {
-        content: '';
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        border: 2px solid #e60000;
-        border-radius: 50%;
-        background: #1a1a1a;
-      }
-      
-      /* Stil pentru când e selectat */
-       .quiz-options input[type="radio"]:checked + span::after {
-        content: '';
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%) scale(1);
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #e60000;
-        transition: transform 0.2s ease;
+        margin-right: 10px;
+        accent-color: #e60000;
       }
 
-      #quiz-feedback {
-        margin-top: 15px;
-        font-weight: bold;
-        text-align: center;
-        height: 20px;
-        font-size: 1.1em;
-      }
-
-      #quiz-results {
+      #submit-quiz {
+        background-color: #e60000;
+        cursor: pointer;
+        width: 100%;
         margin-top: 20px;
         font-weight: bold;
-        text-align: center;
-        color: #e60000;
-        font-size: 1.5em;
+        letter-spacing:
       }
-      /* =========== END: NEW QUIZ STYLES =========== */
-
-
-      /* =========== START: NEW COUNTDOWN TIMER STYLES =========== */
-      .countdown-timer {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        gap: 20px;
-        margin: 25px 0;
-      }
-
-      .countdown-item {
-        background-color: rgba(0, 0, 0, 0.4);
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #e60000;
-        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        min-width: 80px;
-      }
-
-      .countdown-item span {
-        display: block;
-        font-size: 2.5em;
-        font-weight: bold;
-        color: #f5f5f5;
-        text-shadow: 0 0 8px rgba(255, 80, 80, 0.8);
-      }
-
-      .countdown-item label {
-        display: block;
-        font-size: 0.9em;
-        color: #e60000;
-        margin-top: 5px;
-        text-transform: uppercase;
-      }
-
-      #countdown-message {
-        text-align: center;
-        margin-top: 20px;
-        font-size: 1.1em;
-        font-family: "Dancing Script", cursive;
-        color: #ccc;
-        transition: color 0.5s ease;
-      }
-
-      #countdown-message.countdown-finished {
-        color: #e60000;
-        font-weight: bold;
-        font-size: 1.3em;
-      }
-      /* =========== END: NEW COUNTDOWN TIMER STYLES =========== */
-
     </style>
   </head>
 
@@ -847,15 +755,21 @@
     </section>
 
     <section id="vampire-quiz">
-        <h2>The Vampire Quiz</h2>
-        <div id="quiz-container">
-            </div>
-        <div id="quiz-feedback"></div> <div id="quiz-action-container">
-            <button id="quiz-action-button">Next Question</button>
+      <h2>The Vampire Quiz</h2>
+      <div id="quiz-container">
         </div>
-        <div id="quiz-results">
-            </div>
+      <button id="submit-quiz">Submit Answers</button>
+      <div
+        id="quiz-results"
+        style="
+          margin-top: 20px;
+          font-weight: bold;
+          text-align: center;
+          color: #e60000;
+        "
+      ></div>
     </section>
+
     <section id="countdown-section">
       <h2>Mystical Transformation Countdown</h2>
       <p>
@@ -884,6 +798,7 @@
         Register as a donor to begin your mystical transformation countdown...
       </p>
     </section>
+
     <section id="letter">
       <h2>Your Ancient Letter</h2>
       <div id="output">
@@ -956,37 +871,42 @@
           "initial-welcome-overlay"
         );
         const enterSiteButton = document.getElementById("enter-site-button");
-        const batSound = document.getElementById("bat-sound"); 
+        const batSound = document.getElementById("bat-sound"); // Assuming this is your background music
 
+        // --- IMPORTANT MODIFICATION FOR SOUND BUTTON VISIBILITY AND INITIAL SOUND STATE ---
         const soundOnIcon = document.getElementById("sound-on-icon");
         const soundOffIcon = document.getElementById("sound-off-icon");
 
-        isSoundOn = true; 
+        // Initial state: sound is ON
+        isSoundOn = true; // Set isSoundOn to true globally
 
-        if (soundOnIcon) soundOnIcon.style.display = "block";
-        if (soundOffIcon) soundOffIcon.style.display = "none"; 
+        // Ensure that soundOnIcon is visible and soundOffIcon is hidden on initial load
+        if (soundOnIcon) soundOnIcon.style.display = "block"; // Show sound ON icon
+        if (soundOffIcon) soundOffIcon.style.display = "none"; // Hide sound OFF icon
 
+        // Attempt to play background sound (batSound) immediately on DOM load
+        // Modern browsers might still require user interaction, but this is the correct place to try
         if (batSound) {
-          batSound.volume = 0.3; 
+          batSound.volume = 0.3; // Set initial volume
           batSound.play().catch((e) => {
-            console.error("Audio play failed on initial load:", e);
+            console.error("Audio play failed on initial load (might require user interaction):", e);
+            // If autoplay fails, hide sound on icon and show sound off icon
+            // and set isSoundOn to false, so the user knows sound is off and can click to enable
             if (soundOnIcon) soundOnIcon.style.display = "none";
             if (soundOffIcon) soundOffIcon.style.display = "block";
-            isSoundOn = false; 
+            isSoundOn = false; // Reflect actual state if autoplay fails
           });
         }
+        // --- END OF IMPORTANT MODIFICATION ---
+
 
         enterSiteButton.addEventListener("click", () => {
           initialWelcomeOverlay.classList.add("hidden");
+          // No need to play batSound here anymore, it's handled on DOMContentLoaded
         });
 
-        // =========================================================
-        // === INITIALIZE COUNTDOWN AND QUIZ ON PAGE LOAD ===
-        // =========================================================
-        initializeCountdown(); 
-        initializeQuiz();
-        // =========================================================
-
+        // Call the function to start the demo countdown when the DOM is loaded
+        startDemoCountdown();
       });
 
 
@@ -1000,55 +920,61 @@
       const evilLaughSound = document.getElementById("evil-laugh-sound");
       const wolfHowlSound = document.getElementById("wolf-howl-sound");
 
-      let isSoundOn = true; 
+      let isSoundOn = true; // Initial state: sound ON
 
       soundToggleButton.addEventListener("click", () => {
         if (isSoundOn) {
+          // Turn sound OFF
           if (batSound) batSound.pause();
           if (chimeSound) chimeSound.pause();
           if (typingSound) typingSound.pause();
           if (evilLaughSound) evilLaughSound.pause();
           if (wolfHowlSound) wolfHowlSound.pause();
+
           if (soundOnIcon) soundOnIcon.style.display = "none";
           if (soundOffIcon) soundOffIcon.style.display = "block";
         } else {
+          // Turn sound ON
           if (batSound) batSound.play().catch((e) => console.error("Audio play failed:", e));
+
           if (soundOnIcon) soundOnIcon.style.display = "block";
           if (soundOffIcon) soundOffIcon.style.display = "none";
         }
-        isSoundOn = !isSoundOn;
+        isSoundOn = !isSoundOn; // Toggle the state
       });
 
       // Bat animation
       const batContainer = document.getElementById("bat-container");
-      const numBats = 5; 
+      const numBats = 5; // Number of bats
 
       function createBat() {
         const bat = document.createElement("img");
-        bat.src = "halloween-flying-bat-sticker-u889c-x450.png";
+        bat.src = "halloween-flying-bat-sticker-u889c-x450.png"; // Make sure you have this image
         bat.className = "bat";
         batContainer.appendChild(bat);
 
         const startY = Math.random() * window.innerHeight;
         const endY = Math.random() * window.innerHeight;
-        const midY = Math.random() * window.innerHeight;
+        const midY = Math.random() * window.innerHeight; // For more varied paths
 
         bat.style.setProperty("--startY", `${startY}px`);
         bat.style.setProperty("--endY", `${endY}px`);
         bat.style.setProperty("--midY", `${midY}px`);
 
-        const duration = 10 + Math.random() * 10;
+        const duration = 10 + Math.random() * 10; // 10-20 seconds
         bat.style.animationDuration = `${duration}s`;
         bat.style.animationIterationCount = "infinite";
-        bat.style.left = `${-60}px`;
+        bat.style.left = `${-60}px`; // Start off-screen
         bat.style.top = `${startY}px`;
 
+        // Randomly choose direction
         if (Math.random() > 0.5) {
           bat.style.animationName = "flyToRight";
         } else {
           bat.style.animationName = "flyToLeft";
         }
 
+        // Restart animation when it ends
         bat.addEventListener("animationiteration", () => {
           bat.style.left = Math.random() > 0.5 ? `${-60}px` : `${window.innerWidth}px`;
           bat.style.top = `${Math.random() * window.innerHeight}px`;
@@ -1074,7 +1000,7 @@
         if (isSoundOn) {
           const dripSound = document.getElementById("drip-sound");
           if (dripSound) {
-            dripSound.currentTime = 0; 
+            dripSound.currentTime = 0; // Rewind to start
             dripSound.play().catch((e) => console.error("Drip sound play failed:", e));
           }
         }
@@ -1089,8 +1015,8 @@
 
       window.addEventListener("scroll", () => {
         const scrollPercentage = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-        mistOverlay.style.height = `${scrollPercentage * 100}vh`; 
-        mistOverlay.style.opacity = scrollPercentage * 0.7; 
+        mistOverlay.style.height = `${scrollPercentage * 100}vh`; // Adjust as needed
+        mistOverlay.style.opacity = scrollPercentage * 0.7; // Adjust opacity
       });
 
       // Mouse Glow Effect
@@ -1114,7 +1040,7 @@
       function updateDonorList() {
         const donorList = document.getElementById("donor-list");
         const noDonorsMessage = document.getElementById("no-donors-message");
-        donorList.innerHTML = ""; 
+        donorList.innerHTML = ""; // Clear existing list
 
         if (donors.length === 0) {
           noDonorsMessage.style.display = "block";
@@ -1162,10 +1088,11 @@
         donors.splice(index, 1);
         localStorage.setItem("transylvaniaDonors", JSON.stringify(donors));
 
+        // Decrease blood count in inventory
         if (bloodInventory[removedDonorGroup]) {
           bloodInventory[removedDonorGroup]--;
           if (bloodInventory[removedDonorGroup] < 0) {
-            bloodInventory[removedDonorGroup] = 0;
+            bloodInventory[removedDonorGroup] = 0; // Prevent negative
           }
           localStorage.setItem("bloodInventory", JSON.stringify(bloodInventory));
         }
@@ -1178,13 +1105,9 @@
         if (confirm("Are you sure you want to clear all registered donors and blood inventory? This action cannot be undone.")) {
           localStorage.removeItem("transylvaniaDonors");
           localStorage.removeItem("bloodInventory");
-          // Also clear the countdown
-          localStorage.removeItem("countdownTarget");
-          initializeCountdown(); // Reset the timer display
-
-          donors.length = 0; 
+          donors.length = 0; // Clear the array reference
           for (const group in bloodInventory) {
-            delete bloodInventory[group];
+            delete bloodInventory[group]; // Clear inventory object
           }
           updateDonorList();
           updateBloodInventory();
@@ -1194,23 +1117,24 @@
       // Function to simulate typing effect
       function typeWriterEffect(element, text, speed) {
         let i = 0;
-        element.textContent = ""; 
-        element.classList.add("typing-cursor");
+        element.textContent = ""; // Clear existing content
+        element.classList.add("typing-cursor"); // Add typing cursor
 
         function type() {
           if (i < text.length) {
             element.textContent += text.charAt(i);
             i++;
             if (isSoundOn) {
+              // Play typing sound only if it's not already playing or has finished
               if (typingSound.paused || typingSound.ended) {
-                typingSound.currentTime = 0; 
+                typingSound.currentTime = 0; // Rewind to start
                 typingSound.play().catch((e) => console.error("Typing sound play failed:", e));
               }
             }
             setTimeout(type, speed);
           } else {
-            element.classList.remove("typing-cursor"); 
-            if (typingSound) typingSound.pause();
+            element.classList.remove("typing-cursor"); // Remove cursor
+            if (typingSound) typingSound.pause(); // Stop typing sound when done
           }
         }
         type();
@@ -1223,13 +1147,14 @@
         const name = nameInput.value.trim();
         const group = groupSelect.value;
         const outputDiv = document.getElementById("output");
-        const letterSection = document.getElementById("letter"); 
+        const letterSection = document.getElementById("letter"); // Get the letter section
 
         if (name && group) {
           const newDonor = { name: name, group: group };
           donors.push(newDonor);
           localStorage.setItem("transylvaniaDonors", JSON.stringify(donors));
 
+          // Update blood inventory
           bloodInventory[group] = (bloodInventory[group] || 0) + 1;
           localStorage.setItem("bloodInventory", JSON.stringify(bloodInventory));
 
@@ -1250,12 +1175,14 @@ Count Vladislaus and The Transylvania Blood Network`;
 
           typeWriterEffect(outputDiv, letterContent, 50);
 
+          // Show confirmation box
           const confirmationBox = document.getElementById("donation-confirmation-box");
           confirmationBox.classList.add("show");
           setTimeout(() => {
             confirmationBox.classList.remove("show");
-          }, 5000); 
+          }, 5000); // Hide after 5 seconds
 
+          // Play chime sound
           if (isSoundOn) {
             if (chimeSound) {
               chimeSound.currentTime = 0;
@@ -1263,19 +1190,18 @@ Count Vladislaus and The Transylvania Blood Network`;
             }
           }
 
-          // ===== START COUNTDOWN ON FIRST DONATION =====
-          startCountdownOnFirstDonation();
-          // ===========================================
-
+          // Scroll to the letter section
           letterSection.scrollIntoView({ behavior: "smooth" });
 
+          // Clear input fields after submission
           nameInput.value = "";
-          groupSelect.value = "A+";
+          groupSelect.value = "A+"; // Reset to default
         } else {
           outputDiv.textContent = "Please enter your name and select your blood group to generate your letter.";
         }
       }
 
+      // Initial load for donor list and inventory
       updateDonorList();
       updateBloodInventory();
 
@@ -1301,7 +1227,7 @@ Count Vladislaus and The Transylvania Blood Network`;
         factOutput.textContent = fact;
         if (isSoundOn) {
           if (chimeSound) {
-            chimeSound.currentTime = 0; 
+            chimeSound.currentTime = 0; // Rewind to start
             chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
           }
         }
@@ -1324,7 +1250,7 @@ Count Vladislaus and The Transylvania Blood Network`;
         cravingOutput.textContent = bloodCravingCompatibility[cravingGroup] || "No specific craving known for this type.";
         if (isSoundOn) {
           if (chimeSound) {
-            chimeSound.currentTime = 0;
+            chimeSound.currentTime = 0; // Rewind to start
             chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
           }
         }
@@ -1344,7 +1270,7 @@ Count Vladislaus and The Transylvania Blood Network`;
       function createVlad() {
         if (!isGameRunning) return;
         const vlad = document.createElement("img");
-        vlad.src = "Vlad_Tepes_002.jpg";
+        vlad.src = "Vlad_Tepes_002.jpg"; // Your Vlad image
         vlad.className = "game-bat";
         gameArea.appendChild(vlad);
 
@@ -1361,18 +1287,19 @@ Count Vladislaus and The Transylvania Blood Network`;
           if (isGameRunning) {
             score++;
             scoreDisplay.textContent = `Score: ${score}`;
-            vlad.remove(); 
-            clearTimeout(batTimeout);
-            spawnNewVlad();
+            vlad.remove(); // Remove clicked Vlad
+            clearTimeout(batTimeout); // Clear timeout for current Vlad
+            spawnNewVlad(); // Immediately spawn a new one
           }
         });
 
+        // Remove Vlad if not clicked within a time (makes game harder)
         batTimeout = setTimeout(() => {
           if (vlad.parentNode === gameArea) {
             vlad.remove();
-            spawnNewVlad();
+            spawnNewVlad(); // Spawn a new one even if not clicked
           }
-        }, 1500 - (score * 10)); 
+        }, 1500 - (score * 10)); // Make it faster as score increases, min 500ms
       }
 
       function spawnNewVlad() {
@@ -1390,11 +1317,10 @@ Count Vladislaus and The Transylvania Blood Network`;
         timerDisplay.textContent = `Time: ${timeLeft}s`;
         isGameRunning = true;
         gameStartButton.disabled = true;
-        gameStartB
-utton.classList.add("disabled");
+        gameStartButton.classList.add("disabled");
 
-        gameArea.innerHTML = "";
-        createVlad();
+        gameArea.innerHTML = ""; // Clear any previous bats
+        createVlad(); // Create the first Vlad
 
         gameInterval = setInterval(() => {
           timeLeft--;
@@ -1410,15 +1336,14 @@ utton.classList.add("disabled");
               evilLaughSound.currentTime = 0;
               evilLaughSound.play().catch((e) => console.error("Evil laugh sound play failed:", e));
             }
-            clearTimeout(batTimeout);
+            clearTimeout(batTimeout); // Ensure no more bats spawn after game over
           }
         }, 1000);
       }
 
       gameStartButton.addEventListener("click", startGame);
 
-
-      // =========== START: NEW VAMPIRE QUIZ LOGIC ===========
+      // Vampire Quiz
       const quizQuestions = [
         {
           question: "Which of these is NOT a traditional way to ward off vampires?",
@@ -1447,170 +1372,119 @@ utton.classList.add("disabled");
         },
       ];
 
-      let currentQuestionIndex;
-      let quizScore;
-
       const quizContainer = document.getElementById("quiz-container");
-      const quizActionButton = document.getElementById("quiz-action-button");
-      const quizActionContainer = document.getElementById("quiz-action-container");
+      const submitQuizButton = document.getElementById("submit-quiz");
       const quizResultsDiv = document.getElementById("quiz-results");
-      const quizFeedbackDiv = document.getElementById("quiz-feedback");
 
-      function initializeQuiz() {
-          currentQuestionIndex = 0;
-          quizScore = 0;
-          quizResultsDiv.innerHTML = "";
-          quizFeedbackDiv.innerHTML = "";
-          quizActionContainer.innerHTML = `<button id="quiz-action-button">Next Question</button>`;
-          document.getElementById("quiz-action-button").addEventListener("click", handleQuizAction);
-          displayQuestion();
-      }
-      
-      function displayQuestion() {
-          const q = quizQuestions[currentQuestionIndex];
-          quizContainer.innerHTML = `
-              <div class="quiz-question-container">
-                  <p>${currentQuestionIndex + 1}. ${q.question}</p>
-                  <div class="quiz-options">
-                      ${q.options
-                          .map(
-                              (option, i) => `
-                              <label for="option${i}">
-                                  <input type="radio" id="option${i}" name="quizOption" value="${option}">
-                                  <span class="custom-radio"></span>${option}
-                              </label>
-                              `
-                          )
-                          .join("")}
-                  </div>
-              </div>
+      function loadQuiz() {
+        quizContainer.innerHTML = "";
+        quizQuestions.forEach((q, index) => {
+          const questionDiv = document.createElement("div");
+          questionDiv.className = "quiz-question";
+          questionDiv.innerHTML = `
+            <p>${index + 1}. ${q.question}</p>
+            <div class="quiz-options">
+              ${q.options
+                .map(
+                  (option) => `
+                <label>
+                  <input type="radio" name="question${index}" value="${option}">
+                  ${option}
+                </label>
+              `
+                )
+                .join("")}
+            </div>
           `;
-          quizFeedbackDiv.innerHTML = ""; // Clear feedback
-          const actionButton = document.getElementById("quiz-action-button");
-          if (currentQuestionIndex === quizQuestions.length - 1) {
-              actionButton.textContent = "Show Results";
-          } else {
-              actionButton.textContent = "Next Question";
-          }
+          quizContainer.appendChild(questionDiv);
+        });
       }
 
-      function handleQuizAction() {
-          const selectedOption = document.querySelector('input[name="quizOption"]:checked');
-          if (!selectedOption) {
-              quizFeedbackDiv.textContent = "Please select an answer!";
-              quizFeedbackDiv.style.color = "#ffcc00"; // Yellow for warning
-              return;
+      function submitQuiz() {
+        let score = 0;
+        quizQuestions.forEach((q, index) => {
+          const selectedOption = document.querySelector(
+            `input[name="question${index}"]:checked`
+          );
+          if (selectedOption && selectedOption.value === q.answer) {
+            score++;
           }
+        });
+        quizResultsDiv.textContent = `You scored ${score} out of ${quizQuestions.length}!`;
 
-          if (isSoundOn && chimeSound) {
-              chimeSound.currentTime = 0;
-              chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
+        if (isSoundOn) {
+          if (chimeSound) {
+            chimeSound.currentTime = 0;
+            chimeSound.play().catch((e) => console.error("Chime sound play failed:", e));
           }
-
-          if (selectedOption.value === quizQuestions[currentQuestionIndex].answer) {
-              quizScore++;
-              quizFeedbackDiv.textContent = "Correct!";
-              quizFeedbackDiv.style.color = "#00ff00"; // Green for correct
-          } else {
-              quizFeedbackDiv.textContent = "Wrong!";
-              quizFeedbackDiv.style.color = "#ff0000"; // Red for wrong
-          }
-          
-          // Disable options after answering
-          document.querySelectorAll('input[name="quizOption"]').forEach(input => input.disabled = true);
-
-
-          setTimeout(() => {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < quizQuestions.length) {
-                displayQuestion();
-            } else {
-                showQuizResults();
-            }
-          }, 1200); // Wait a moment before showing the next question
+        }
       }
 
-      function showQuizResults() {
-          quizContainer.innerHTML = "";
-          quizFeedbackDiv.innerHTML = "";
-          quizResultsDiv.innerHTML = `You scored ${quizScore} out of ${quizQuestions.length}!`;
-          quizActionContainer.innerHTML = `<button id="restart-quiz-button">Restart Quiz</button>`;
-          document.getElementById("restart-quiz-button").addEventListener("click", initializeQuiz);
-      }
-      // =========== END: NEW VAMPIRE QUIZ LOGIC ===========
+      submitQuizButton.addEventListener("click", submitQuiz);
 
+      // Load quiz on page load
+      loadQuiz();
 
-      // =========== START: NEW COUNTDOWN TIMER LOGIC ===========
+      // Countdown Timer
       const daysSpan = document.getElementById("days");
       const hoursSpan = document.getElementById("hours");
       const minutesSpan = document.getElementById("minutes");
       const secondsSpan = document.getElementById("seconds");
       const countdownMessage = document.getElementById("countdown-message");
-      let countdownInterval;
 
-      function initializeCountdown() {
-          clearInterval(countdownInterval); // Clear any existing interval
-          const targetTimestamp = localStorage.getItem("countdownTarget");
-          if (targetTimestamp) {
-              const targetDate = new Date(parseInt(targetTimestamp));
-              countdownMessage.textContent = "Your transformation is underway...";
-              countdownInterval = setInterval(() => updateCountdown(targetDate), 1000);
-          } else {
-              countdownMessage.textContent = "Register as a donor to begin your mystical transformation countdown...";
-              countdownMessage.classList.remove("countdown-finished");
-              daysSpan.textContent = "00";
-              hoursSpan.textContent = "00";
-              minutesSpan.textContent = "00";
-              secondsSpan.textContent = "00";
-          }
-      }
+      let targetDate = null; // This will be set when a donor registers
 
-      function updateCountdown(targetDate) {
-          const now = new Date().getTime();
-          const distance = targetDate - now;
-
-          if (distance < 0) {
-              clearInterval(countdownInterval);
-              countdownMessage.textContent = "Transformation Complete! Welcome to the eternal night.";
-              countdownMessage.classList.add("countdown-finished");
-              daysSpan.textContent = "00";
-              hoursSpan.textContent = "00";
-              minutesSpan.textContent = "00";
-              secondsSpan.textContent = "00";
-
-              if (isSoundOn && evilLaughSound) {
-                  evilLaughSound.currentTime = 0;
-                  evilLaughSound.play().catch((e) => console.error("Evil laugh sound play failed:", e));
-              }
-              return;
-          }
-
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-          daysSpan.textContent = String(days).padStart(2, '0');
-          hoursSpan.textContent = String(hours).padStart(2, '0');
-          minutesSpan.textContent = String(minutes).padStart(2, '0');
-          secondsSpan.textContent = String(seconds).padStart(2, '0');
-
-          countdownMessage.textContent = "Your transformation is underway...";
+      function updateCountdown() {
+        if (!targetDate) {
+          countdownMessage.textContent = "Register as a donor to begin your mystical transformation countdown...";
           countdownMessage.classList.remove("countdown-finished");
-      }
+          daysSpan.textContent = "00";
+          hoursSpan.textContent = "00";
+          minutesSpan.textContent = "00";
+          secondsSpan.textContent = "00";
+          return;
+        }
 
-      function startCountdownOnFirstDonation() {
-          // Start countdown only if it hasn't been started before
-          if (!localStorage.getItem("countdownTarget")) {
-              const now = new Date();
-              // Set a target date for 3 days from now
-              const targetDate = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000)); 
-              localStorage.setItem("countdownTarget", targetDate.getTime());
-              initializeCountdown(); // Initialize and start the countdown
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+          clearInterval(countdownInterval);
+          countdownMessage.textContent = "Transformation Complete! Welcome to the eternal night.";
+          countdownMessage.classList.add("countdown-finished");
+          daysSpan.textContent = "00";
+          hoursSpan.textContent = "00";
+          minutesSpan.textContent = "00";
+          secondsSpan.textContent = "00";
+
+          if (isSoundOn && evilLaughSound) {
+            evilLaughSound.currentTime = 0;
+            evilLaughSound.play().catch((e) => console.error("Evil laugh sound play failed:", e));
           }
-      }
-      // =========== END: NEW COUNTDOWN TIMER LOGIC ===========
+          return;
+        }
 
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        daysSpan.textContent = String(days).padStart(2, '0');
+        hoursSpan.textContent = String(hours).padStart(2, '0');
+        minutesSpan.textContent = String(minutes).padStart(2, '0');
+        secondsSpan.textContent = String(seconds).padStart(2, '0');
+
+        countdownMessage.textContent = "Register as a donor to begin your mystical transformation countdown...";
+        countdownMessage.classList.remove("countdown-finished");
+      }
+
+      function startDemoCountdown() {
+        // Set a target date, e.g., 3 days from now
+        const now = new Date();
+        targetDate = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from now
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      }
 
       // Contact Form Submission
       const contactForm = document.getElementById("contact-form");
@@ -1618,6 +1492,7 @@ utton.classList.add("disabled");
 
       contactForm.addEventListener("submit", function(e) {
         e.preventDefault();
+        // In a real application, you would send this data to a server
         console.log("Contact form submitted!");
         contactSuccessMessage.textContent = "Message sent! We'll be in touch... eventually.";
         contactSuccessMessage.style.display = "block";
