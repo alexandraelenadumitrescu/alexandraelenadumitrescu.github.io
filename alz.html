@@ -23,11 +23,11 @@
       <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-end">
         <label class="flex-1">
           <span class="text-sm text-slate-600">URL model TF.js</span>
-          <input id="modelUrl" class="mt-1 w-full px-3 py-2 rounded-xl border" value="https://huggingface.co/pucktada/alzheimer-detection/raw/main/tfjs/model.json" />
+          <input id="modelUrl" class="mt-1 w-full px-3 py-2 rounded-xl border" value="https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json" />
         </label>
         <label class="md:w-64">
           <span class="text-sm text-slate-600">Nume strat conv. pt. Grad‑CAM (opțional)</span>
-          <input id="lastConvName" class="mt-1 w-full px-3 py-2 rounded-xl border" value="" placeholder="block5_conv3" />
+          <input id="lastConvName" class="mt-1 w-full px-3 py-2 rounded-xl border" value="block_16_project_BN" placeholder="block5_conv3" />
         </label>
         <button id="loadBtn" class="px-4 py-2 rounded-2xl bg-slate-900 text-white disabled:opacity-50">Încarcă modelul</button>
       </div>
@@ -73,7 +73,7 @@
     const state = {
       model: null,
       inputSize: 224, // Ajustat dinamic după model
-      labels: ["NonDemented", "VeryMildDemented", "MildDemented", "ModerateDemented"],
+      labels: ["oameni", "animale", "obiecte"], 
       lastConvName: null,
       lastInput: null,
       lastPred: null,
