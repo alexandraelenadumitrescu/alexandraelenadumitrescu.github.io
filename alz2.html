@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Alzheimer Detector – Browser</title>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; }
+    canvas, img { border: 1px solid #ddd; border-radius: 8px; }
+    .card { padding: 16px; border: 1px solid #eee; border-radius: 12px; margin-top: 16px; }
+    .prob { font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Alzheimer Detector – Demo educațional</h1>
+  <p><strong>Notă:</strong> Nu înlocuiește consultul medical.</p>
+
+  <div class="card">
+    <input type="file" id="fileInput" accept="image/*">
+    <button id="runBtn">Predict</button>
+  </div>
+
+  <div class="card row" style="display:flex; gap:16px; margin-top:16px;">
+    <div>
+      <h3>Imagine</h3>
+      <img id="preview" width="224" height="224">
+    </div>
+    <div>
+      <h3>Canvas (preprocesare)</h3>
+      <canvas id="canvas" width="224" height="224"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="out"></div>
+  </div>
+
+  <script>
+    const LABELS = ["Mild_Demented","Moderate_Demented","Non_Demented","Very_Mild_Demented"];
+    const MEAN = [0.485,0.456,0.406];
+    const STD  = [0.229,0.224,0.225];
+
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const out = document.getElementById("out");
+    const runBtn = document.getElementById("runBtn");
+
+    let imageLoaded = false;
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.onload = () => {
+        ctx.clearRect(0,0,224,224);
+        ctx.drawImage(preview,0,0,224,224);
+        imageLoaded = true;
+      };
+    });
+
+    function softmax(arr) {
+      const max = Math.max(...arr);
+      const exps = arr.map(v=>Math.exp(v-max));
+      const sum = exps.reduce((a,b)=>a+b,0);
+      return exps.map(v=>v/sum);
+    }
+
+    function preprocess() {
+      const {data} = ctx.getImageData(0,0,224,224);
+      const chw = new Float32Array(1*3*224*224);
+      let idx=0;
+      const stride=224*224;
+      for(let y=0;y<224;y++){
+        for(let x=0;x<224;x++){
+          const p=(y*224+x)*4;
+          const r=data[p]/255, g=data[p+1]/255, b=data[p+2]/255;
+          chw[0*stride+idx]=(r-MEAN[0])/STD[0];
+          chw[1*stride+idx]=(g-MEAN[1])/STD[1];
+          chw[2*stride+idx]=(b-MEAN[2])/STD[2];
+          idx++;
+        }
+      }
+      return chw;
+    }
+
+    runBtn.addEventListener("click", async ()=>{
+      if(!imageLoaded){ out.textContent="Încarcă o imagine mai întâi."; return; }
+      const tensor = new ort.Tensor("float32", preprocess(), [1,3,224,224]);
+      let session;
+      try { session = await ort.InferenceSession.create("alzheimer.onnx",{executionProviders:["webgpu"]}); }
+      catch { try { session = await ort.InferenceSession.create("alzheimer.onnx",{executionProviders:["webgl"]}); }
+      catch { session = await ort.InferenceSession.create("alzheimer.onnx"); } }
+      const results = await session.run({input:tensor});
+      const logits = results.logits.data;
+      const probs = softmax(Array.from(logits));
+      const sorted = probs.map((p,i)=>({label:LABELS[i],p})).sort((a,b)=>b.p-a.p);
+      out.innerHTML=`<div><strong>Predicții:</strong></div>
+                     <ul>${sorted.map(s=>`<li class="prob">${s.label}: ${(s.p*100).toFixed(2)}%</li>`).join("")}</ul>`;
+    });
+  </script>
+</body>
+</html>
