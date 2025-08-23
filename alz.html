@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analiză CT Alzheimer – TensorFlow.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Canvas overlay helpers */
+    .overlay { position:absolute; top:0; left:0; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+  <main class="max-w-5xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold">Analiză poze CT pentru depistarea Alzheimer (demo educațional)</h1>
+      <p class="text-sm text-slate-600 mt-2">Această aplicație front‑end rulează <span class="font-mono">TensorFlow.js</span> local în browser. Folosiți un model antrenat & convertit la format TF.js (<span class="font-mono">model.json</span> + sharde). Nu este un dispozitiv medical.</p>
+    </header>
+
+        <section class="bg-white rounded-2xl shadow p-4 mb-6">
+      <h2 class="font-semibold mb-3">1) Încărcați modelul</h2>
+      <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-end">
+        <label class="flex-1">
+          <span class="text-sm text-slate-600">URL model TF.js</span>
+          <input id="modelUrl" class="mt-1 w-full px-3 py-2 rounded-xl border" value="https://huggingface.co/pucktada/alzheimer-detection/raw/main/tfjs/model.json" />
+        </label>
+        <label class="md:w-64">
+          <span class="text-sm text-slate-600">Nume strat conv. pt. Grad‑CAM (opțional)</span>
+          <input id="lastConvName" class="mt-1 w-full px-3 py-2 rounded-xl border" value="" placeholder="block5_conv3" />
+        </label>
+        <button id="loadBtn" class="px-4 py-2 rounded-2xl bg-slate-900 text-white disabled:opacity-50">Încarcă modelul</button>
+      </div>
+      <p id="modelStatus" class="text-sm mt-2"></p>
+    </section>
+
+        <section class="bg-white rounded-2xl shadow p-4 mb-6">
+      <h2 class="font-semibold mb-3">2) Încărcați imagine CT</h2>
+      <div class="flex flex-col md:flex-row gap-3 items-start">
+        <input id="fileInput" type="file" accept="image/*" class="file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-900 hover:file:bg-slate-200" />
+        <div class="flex items-center gap-2">
+          <label class="inline-flex items-center gap-2 text-sm"><input id="grayscaleToggle" type="checkbox" class="accent-slate-900" checked /> Convert la grayscale</label>
+          <label class="inline-flex items-center gap-2 text-sm"><input id="equalizeToggle" type="checkbox" class="accent-slate-900" /> Egalizează histograma (ușor)</label>
+          <label class="inline-flex items-center gap-2 text-sm"><input id="normalizeToggle" type="checkbox" class="accent-slate-900" checked /> Normalizează 0‑1</label>
+        </div>
+        <button id="predictBtn" class="px-4 py-2 rounded-2xl bg-indigo-600 text-white disabled:opacity-50">Rulează predicția</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">Dimensiunea implicită de intrare: 224×224. Ajustați în cod dacă modelul cere altceva.</p>
+    </section>
+
+        <section class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-3">3) Rezultate</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <div class="relative">
+            <canvas id="imageCanvas" class="rounded-xl border w-full"></canvas>
+            <canvas id="camCanvas" class="rounded-xl border overlay mix-blend-multiply hidden"></canvas>
+          </div>
+          <div class="flex items-center gap-3 mt-3">
+            <button id="toggleCam" class="px-3 py-1 rounded-xl border">Comută Grad‑CAM</button>
+            <span id="camNote" class="text-xs text-slate-500">Necesită un model cu straturi conv. și numele ultimului strat conv.</span>
+          </div>
+        </div>
+        <div>
+          <div id="predictions" class="space-y-2 text-sm"></div>
+          <div id="meta" class="text-xs text-slate-500 mt-4"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      model: null,
+      inputSize: 224, // Ajustat dinamic după model
+      labels: ["NonDemented", "VeryMildDemented", "MildDemented", "ModerateDemented"],
+      lastConvName: null,
+      lastInput: null,
+      lastPred: null,
+      camEnabled: false,
+    };
+
+    const els = {
+      modelUrl: document.getElementById('modelUrl'),
+      lastConvName: document.getElementById('lastConvName'),
+      loadBtn: document.getElementById('loadBtn'),
+      modelStatus: document.getElementById('modelStatus'),
+      fileInput: document.getElementById('fileInput'),
+      predictBtn: document.getElementById('predictBtn'),
+      imageCanvas: document.getElementById('imageCanvas'),
+      camCanvas: document.getElementById('camCanvas'),
+      toggleCam: document.getElementById('toggleCam'),
+      predictions: document.getElementById('predictions'),
+      meta: document.getElementById('meta'),
+      grayscaleToggle: document.getElementById('grayscaleToggle'),
+      equalizeToggle: document.getElementById('equalizeToggle'),
+      normalizeToggle: document.getElementById('normalizeToggle'),
+      camNote: document.getElementById('camNote'),
+    };
+
+    // UI handlers
+    els.loadBtn.onclick = async () => {
+      const url = (els.modelUrl.value || '').trim();
+      if (!url) {
+        toast("Introduceți un URL valid pentru model.json");
+        return;
+      }
+      try {
+        els.loadBtn.disabled = true;
+        els.modelStatus.textContent = 'Se încarcă modelul…';
+        // Încercăm ca LayersModel, apoi GraphModel
+        try {
+          state.model = await tf.loadLayersModel(url);
+        } catch (e) {
+          console.warn('Nu este LayersModel, încerc GraphModel', e);
+          state.model = await tf.loadGraphModel(url);
+        }
+        state.lastConvName = (els.lastConvName.value || '').trim() || null;
+        const inShape = state.model.inputs?.[0]?.shape || [];
+        const sizeFromModel = inShape?.[1] && inShape?.[2] ? inShape[1] : null;
+        if (sizeFromModel) state.inputSize = sizeFromModel;
+        els.modelStatus.textContent = `Model încărcat. Intrare: ${inShape}. Dimensiune: ${state.inputSize}×${state.inputSize}`;
+        els.predictBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        els.modelStatus.textContent = 'Eroare la încărcarea modelului. Verificați consola.';
+      } finally {
+        els.loadBtn.disabled = false;
+      }
+    };
+
+    els.fileInput.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => drawImageToCanvas(img);
+      img.src = URL.createObjectURL(file);
+    };
+
+    els.predictBtn.onclick = async () => {
+      if (!state.model) return toast('Încărcați mai întâi modelul');
+      const ctx = els.imageCanvas.getContext('2d');
+      if (!ctx.canvas.width) return toast('Încărcați o imagine');
+
+      const t = tf.tidy(() => preprocessFromCanvas(els.imageCanvas));
+      state.lastInput = t.clone();
+      const logits = state.model.predict(t);
+      const probs = (Array.isArray(logits) ? logits[0] : logits).softmax();
+      const data = await probs.data();
+      state.lastPred = data;
+      renderPredictions(data);
+      renderMeta();
+      probs.dispose();
+      tf.dispose(logits);
+      tf.dispose(t);
+
+      if (state.camEnabled) await runGradCAM();
+    };
+
+    els.toggleCam.onclick = async () => {
+      state.camEnabled = !state.camEnabled;
+      els.camCanvas.classList.toggle('hidden', !state.camEnabled);
+      if (state.camEnabled) {
+        await runGradCAM();
+      }
+    };
+
+    function drawImageToCanvas(img) {
+      const maxW = 900;
+      const scale = Math.min(maxW / img.width, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const can = els.imageCanvas; const ctx = can.getContext('2d');
+      can.width = w; can.height = h;
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+      // ajustăm overlay la aceleași dimensiuni
+      const oc = els.camCanvas; oc.width = w; oc.height = h; oc.style.width = w + 'px'; oc.style.height = h + 'px';
+    }
+
+    function preprocessFromCanvas(canvas) {
+      let t = tf.browser.fromPixels(canvas, 3);
+      // opțional: grayscale
+      if (els.grayscaleToggle.checked) {
+        t = rgbToGray3C(t);
+      }
+      // redimensionare la inputSize
+      t = tf.image.resizeBilinear(t, [state.inputSize, state.inputSize], true);
+      // opțional: egalizare simplă pe canalul Y (luma) aproximată
+      if (els.equalizeToggle.checked) {
+        t = equalizeApprox(t);
+      }
+      // normalizare
+      t = t.toFloat();
+      if (els.normalizeToggle.checked) {
+        t = t.div(255);
+      }
+      return t.expandDims(0);
+    }
+
+    function rgbToGray3C(t) {
+      // t: [H,W,3] -> luma -> duplicat pe 3 canale (modele pre-antrenate pe RGB)
+      const [r,g,b] = tf.split(t, 3, 2);
+      const y = r.mul(0.299).add(g.mul(0.587)).add(b.mul(0.114));
+      return tf.concat([y,y,y], 2);
+    }
+
+    function equalizeApprox(t) {
+      // Aproximare rapidă: stretch min-max per‑canal
+      const mins = t.min([0,1]);
+      const maxs = t.max([0,1]);
+      const range = maxs.sub(mins).add(1e-6);
+      return t.sub(mins).div(range).mul(255);
+    }
+
+    function renderPredictions(arr) {
+      const top = arr.map((p,i)=>({i,p,label: state.labels[i]||`Clasa ${i}`}))
+                     .sort((a,b)=>b.p-a.p);
+      els.predictions.innerHTML = top.map(x => {
+        const pct = (x.p*100).toFixed(2);
+        return `
+          <div>
+            <div class="flex justify-between"><span class="font-medium">${escapeHtml(x.label)}</span><span>${pct}%</span></div>
+            <div class="w-full bg-slate-100 rounded-xl h-2"><div class="h-2 bg-indigo-500 rounded-xl" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderMeta() {
+      const size = state.inputSize;
+      els.meta.textContent = `Intrare: ${size}×${size}×3 · Normalizare: ${els.normalizeToggle.checked?'0‑1':'0‑255'} · Grayscale: ${els.grayscaleToggle.checked?'da':'nu'} · Egalizare: ${els.equalizeToggle.checked?'da':'nu'}`;
+    }
+
+    function toast(msg) {
+      els.modelStatus.textContent = msg;
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>\"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+    }
+
+    async function runGradCAM() {
+      try {
+        if (!state.model || !state.lastInput) return;
+        const name = state.lastConvName;
+        if (!name) { toast('Introduceți numele ultimului strat conv pentru Grad‑CAM'); return; }
+
+        if (state.model instanceof tf.GraphModel) {
+          toast('Grad‑CAM pe GraphModel nu este suportat în demo');
+          return;
+        }
+
+        // layers model: construim sub‑model până la stratul conv selectat
+        const lastConv = state.model.getLayer(name);
+        const camModel = tf.model({
+          inputs: state.model.inputs,
+          outputs: [lastConv.output, state.model.outputs[0]]
+        });
+
+        const classIdx = argmax(state.lastPred || []) ?? 0;
+        const [cam, logits] = tf.tidy(() => {
+          return tf.grads((x) => {
+            const [convOut, preds] = camModel.apply(x, {training:false});
+            // indexăm logitul clasei țintă (înainte de softmax)
+            const y = preds.squeeze().gather([classIdx]).sum();
+            return y;
+          })([state.lastInput], 1);
+        });
+
+        // cam este gradientul w.r.t. input (nu dorim asta). Refacem corect:
+        // Implementare clasică Grad‑CAM: gradientul w.r.t. ultimul feature map
+        const camData = await tf.tidy(async () => {
+          const x = state.lastInput;
+          const tape = await tf.engine().startScope(), end = tf.engine().endScope;
+          // rulăm manual pentru a obține convOut & preds
+          const [convOut, preds] = camModel.apply(x, {training:false});
+          const y = preds.squeeze().gather([classIdx]).sum();
+          const grads = tf.grad(u => u.sum())(convOut.mul(y)); // aproximare simplă
+          // mediem pe axe spațiale -> weights
+          const weights = grads.mean([0,1,2]);
+          let camMap = convOut.mul(weights).sum(-1); // [1,h,w]
+          camMap = camMap.relu();
+          // redimensionare la canvas
+          camMap = camMap.squeeze();
+          camMap = tf.image.resizeBilinear(camMap.expandDims(-1), [els.camCanvas.height, els.camCanvas.width], true).squeeze();
+          // normalizare 0‑1
+          const min = camMap.min(), max = camMap.max();
+          camMap = camMap.sub(min).div(max.sub(min).add(1e-6));
+          const out = await camMap.data();
+          tf.dispose([convOut, preds, grads, camMap, min, max, weights]);
+          return out;
+        });
+
+        drawHeatmap(camData, els.camCanvas);
+        toast('Grad‑CAM generat');
+      } catch (err) {
+        console.warn('Grad‑CAM error', err);
+        toast('Nu s-a putut genera Grad‑CAM (verificați numele stratului).');
+      }
+    }
+
+    function argmax(arr){ if(!arr||!arr.length) return 0; let m=arr[0],i=0; for(let k=1;k<arr.length;k++){ if(arr[k]>m){m=arr[k];i=k;} } return i; }
+
+    function drawHeatmap(values, canvas) {
+      const w = canvas.width, h = canvas.height;
+      const ctx = canvas.getContext('2d');
+      const img = ctx.createImageData(w, h);
+      for (let i=0;i<w*h;i++) {
+        const v = values[i] || 0; // 0..1
+        // colormap simplu: v -> (r,g,b) (inferno‑like aproximat)
+        const r = Math.floor(255 * v);
+        const g = Math.floor(255 * Math.pow(v, 0.5));
+        const b = Math.floor(255 * Math.pow(1 - v, 2));
+        img.data[i*4+0] = r;
+        img.data[i*4+1] = g;
+        img.data[i*4+2] = b;
+        img.data[i*4+3] = Math.floor(255 * 0.45); // transparență
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+  </script>
+</body>
+</html>
