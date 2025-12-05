@@ -1,35 +1,398 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { Upload, Download, CheckCircle, AlertCircle, TrendingUp, Database, FileSpreadsheet, Settings } from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+const VATGapDataOptimizer = () => {
+  const [activeTab, setActiveTab] = useState('import');
+  const [data, setData] = useState(null);
+  const [validationResults, setValidationResults] = useState(null);
+  const [transformedData, setTransformedData] = useState(null);
+
+  const requiredVariables = {
+    dependent: {
+      name: 'vat_gap',
+      description: 'Gap-ul de TVA (% sau valoare absolută)',
+      formula: '(TVA Teoretică - TVA Colectată) / TVA Teoretică * 100'
+    },
+    independent: [
+      { name: 'gdp_growth', description: 'Creștere PIB (%)', type: 'macroeconomic' },
+      { name: 'unemployment_rate', description: 'Rata șomajului (%)', type: 'macroeconomic' },
+      { name: 'inflation_rate', description: 'Rata inflației (%)', type: 'macroeconomic' },
+      { name: 'shadow_economy', description: 'Economia subterană (% din PIB)', type: 'structural' },
+      { name: 'tax_compliance', description: 'Indice de conformare fiscală', type: 'institutional' },
+      { name: 'digitalization', description: 'Grad de digitalizare fiscală', type: 'institutional' },
+      { name: 'corruption_index', description: 'Indice de corupție', type: 'institutional' },
+      { name: 'vat_rate', description: 'Cotă standard TVA (%)', type: 'policy' }
+    ]
+  };
+
+  const dataQualityChecks = [
+    { id: 'missing', name: 'Valori lipsă', threshold: 5 },
+    { id: 'outliers', name: 'Valori extreme', threshold: 2 },
+    { id: 'stationarity', name: 'Staționaritate', required: true },
+    { id: 'multicollinearity', name: 'Multicolinearitate', threshold: 0.8 },
+    { id: 'temporal', name: 'Consistență temporală', required: true }
+  ];
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          // Simulare procesare CSV
+          const mockData = {
+            filename: file.name,
+            rows: 120,
+            columns: 15,
+            period: '2010-2024',
+            frequency: 'quarterly'
+          };
+          setData(mockData);
+          performValidation(mockData);
+        } catch (error) {
+          alert('Eroare la procesarea fișierului');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const performValidation = (inputData) => {
+    // Simulare validare date
+    const results = {
+      overall: 'good',
+      checks: [
+        { name: 'Valori lipsă', status: 'pass', details: '2.3% (sub pragul de 5%)' },
+        { name: 'Valori extreme', status: 'warning', details: '3 valori identificate' },
+        { name: 'Staționaritate', status: 'pass', details: 'Test ADF: p < 0.05' },
+        { name: 'Multicolinearitate', status: 'pass', details: 'VIF max: 4.2' },
+        { name: 'Consistență temporală', status: 'pass', details: 'Fără gaps temporale' }
+      ],
+      recommendations: [
+        'Înlocuiți valorile lipsă prin interpolare liniară',
+        'Verificați manual cele 3 valori extreme identificate',
+        'Dataset-ul este pregătit pentru modele ARIMA/VAR'
+      ]
+    };
+    setValidationResults(results);
+  };
+
+  const transformData = () => {
+    const transformed = {
+      standardization: 'Z-score normalization aplicată',
+      lagged_variables: ['vat_gap_lag1', 'gdp_growth_lag1', 'unemployment_lag1'],
+      differencing: 'Prima diferență pentru variabile non-staționare',
+      seasonal_adjustment: 'X-13 ARIMA-SEATS aplicat',
+      output_format: 'CSV optimizat pentru R/Python/Stata'
+    };
+    setTransformedData(transformed);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Database className="w-8 h-8 text-indigo-600" />
+            <h1 className="text-3xl font-bold text-gray-800">Optimizator Date Gap TVA</h1>
+          </div>
+          
+          <div className="flex gap-2 mb-6 border-b">
+            {['import', 'validate', 'transform', 'export'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 font-medium transition-colors ${
+                  activeTab === tab 
+                    ? 'text-indigo-600 border-b-2 border-indigo-600' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab === 'import' && 'Import Date'}
+                {tab === 'validate' && 'Validare'}
+                {tab === 'transform' && 'Transformare'}
+                {tab === 'export' && 'Export'}
+              </button>
+            ))}
+          </div>
 
-export default App
+          {activeTab === 'import' && (
+            <div className="space-y-6">
+              <div className="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded">
+                <h3 className="font-semibold text-indigo-900 mb-2">Variabile Necesare</h3>
+                <div className="space-y-2">
+                  <p className="text-sm text-indigo-800">
+                    <strong>Variabilă dependentă:</strong> {requiredVariables.dependent.name}
+                  </p>
+                  <p className="text-xs text-indigo-700">{requiredVariables.dependent.formula}</p>
+                  <div className="mt-3">
+                    <strong className="text-sm text-indigo-900">Variabile independente principale:</strong>
+                    <ul className="mt-2 grid grid-cols-2 gap-2">
+                      {requiredVariables.independent.slice(0, 8).map(v => (
+                        <li key={v.name} className="text-xs text-indigo-700">
+                          • {v.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <label className="cursor-pointer">
+                  <span className="text-indigo-600 font-medium hover:text-indigo-700">
+                    Încarcă fișier CSV/Excel
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+                <p className="text-sm text-gray-500 mt-2">sau trage și plasează aici</p>
+              </div>
+
+              {data && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                    <div>
+                      <h4 className="font-semibold text-green-900">Date încărcate cu succes</h4>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-green-800">
+                        <p>Fișier: {data.filename}</p>
+                        <p>Rânduri: {data.rows}</p>
+                        <p>Coloane: {data.columns}</p>
+                        <p>Perioadă: {data.period}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'validate' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-800">Raport Validare Date</h3>
+                {!validationResults && data && (
+                  <button
+                    onClick={() => performValidation(data)}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  >
+                    Rulează Validare
+                  </button>
+                )}
+              </div>
+
+              {validationResults ? (
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-lg border-l-4 ${
+                    validationResults.overall === 'good' 
+                      ? 'bg-green-50 border-green-500' 
+                      : 'bg-yellow-50 border-yellow-500'
+                  }`}>
+                    <h4 className="font-semibold mb-2">
+                      Status General: {validationResults.overall === 'good' ? 'Bun' : 'Necesită atenție'}
+                    </h4>
+                  </div>
+
+                  <div className="space-y-3">
+                    {validationResults.checks.map((check, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded">
+                        {check.status === 'pass' ? (
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                        ) : (
+                          <AlertCircle className="w-5 h-5 text-yellow-600 mt-1" />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-medium text-gray-900">{check.name}</h5>
+                          <p className="text-sm text-gray-600">{check.details}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 mb-2">Recomandări</h4>
+                    <ul className="space-y-1">
+                      {validationResults.recommendations.map((rec, idx) => (
+                        <li key={idx} className="text-sm text-blue-800">• {rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Settings className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>Încarcă date pentru a rula validarea</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'transform' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-800">Transformări Date</h3>
+                {validationResults && !transformedData && (
+                  <button
+                    onClick={transformData}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  >
+                    Aplică Transformări
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Standardizare</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Z-score normalization pentru toate variabilele</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Media = 0, Deviație standard = 1</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Variabile Lagged</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Lag 1-4 pentru variabila dependentă</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Lag 1-2 pentru variabile explicative</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Diferențiere</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Prima diferență pentru variabile cu trend</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Test de staționaritate post-diferențiere</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Ajustare Sezonieră</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>X-13 ARIMA-SEATS pentru date trimestriale</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-indigo-600">✓</span>
+                      <span>Elimină efecte sezoniere recurente</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {transformedData && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                    <div>
+                      <h4 className="font-semibold text-green-900">Transformări aplicate cu succes</h4>
+                      <p className="text-sm text-green-800 mt-1">
+                        Dataset-ul este optimizat pentru modele econometrice (ARIMA, VAR, ECM, Panel Data)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'export' && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Export Date Procesate</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-600 hover:bg-indigo-50 transition-colors">
+                  <FileSpreadsheet className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+                  <p className="font-medium text-gray-900">CSV pentru R/Python</p>
+                  <p className="text-xs text-gray-500 mt-1">Format optimizat pentru pandas/tidyverse</p>
+                </button>
+
+                <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-600 hover:bg-indigo-50 transition-colors">
+                  <FileSpreadsheet className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+                  <p className="font-medium text-gray-900">DTA pentru Stata</p>
+                  <p className="text-xs text-gray-500 mt-1">Format Stata 14+</p>
+                </button>
+
+                <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-600 hover:bg-indigo-50 transition-colors">
+                  <FileSpreadsheet className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+                  <p className="font-medium text-gray-900">Excel cu Metadata</p>
+                  <p className="text-xs text-gray-500 mt-1">Include dicționar variabile</p>
+                </button>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 mb-3">Conținut Export</h4>
+                <ul className="space-y-1 text-sm text-blue-800">
+                  <li>• Date transformate și standardizate</li>
+                  <li>• Variabile lagged generate automat</li>
+                  <li>• Metadata: surse, transformări aplicate, periodicitate</li>
+                  <li>• Raport de calitate a datelor</li>
+                  <li>• Cod exemplu pentru model (R/Python/Stata)</li>
+                </ul>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-semibold text-yellow-900 mb-2">Recomandări Modelare</h4>
+                <div className="space-y-2 text-sm text-yellow-800">
+                  <p><strong>Pentru date time-series:</strong> ARIMA, VAR, ECM (Error Correction Model)</p>
+                  <p><strong>Pentru date panel:</strong> Fixed Effects, Random Effects, GMM</p>
+                  <p><strong>Pentru relații non-liniare:</strong> GAM (Generalized Additive Models)</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Specificații Tehnice Gap TVA</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Formula Gap TVA</h4>
+              <p className="text-gray-700 font-mono bg-gray-50 p-2 rounded">
+                Gap = (VTTL - VATCol) / VTTL × 100
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                VTTL = TVA Teoretică din Liabilities, VATCol = TVA Colectată
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Frecvență Recomandată</h4>
+              <p className="text-gray-700">Trimestrială sau anuală</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Minimizează zgomotul statistic și permite identificarea trendurilor
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default VATGapDataOptimizer;
