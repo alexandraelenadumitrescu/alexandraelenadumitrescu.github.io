@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VAT GAP 2025 - Persistent Session</title>
+    <title>VAT GAP 2025 - Rich Notes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
@@ -154,7 +154,7 @@
             top: 20px;
             right: 20px;
             bottom: 20px;
-            width: 450px;
+            width: 500px; /* Lățit puțin pentru imagini */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 24px;
@@ -188,24 +188,47 @@
             line-height: 1.6;
             color: #334155;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            max-height: 200px;
+            overflow-y: auto;
         }
 
-        textarea {
+        /* --- MODIFICAT PENTRU IMAGINI (Rich Text) --- */
+        #user-notes {
             width: 100%;
             flex-grow: 1;
             padding: 20px;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            resize: none;
             font-family: 'Inter', sans-serif;
             background: #f8fafc;
             outline: none;
             transition: all 0.2s;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Păstrează formatarea */
+            box-sizing: border-box;
         }
-        textarea:focus {
+
+        #user-notes:focus {
             border-color: var(--accent-color);
             background: #fff;
             box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        
+        /* Stilizare pentru imaginile din notițe */
+        #user-notes img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        /* Placeholder trick pentru div contenteditable */
+        #user-notes:empty:before {
+            content: attr(placeholder);
+            color: #94a3b8;
+            pointer-events: none;
         }
 
         .overlay {
@@ -398,9 +421,12 @@ flowchart TD
             <h2 id="drawer-title" style="margin:0; font-weight:700; color:#1e293b;">Detalii Pas</h2>
             <button onclick="closeDrawer()" style="background:none; border:none; cursor:pointer; font-size:1.5rem; color:#64748b;">&times;</button>
         </div>
+        
         <div class="step-content" id="node-text"></div>
-        <label style="font-size:0.85rem; font-weight:600; color:#64748b; margin-bottom:10px; display:block; text-transform:uppercase; letter-spacing:0.5px;">Notele Tale (Auto-Saved)</label>
-        <textarea id="user-notes" placeholder="Scrie idei, link-uri sau observații aici..."></textarea>
+        
+        <label style="font-size:0.85rem; font-weight:600; color:#64748b; margin-bottom:10px; display:block; text-transform:uppercase; letter-spacing:0.5px;">Notele Tale (Text + Imagini)</label>
+        
+        <div id="user-notes" contenteditable="true" placeholder="Scrie idei sau dă Paste (Ctrl+V) la imagini aici..."></div>
     </div>
 
     <script>
@@ -408,7 +434,7 @@ flowchart TD
 
         // --- CORE ENGINE ---
         let state = {
-            scale: 1.5, // Scara inițială crescută
+            scale: 1.5,
             x: 0,
             y: 0,
             panning: false,
@@ -423,16 +449,21 @@ flowchart TD
         const STORAGE_KEY_COMPLETED = "vatgap_completed_nodes";
         const STORAGE_KEY_NOTES = "vatgap_user_notes";
         
-        let notesStorage = {}; // Will load from LS
+        let notesStorage = {};
 
         function loadPersistence() {
             // 1. Load Notes
             const savedNotes = localStorage.getItem(STORAGE_KEY_NOTES);
             if (savedNotes) {
-                notesStorage = JSON.parse(savedNotes);
+                try {
+                    notesStorage = JSON.parse(savedNotes);
+                } catch(e) {
+                    console.error("Error loading notes", e);
+                    notesStorage = {};
+                }
             }
 
-            // 2. Load Completed State (Green nodes)
+            // 2. Load Completed State
             const savedCompleted = localStorage.getItem(STORAGE_KEY_COMPLETED);
             if (savedCompleted) {
                 const ids = JSON.parse(savedCompleted);
@@ -453,7 +484,7 @@ flowchart TD
         }
 
         function clearAllData() {
-            if(confirm("Ești sigur că vrei să ștergi tot progresul și notițele?")) {
+            if(confirm("Ești sigur că vrei să ștergi tot progresul și notițele (inclusiv imaginile)?")) {
                 localStorage.removeItem(STORAGE_KEY_COMPLETED);
                 localStorage.removeItem(STORAGE_KEY_NOTES);
                 location.reload();
@@ -469,17 +500,9 @@ flowchart TD
             const nodeA = document.querySelector('g[id^="flowchart-A-"]');
             if (nodeA) {
                 const nodeBox = nodeA.getBBox();
-                
-                // --- AICI ESTE SCHIMBAREA MAJORĂ ---
-                state.scale = 20; // Era 0.9, acum e 1.5 pentru ZOOM IN
-                // -----------------------------------
-
-                const screenW = window.innerWidth;
-                const scaledNodeX = (nodeBox.x + nodeBox.width / 2) * state.scale;
-                //state.x = (screenW / 2) - scaledNodeX;
-                state.x=430;
-                //state.y = 100 - (nodeBox.y * state.scale); 
-                state.y=185;
+                state.scale = 20; 
+                state.x = 430;
+                state.y = 185;
                 updateTransform();
             } else {
                 setTimeout(centerNodeA, 100);
@@ -494,7 +517,7 @@ flowchart TD
                 clearInterval(initInterval);
                 setTimeout(() => {
                     centerNodeA();
-                    loadPersistence(); // LOAD DATA AFTER RENDER
+                    loadPersistence(); 
                 }, 300);
             }
             if(++attempts > 50) clearInterval(initInterval);
@@ -509,7 +532,6 @@ flowchart TD
             const factor = 1.1;
             (delta > 0) ? (state.scale *= factor) : (state.scale /= factor);
             if(state.scale < 0.1) state.scale = 0.1;
-            //if(state.scale > 5) state.scale = 5;
             state.x = e.clientX - xs * state.scale;
             state.y = e.clientY - ys * state.scale;
             updateTransform();
@@ -563,7 +585,7 @@ flowchart TD
             const nodeElement = e.target.closest('.node');
             if (nodeElement) {
                 nodeElement.classList.toggle('completed');
-                saveCompletedState(); // SAVE ON CLICK
+                saveCompletedState(); 
             }
         }
 
@@ -583,11 +605,12 @@ flowchart TD
         const noteArea = document.getElementById('user-notes');
         let currentId = null;
 
-        // Save note on input
+        // --- NEW SAVE LOGIC FOR RICH TEXT ---
         noteArea.addEventListener('input', () => {
             if(currentId) {
-                notesStorage[currentId] = noteArea.value;
-                saveNotesState(); // SAVE ON TYPING
+                // Save innerHTML instead of value to keep images
+                notesStorage[currentId] = noteArea.innerHTML;
+                saveNotesState(); 
             }
         });
 
@@ -596,7 +619,10 @@ flowchart TD
             let cleanId = id.split('-')[1] || "Info";
             title.textContent = "Pasul: " + cleanId;
             contentDiv.innerHTML = content.replace(/\n/g, "<br>");
-            noteArea.value = notesStorage[id] || "";
+            
+            // Load innerHTML
+            noteArea.innerHTML = notesStorage[id] || "";
+            
             drawer.classList.add('open');
             overlay.classList.add('active');
         }
