@@ -1,88 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VAT GAP 2023 - Interactive Workflow</title>
+    <title>VAT GAP 2023 - Infinite Canvas (Custom Engine)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        body, html {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
-            overflow-x: hidden;
+            user-select: none; /* Previne selectarea textului când tragi de hartă */
         }
 
-        h1 {
-            text-align: center;
-            color: #333;
+        /* Containerul care ascunde ce iese din ecran */
+        #scene {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            cursor: grab;
+            position: relative;
         }
 
-        .instructions {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #666;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+        #scene:active {
+            cursor: grabbing;
         }
 
-        /* Container for the graph */
-        .mermaid-container {
-            display: flex;
-            justify-content: center;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        /* Canvas-ul care se va mișca și scala */
+        #canvas {
+            transform-origin: 0 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Tranziție fină doar la zoom, nu la drag, pentru performanță */
+            transition: transform 0.05s linear; 
         }
 
-        /* --- INTERACTIVITY STYLES --- */
-        
-        /* Cursor pointer for nodes */
+        /* --- STILURI NODURI --- */
         g.node {
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        /* Completed State (Green) */
-        /* We target the shapes inside the node (rect, polygon, circle) */
+        /* Stare completată (Verde) */
         g.node.completed > :is(rect, circle, polygon, path) {
-            fill: #4caf50 !important; /* Green */
-            stroke: #2e7d32 !important; /* Dark Green Border */
+            fill: #4caf50 !important;
+            stroke: #2e7d32 !important;
             stroke-width: 3px !important;
         }
-
-        /* Change text color in completed nodes if needed */
         g.node.completed .nodeLabel {
             font-weight: bold; 
+            color: white !important;
         }
 
-        /* --- DRAWER / POST-IT STYLES --- */
+        /* --- SERTAR / POST-IT --- */
         #drawer {
             position: fixed;
             top: 0;
-            right: -400px; /* Hidden by default */
-            width: 350px;
+            right: -400px;
+            width: 400px;
             height: 100vh;
-            background: #fff9c4; /* Post-it Yellow */
+            background: #fff9c4;
             box-shadow: -5px 0 15px rgba(0,0,0,0.2);
             transition: right 0.3s ease-in-out;
             z-index: 1000;
-            padding: 20px;
+            padding: 25px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
         }
 
-        #drawer.open {
-            right: 0;
-        }
+        #drawer.open { right: 0; }
 
         .drawer-header {
             display: flex;
@@ -93,42 +85,22 @@
             margin-bottom: 20px;
         }
 
-        .drawer-header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: #555;
-        }
-
         .close-btn {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 2rem;
             cursor: pointer;
-            color: #555;
-        }
-
-        .drawer-content {
-            flex-grow: 1;
-        }
-
-        .node-content-display {
-            background: rgba(255,255,255,0.5);
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            color: #333;
         }
 
         textarea {
             width: 100%;
-            height: 200px;
+            flex-grow: 1;
             padding: 10px;
             border: 1px solid #dcdcdc;
             border-radius: 5px;
+            resize: none;
             font-family: inherit;
-            resize: vertical;
-            background: #fff;
+            background: rgba(255,255,255,0.7);
         }
 
         .overlay {
@@ -141,157 +113,139 @@
             display: none;
             z-index: 999;
         }
+        .overlay.active { display: block; }
 
-        .overlay.active {
-            display: block;
+        /* Controale Zoom Manual */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
         }
+        .btn {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+        .btn:hover { background: #eee; }
 
     </style>
 </head>
 <body>
 
-    <h1>Research Workflow: VAT GAP 2023</h1>
-    
-    <div class="instructions">
-        <strong>👆 Single Click:</strong> Mark as Completed (Green)<br>
-        <strong>✌️ Double Click:</strong> Open Notes / Details
+    <div class="controls">
+        <button class="btn" onclick="resetView()">Reset View</button>
+        <button class="btn" onclick="zoomCenter(1.2)">+</button>
+        <button class="btn" onclick="zoomCenter(0.8)">-</button>
     </div>
 
-    <div class="mermaid-container">
-        <div class="mermaid">
+    <div id="scene">
+        <div id="canvas">
+            <div class="mermaid">
 graph TD
     A[TEMA: GAP TVA 2023 în UE] --> B[1. FUNDAMENTARE TEORETICĂ]
-    
     B --> B1[Caută 5-10 articole recente<br/>2020-2025 despre:]
     B1 --> B1a[• VAT gap determinants]
     B1 --> B1b[• Shadow economy & tax evasion]
     B1 --> B1c[• Digitalization impact on tax compliance]
     B1 --> B1d[• EU tax administration efficiency]
-    
     B1 --> C[2. COLECTARE & PREGĂTIRE DATE]
-    
     C --> C1[Variabila DEPENDENTĂ:<br/>VAT_GAP_2023]
     C --> C2[Variabile INDEPENDENTE]
-    
     C2 --> C2a[SHADOW_ECONOMY<br/>% din PIB - 2023]
     C2 --> C2b[DIGI_DUMMY<br/>digitalizare timpurie]
     C2 --> C2c[Alte variabile de control]
-    
     C2c --> C2c1[• GDP_per_capita]
     C2c --> C2c2[• Tax_administration_quality]
     C2c --> C2c3[• Corruption_index]
     C2c --> C2c4[• Digital_infrastructure]
-    
     C --> D[3. EXPLORATORY DATA ANALYSIS]
-    
     D --> D1[Statistici descriptive<br/>mean, sd, min, max, skewness]
     D --> D2[Vizualizări]
     D --> D3[Matrice de corelații]
-    
     D2 --> D2a[• Histograme pentru distribuții]
     D2 --> D2b[• Scatter plots VAT_GAP vs predictori]
     D2 --> D2c[• Boxplots pe grup DIGI_DUMMY]
-    
     D --> E[4. ÎMPĂRȚIRE TRAIN/TEST]
     E --> E1[70-80% TRAIN<br/>20-30% TEST]
-    
     E --> F[5. MODELUL DE BAZĂ - OLS]
-    
     F --> F1[VAT_GAP = β0 + β1·SHADOW_ECONOMY<br/>+ β2·DIGI_DUMMY + β3·CONTROLS + ε]
-    
     F1 --> G[6. VALIDĂRI OBLIGATORII]
-    
     G --> G1[A. SEMNIFICAȚIE STATISTICĂ]
     G1 --> G1a[t-test pentru fiecare β<br/>✓ p-value < 0.05 sau 0.10]
     G1 --> G1b[F-test global<br/>✓ modelul e semnificativ]
-    
     G --> G2[B. BONITATEA MODELULUI]
     G2 --> G2a[R² și R²_adjusted<br/>✓ cât din variație explică]
     G2 --> G2b[AIC / BIC<br/>✓ pentru comparații]
-    
     G --> G3[C. IPOTEZE CLASICE OLS]
-    
     G3 --> H1[TEST 1: NORMALITATE]
     H1 --> H1a[Shapiro-Wilk test pe reziduuri]
     H1 --> H1b[Q-Q plot vizual]
     H1 --> H1c[⚠️ Dacă RESPINS: n mare salvează<br/>prin CLT, altfel transformări]
-    
     G3 --> H2[TEST 2: HOMOSCEDASTICITATE]
     H2 --> H2a[Breusch-Pagan test]
     H2 --> H2b[White test]
     H2 --> H2c[Plot reziduuri vs fitted]
     H2 --> H2d[⚠️ Dacă RESPINS:<br/>Corecție HC robust std errors]
-    
     G3 --> H3[TEST 3: MULTICOLINIARITATE]
     H3 --> H3a[VIF pentru fiecare predictor]
     H3 --> H3b[✓ VIF < 5 OK<br/>⚠️ VIF > 10 PROBLEMĂ]
     H3 --> H3c[Dacă problemă:<br/>elimină variabile corelate<br/>sau centrează datele]
-    
     G3 --> H4[TEST 4: OUTLIERI & INFLUENȚĂ]
     H4 --> H4a[Cook's Distance > 1]
     H4 --> H4b[Leverage > 2k/n]
     H4 --> H4c[Studentized residuals]
     H4 --> H4d[⚠️ Dacă detectat:<br/>investighează & eventual exclude]
-    
     G3 --> H5[TEST 5: SPECIFICAȚIE]
     H5 --> H5a[Ramsey RESET test]
     H5 --> H5b[⚠️ Dacă RESPINS:<br/>adaugă termeni pătrați/<br/>forme funcționale]
-    
     H1 --> I[7. MODEL ÎMBUNĂTĂȚIT]
     H2 --> I
     H3 --> I
     H4 --> I
     H5 --> I
-    
     I --> I1[FORME FUNCȚIONALE alternative]
     I1 --> I1a[Log-log: log VAT_GAP ~ log SHADOW]
     I1 --> I1b[Semi-log: VAT_GAP ~ log SHADOW]
     I1 --> I1c[Polinomială: + SHADOW²]
-    
     I --> I2[INTERACȚIUNI]
     I2 --> I2a[SHADOW × DIGI_DUMMY<br/>efectul digitalizării modifică<br/>impactul economiei subterane?]
-    
     I --> I3[Compară modele cu AIC/BIC<br/>Alege modelul optim]
-    
     I3 --> J[8. EVALUARE OUT-OF-SAMPLE]
-    
     J --> J1[Predict pe TEST set]
     J --> J2[Calculează metrici:]
     J2 --> J2a[• RMSE - Root Mean Squared Error]
     J2 --> J2b[• MAE - Mean Absolute Error]
     J2 --> J2c[• MAPE - Mean Absolute % Error]
     J2 --> J2d[• R² pe test]
-    
     J --> K[9. REGULARIZARE & ML]
-    
     K --> K1[Ridge α > 0]
     K --> K2[Lasso α > 0]
     K --> K3[Elastic Net]
     K --> K4[Cross-validation pentru α optim]
-    
     K --> K5[Compară:<br/>OLS vs Ridge vs Lasso]
     K5 --> K5a[Acuratețe predictivă RMSE/MAE]
     K5 --> K5b[Interpretabilitate coeficienți]
-    
     K --> L[10. OPȚIONAL: ML AVANSAT]
     L --> L1[Random Forest]
     L --> L2[Gradient Boosting]
     L --> L3[SVR]
-    
     L --> M[11. SCENARIU PROGNOZĂ]
-    
     M --> M1[Pe modelul optim validat]
     M --> M2[Scenarii ipotetic:]
     M2 --> M2a[Ce se întâmplă dacă<br/>shadow economy scade cu 10%?]
     M2 --> M2b[Impact digitalizare în țări<br/>fără DIGI_DUMMY=1]
-    
     M --> N[12. INTERPRETARE & DISCUȚII]
-    
     N --> N1[Validare cu literatură]
     N --> N2[Convergențe OLS vs ML]
     N --> N3[Limitări studiu]
     N --> N4[Direcții viitoare]
-    
     style A fill:#e1f5ff,stroke:#333,stroke-width:2px
     style G3 fill:#fff4e1
     style H1c fill:#ffe1e1
@@ -301,113 +255,192 @@ graph TD
     style H5b fill:#ffe1e1
     style I3 fill:#e1ffe1
     style K5 fill:#f0e1ff
+            </div>
         </div>
     </div>
 
     <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
-
     <div id="drawer">
         <div class="drawer-header">
-            <h2 id="drawer-title">Node ID</h2>
+            <h2 id="drawer-title">Details</h2>
             <button class="close-btn" onclick="closeDrawer()">&times;</button>
         </div>
-        <div class="drawer-content">
-            <div id="node-text" class="node-content-display">
-                </div>
-            <label for="user-notes" style="font-size: 0.9em; color: #777;">My Notes:</label>
-            <textarea id="user-notes" placeholder="Write your observation regarding this step here..."></textarea>
-        </div>
+        <div id="node-text" style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #eee; font-weight:bold; color:#444;"></div>
+        <label style="font-size: 0.9em; color: #777;">Note personale:</label>
+        <textarea id="user-notes" placeholder="Scrie aici..."></textarea>
     </div>
 
     <script>
-        // Initialize Mermaid
-        mermaid.initialize({ 
-            startOnLoad: true,
-            securityLevel: 'loose', // Needed for HTML parsing in nodes
-            flowchart: { htmlLabels: true }
-        });
+        // Initializare Mermaid
+        mermaid.initialize({ startOnLoad: true });
 
-        // Wait for mermaid to render the graph, then attach listeners
-        // Since startOnLoad is true, we use a slight delay or MutationObserver. 
-        // A simple interval check is robust for copy-paste solutions.
+        // --- CUSTOM PAN & ZOOM ENGINE (Fără librării) ---
+        const scene = document.getElementById('scene');
+        const canvas = document.getElementById('canvas');
         
-        let attempts = 0;
-        const initInterval = setInterval(() => {
-            const nodes = document.querySelectorAll('.node');
-            if (nodes.length > 0) {
-                clearInterval(initInterval);
-                attachListeners(nodes);
-            }
-            attempts++;
-            if(attempts > 50) clearInterval(initInterval); // Stop after 5s if fail
-        }, 100);
+        // Stare globală transformare
+        let state = {
+            scale: 1,
+            panning: false,
+            pointX: 0,
+            pointY: 0,
+            startX: 0,
+            startY: 0,
+            cssScale: 1 // Zoom initial
+        };
 
-        function attachListeners(nodes) {
-            nodes.forEach(node => {
-                // 1. Single Click: Toggle 'completed' class
-                node.addEventListener('click', (e) => {
-                    // Toggle the class
-                    node.classList.toggle('completed');
-                });
-
-                // 2. Double Click: Open Drawer
-                node.addEventListener('dblclick', (e) => {
-                    e.stopPropagation(); // Stop bubbling
-                    const nodeId = node.id;
-                    
-                    // Mermaid text extraction is tricky because of HTML labels.
-                    // We try to grab the text content of the label div/span.
-                    let content = "";
-                    const label = node.querySelector('.nodeLabel');
-                    if(label) content = label.innerText;
-
-                    openDrawer(nodeId, content);
-                });
-            });
+        // Aplica transformarea CSS
+        function setTransform() {
+            canvas.style.transform = `translate(${state.pointX}px, ${state.pointY}px) scale(${state.scale})`;
         }
 
-        // Drawer Logic
+        // 1. ZOOM pe Scroll
+        scene.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const xs = (e.clientX - state.pointX) / state.scale;
+            const ys = (e.clientY - state.pointY) / state.scale;
+            
+            const delta = -e.deltaY;
+            
+            // Factor de zoom
+            (delta > 0) ? (state.scale *= 1.1) : (state.scale /= 1.1);
+            
+            // Limite zoom
+            if(state.scale < 0.1) state.scale = 0.1;
+            if(state.scale > 10) state.scale = 10;
+
+            state.pointX = e.clientX - xs * state.scale;
+            state.pointY = e.clientY - ys * state.scale;
+
+            setTransform();
+        });
+
+        // 2. PAN (Drag and Drop)
+        let isDragging = false;
+        let dragStartTime = 0;
+
+        scene.addEventListener('mousedown', (e) => {
+            // Dacă dăm click pe overlay sau drawer, ignorăm
+            if(e.target.closest('#drawer') || e.target.closest('.overlay')) return;
+
+            state.panning = true;
+            state.startX = e.clientX - state.pointX;
+            state.startY = e.clientY - state.pointY;
+            isDragging = false;
+            dragStartTime = Date.now();
+            canvas.style.transition = 'none'; // Dezactivăm tranziția în timpul tragerii
+        });
+
+        scene.addEventListener('mousemove', (e) => {
+            if (!state.panning) return;
+            e.preventDefault();
+            state.pointX = e.clientX - state.startX;
+            state.pointY = e.clientY - state.startY;
+            setTransform();
+            isDragging = true; // Dacă mișcăm mouse-ul, e drag, nu click
+        });
+
+        scene.addEventListener('mouseup', (e) => {
+            state.panning = false;
+            canvas.style.transition = 'transform 0.05s linear'; // Reactivăm tranziția
+            
+            // Logică diferențiere Click vs Drag
+            // Dacă timpul a fost scurt și nu s-a mișcat mult, e CLICK
+            const timeDiff = Date.now() - dragStartTime;
+            if (timeDiff < 200 && !isDragging) {
+                handleNodeClick(e);
+            }
+        });
+
+        // 3. Logică Click pe Noduri (Manuală)
+        function handleNodeClick(e) {
+            // Căutăm cel mai apropiat părinte care este nod mermaid
+            const nodeElement = e.target.closest('.node');
+            
+            if (nodeElement) {
+                // SINGLE CLICK: Toggle verde
+                nodeElement.classList.toggle('completed');
+            }
+        }
+
+        // 4. Logică Double Click
+        scene.addEventListener('dblclick', (e) => {
+            const nodeElement = e.target.closest('.node');
+            if (nodeElement) {
+                const nodeId = nodeElement.id;
+                // Extragem text
+                let content = "";
+                // Mermaid randează textul diferit, uneori în foreignObject div, alteori span
+                const label = nodeElement.querySelector('.nodeLabel') || nodeElement;
+                content = label.innerText;
+                
+                openDrawer(nodeId, content);
+            }
+        });
+
+        // Funcții Helper Zoom
+        function zoomCenter(factor) {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            const xs = (centerX - state.pointX) / state.scale;
+            const ys = (centerY - state.pointY) / state.scale;
+
+            state.scale *= factor;
+            
+            state.pointX = centerX - xs * state.scale;
+            state.pointY = centerY - ys * state.scale;
+            setTransform();
+        }
+
+        function resetView() {
+            state.scale = 1;
+            state.pointX = 0;
+            state.pointY = 0;
+            setTransform();
+        }
+
+        // Logică Sertar
         const drawer = document.getElementById('drawer');
         const overlay = document.getElementById('overlay');
         const drawerTitle = document.getElementById('drawer-title');
         const nodeTextDisplay = document.getElementById('node-text');
         const noteArea = document.getElementById('user-notes');
-
-        // Simple in-memory storage for notes during the session
         const notesStorage = {}; 
-
         let currentActiveNodeId = null;
 
         function openDrawer(id, content) {
-            // Save previous note if switching
-            if(currentActiveNodeId) {
-                notesStorage[currentActiveNodeId] = noteArea.value;
-            }
-
+            if(currentActiveNodeId) notesStorage[currentActiveNodeId] = noteArea.value;
             currentActiveNodeId = id;
             
-            // Clean up ID for display (remove mermaid generated junk)
             const cleanId = id.split('-')[1] || id; 
-
-            drawerTitle.textContent = "Step: " + cleanId;
+            drawerTitle.textContent = "Pasul: " + cleanId;
             nodeTextDisplay.innerText = content;
-            
-            // Load existing note or empty
             noteArea.value = notesStorage[id] || "";
-
+            
             drawer.classList.add('open');
             overlay.classList.add('active');
         }
 
         function closeDrawer() {
-            // Save current note before closing
-            if(currentActiveNodeId) {
-                notesStorage[currentActiveNodeId] = noteArea.value;
-            }
+            if(currentActiveNodeId) notesStorage[currentActiveNodeId] = noteArea.value;
             drawer.classList.remove('open');
             overlay.classList.remove('active');
             currentActiveNodeId = null;
         }
+
+        // Centrare inițială după ce Mermaid randează
+        setTimeout(() => {
+            // O centrare aproximativă
+            const contentWidth = document.querySelector('.mermaid svg').getBoundingClientRect().width;
+            if(contentWidth > 100) {
+                 // Ajustare fină dacă e nevoie
+            }
+            // Zoom in puțin la start
+            zoomCenter(1.2);
+        }, 1000);
+
     </script>
 </body>
 </html>
