@@ -3,104 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VAT GAP 2023 - Infinite Canvas (Custom Engine)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <title>VAT GAP 2025 - Persistent Session</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --bg-color: #f8fafc;
+            --dot-color: #cbd5e1;
+            --accent-color: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --completed-bg: #e0e7ff;
+            --completed-stroke: #4338ca;
+            --text-main: #1e293b;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            user-select: none; /* Previne selectarea textului când tragi de hartă */
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            user-select: none;
         }
 
-        /* Containerul care ascunde ce iese din ecran */
+        /* --- BACKGROUND --- */
         #scene {
             width: 100vw;
             height: 100vh;
             overflow: hidden;
             cursor: grab;
             position: relative;
+            background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
         }
 
-        #scene:active {
-            cursor: grabbing;
-        }
+        #scene:active { cursor: grabbing; }
 
-        /* Canvas-ul care se va mișca și scala */
         #canvas {
             transform-origin: 0 0;
             position: absolute;
             top: 0;
             left: 0;
-            /* Tranziție fină doar la zoom, nu la drag, pentru performanță */
-            transition: transform 0.05s linear; 
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- STILURI NODURI --- */
-        g.node {
+        /* --- MERMAID STYLING --- */
+        .edgePath .path {
+            stroke: #94a3b8 !important;
+            stroke-width: 2px !important;
+            opacity: 0.7;
+        }
+
+        g.node rect, g.node polygon, g.node circle {
+            fill: #ffffff !important;
+            stroke: #cbd5e1 !important;
+            stroke-width: 2px !important;
+            rx: 12px !important;
+            ry: 12px !important;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+        }
+
+        g.node .nodeLabel {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500;
+            color: var(--text-main) !important;
+            line-height: 1.5;
+        }
+
+        g.node:hover rect {
+            stroke: var(--accent-color) !important;
+            filter: drop-shadow(0 10px 15px rgba(99, 102, 241, 0.15));
             cursor: pointer;
         }
 
-        /* Stare completată (Verde) */
-        g.node.completed > :is(rect, circle, polygon, path) {
-            fill: #4caf50 !important;
-            stroke: #2e7d32 !important;
-            stroke-width: 3px !important;
+        g.node.completed rect, g.node.completed polygon {
+            fill: var(--completed-bg) !important;
+            stroke: var(--completed-stroke) !important;
+            filter: drop-shadow(0 0 15px var(--accent-glow));
         }
         g.node.completed .nodeLabel {
-            font-weight: bold; 
-            color: white !important;
+            color: var(--completed-stroke) !important;
+            font-weight: 700;
         }
 
-        /* --- SERTAR / POST-IT --- */
+        /* --- CONTROLS --- */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            color: #475569;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn:hover {
+            background: #fff;
+            color: var(--accent-color);
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- RESET DATA BUTTON --- */
+        .reset-data-btn {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            z-index: 101;
+            background: white;
+            border: 1px solid #fee2e2;
+            color: #ef4444;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .reset-data-btn:hover {
+            background: #fef2f2;
+            transform: scale(1.1);
+        }
+
+        /* --- DRAWER --- */
         #drawer {
             position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: #fff9c4;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
-            transition: right 0.3s ease-in-out;
+            top: 20px;
+            right: 20px;
+            bottom: 20px;
+            width: 450px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: -20px 0 50px rgba(0,0,0,0.1);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1000;
-            padding: 25px;
-            box-sizing: border-box;
+            padding: 35px;
             display: flex;
             flex-direction: column;
+            border: 1px solid #fff;
         }
 
-        #drawer.open { right: 0; }
+        #drawer.open { transform: translateX(0); }
 
         .drawer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #f0e68c;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
         }
 
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
+        .step-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
         textarea {
             width: 100%;
             flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #dcdcdc;
-            border-radius: 5px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
             resize: none;
-            font-family: inherit;
-            background: rgba(255,255,255,0.7);
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            outline: none;
+            transition: all 0.2s;
+        }
+        textarea:focus {
+            border-color: var(--accent-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px var(--accent-glow);
         }
 
         .overlay {
@@ -109,152 +214,180 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.3);
-            display: none;
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
             z-index: 999;
         }
-        .overlay.active { display: block; }
-
-        /* Controale Zoom Manual */
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 100;
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            background: white;
-            border: 1px solid #ccc;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-weight: bold;
-        }
-        .btn:hover { background: #eee; }
+        .overlay.active { opacity: 1; pointer-events: all; }
 
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <button class="btn" onclick="resetView()">Reset View</button>
-        <button class="btn" onclick="zoomCenter(1.2)">+</button>
-        <button class="btn" onclick="zoomCenter(0.8)">-</button>
+        <button class="btn" onclick="modifyZoom(1.2)" title="Zoom In">＋</button>
+        <button class="btn" onclick="centerNodeA()" title="Reset & Center">⟲</button>
+        <button class="btn" onclick="modifyZoom(0.8)" title="Zoom Out">－</button>
     </div>
+
+    <button class="reset-data-btn" onclick="clearAllData()" title="Șterge tot progresul (Reset)">🗑️</button>
 
     <div id="scene">
         <div id="canvas">
             <div class="mermaid">
-graph TD
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#ffffff',
+      'primaryBorderColor': '#cbd5e1',
+      'lineColor': '#94a3b8',
+      'fontFamily': 'Inter',
+      'fontSize': '16px'
+    },
+    'flowchart': {
+      'curve': 'basis', 
+      'nodeSpacing': 200, 
+      'rankSpacing': 250, 
+      'htmlLabels': true
+    }
+  }
+}%%
+flowchart TD
     A[TEMA: GAP TVA 2023 în UE] --> B[1. FUNDAMENTARE TEORETICĂ]
+    
     B --> B1[Caută 5-10 articole recente<br/>2020-2025 despre:]
     B1 --> B1a[• VAT gap determinants]
     B1 --> B1b[• Shadow economy & tax evasion]
     B1 --> B1c[• Digitalization impact on tax compliance]
     B1 --> B1d[• EU tax administration efficiency]
+    
     B1 --> C[2. COLECTARE & PREGĂTIRE DATE]
+    
     C --> C1[Variabila DEPENDENTĂ:<br/>VAT_GAP_2023]
     C --> C2[Variabile INDEPENDENTE]
+    
     C2 --> C2a[SHADOW_ECONOMY<br/>% din PIB - 2023]
     C2 --> C2b[DIGI_DUMMY<br/>digitalizare timpurie]
     C2 --> C2c[Alte variabile de control]
+    
     C2c --> C2c1[• GDP_per_capita]
     C2c --> C2c2[• Tax_administration_quality]
     C2c --> C2c3[• Corruption_index]
     C2c --> C2c4[• Digital_infrastructure]
+    
     C --> D[3. EXPLORATORY DATA ANALYSIS]
+    
     D --> D1[Statistici descriptive<br/>mean, sd, min, max, skewness]
     D --> D2[Vizualizări]
     D --> D3[Matrice de corelații]
+    
     D2 --> D2a[• Histograme pentru distribuții]
     D2 --> D2b[• Scatter plots VAT_GAP vs predictori]
     D2 --> D2c[• Boxplots pe grup DIGI_DUMMY]
+    
     D --> E[4. ÎMPĂRȚIRE TRAIN/TEST]
     E --> E1[70-80% TRAIN<br/>20-30% TEST]
+    
     E --> F[5. MODELUL DE BAZĂ - OLS]
+    
     F --> F1[VAT_GAP = β0 + β1·SHADOW_ECONOMY<br/>+ β2·DIGI_DUMMY + β3·CONTROLS + ε]
+    
     F1 --> G[6. VALIDĂRI OBLIGATORII]
+    
     G --> G1[A. SEMNIFICAȚIE STATISTICĂ]
     G1 --> G1a[t-test pentru fiecare β<br/>✓ p-value < 0.05 sau 0.10]
     G1 --> G1b[F-test global<br/>✓ modelul e semnificativ]
+    
     G --> G2[B. BONITATEA MODELULUI]
     G2 --> G2a[R² și R²_adjusted<br/>✓ cât din variație explică]
     G2 --> G2b[AIC / BIC<br/>✓ pentru comparații]
+    
     G --> G3[C. IPOTEZE CLASICE OLS]
+    
     G3 --> H1[TEST 1: NORMALITATE]
     H1 --> H1a[Shapiro-Wilk test pe reziduuri]
     H1 --> H1b[Q-Q plot vizual]
     H1 --> H1c[⚠️ Dacă RESPINS: n mare salvează<br/>prin CLT, altfel transformări]
+    
     G3 --> H2[TEST 2: HOMOSCEDASTICITATE]
     H2 --> H2a[Breusch-Pagan test]
     H2 --> H2b[White test]
     H2 --> H2c[Plot reziduuri vs fitted]
     H2 --> H2d[⚠️ Dacă RESPINS:<br/>Corecție HC robust std errors]
+    
     G3 --> H3[TEST 3: MULTICOLINIARITATE]
     H3 --> H3a[VIF pentru fiecare predictor]
     H3 --> H3b[✓ VIF < 5 OK<br/>⚠️ VIF > 10 PROBLEMĂ]
     H3 --> H3c[Dacă problemă:<br/>elimină variabile corelate<br/>sau centrează datele]
+    
     G3 --> H4[TEST 4: OUTLIERI & INFLUENȚĂ]
     H4 --> H4a[Cook's Distance > 1]
     H4 --> H4b[Leverage > 2k/n]
     H4 --> H4c[Studentized residuals]
     H4 --> H4d[⚠️ Dacă detectat:<br/>investighează & eventual exclude]
+    
     G3 --> H5[TEST 5: SPECIFICAȚIE]
     H5 --> H5a[Ramsey RESET test]
     H5 --> H5b[⚠️ Dacă RESPINS:<br/>adaugă termeni pătrați/<br/>forme funcționale]
+    
     H1 --> I[7. MODEL ÎMBUNĂTĂȚIT]
     H2 --> I
     H3 --> I
     H4 --> I
     H5 --> I
+    
     I --> I1[FORME FUNCȚIONALE alternative]
     I1 --> I1a[Log-log: log VAT_GAP ~ log SHADOW]
     I1 --> I1b[Semi-log: VAT_GAP ~ log SHADOW]
     I1 --> I1c[Polinomială: + SHADOW²]
+    
     I --> I2[INTERACȚIUNI]
     I2 --> I2a[SHADOW × DIGI_DUMMY<br/>efectul digitalizării modifică<br/>impactul economiei subterane?]
+    
     I --> I3[Compară modele cu AIC/BIC<br/>Alege modelul optim]
+    
     I3 --> J[8. EVALUARE OUT-OF-SAMPLE]
+    
     J --> J1[Predict pe TEST set]
     J --> J2[Calculează metrici:]
     J2 --> J2a[• RMSE - Root Mean Squared Error]
     J2 --> J2b[• MAE - Mean Absolute Error]
     J2 --> J2c[• MAPE - Mean Absolute % Error]
     J2 --> J2d[• R² pe test]
+    
     J --> K[9. REGULARIZARE & ML]
+    
     K --> K1[Ridge α > 0]
     K --> K2[Lasso α > 0]
     K --> K3[Elastic Net]
     K --> K4[Cross-validation pentru α optim]
+    
     K --> K5[Compară:<br/>OLS vs Ridge vs Lasso]
     K5 --> K5a[Acuratețe predictivă RMSE/MAE]
     K5 --> K5b[Interpretabilitate coeficienți]
+    
     K --> L[10. OPȚIONAL: ML AVANSAT]
     L --> L1[Random Forest]
     L --> L2[Gradient Boosting]
     L --> L3[SVR]
+    
     L --> M[11. SCENARIU PROGNOZĂ]
+    
     M --> M1[Pe modelul optim validat]
     M --> M2[Scenarii ipotetic:]
     M2 --> M2a[Ce se întâmplă dacă<br/>shadow economy scade cu 10%?]
     M2 --> M2b[Impact digitalizare în țări<br/>fără DIGI_DUMMY=1]
+    
     M --> N[12. INTERPRETARE & DISCUȚII]
+    
     N --> N1[Validare cu literatură]
     N --> N2[Convergențe OLS vs ML]
     N --> N3[Limitări studiu]
     N --> N4[Direcții viitoare]
-    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
-    style G3 fill:#fff4e1
-    style H1c fill:#ffe1e1
-    style H2d fill:#ffe1e1
-    style H3c fill:#ffe1e1
-    style H4d fill:#ffe1e1
-    style H5b fill:#ffe1e1
-    style I3 fill:#e1ffe1
-    style K5 fill:#f0e1ff
             </div>
         </div>
     </div>
@@ -262,185 +395,217 @@ graph TD
     <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
     <div id="drawer">
         <div class="drawer-header">
-            <h2 id="drawer-title">Details</h2>
-            <button class="close-btn" onclick="closeDrawer()">&times;</button>
+            <h2 id="drawer-title" style="margin:0; font-weight:700; color:#1e293b;">Detalii Pas</h2>
+            <button onclick="closeDrawer()" style="background:none; border:none; cursor:pointer; font-size:1.5rem; color:#64748b;">&times;</button>
         </div>
-        <div id="node-text" style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #eee; font-weight:bold; color:#444;"></div>
-        <label style="font-size: 0.9em; color: #777;">Note personale:</label>
-        <textarea id="user-notes" placeholder="Scrie aici..."></textarea>
+        <div class="step-content" id="node-text"></div>
+        <label style="font-size:0.85rem; font-weight:600; color:#64748b; margin-bottom:10px; display:block; text-transform:uppercase; letter-spacing:0.5px;">Notele Tale (Auto-Saved)</label>
+        <textarea id="user-notes" placeholder="Scrie idei, link-uri sau observații aici..."></textarea>
     </div>
 
     <script>
-        // Initializare Mermaid
         mermaid.initialize({ startOnLoad: true });
 
-        // --- CUSTOM PAN & ZOOM ENGINE (Fără librării) ---
-        const scene = document.getElementById('scene');
-        const canvas = document.getElementById('canvas');
-        
-        // Stare globală transformare
+        // --- CORE ENGINE ---
         let state = {
-            scale: 1,
+            scale: 1.5, // Scara inițială crescută
+            x: 0,
+            y: 0,
             panning: false,
-            pointX: 0,
-            pointY: 0,
             startX: 0,
-            startY: 0,
-            cssScale: 1 // Zoom initial
+            startY: 0
         };
 
-        // Aplica transformarea CSS
-        function setTransform() {
-            canvas.style.transform = `translate(${state.pointX}px, ${state.pointY}px) scale(${state.scale})`;
+        const scene = document.getElementById('scene');
+        const canvas = document.getElementById('canvas');
+
+        // --- PERSISTENCE LOGIC (LOCALSTORAGE) ---
+        const STORAGE_KEY_COMPLETED = "vatgap_completed_nodes";
+        const STORAGE_KEY_NOTES = "vatgap_user_notes";
+        
+        let notesStorage = {}; // Will load from LS
+
+        function loadPersistence() {
+            // 1. Load Notes
+            const savedNotes = localStorage.getItem(STORAGE_KEY_NOTES);
+            if (savedNotes) {
+                notesStorage = JSON.parse(savedNotes);
+            }
+
+            // 2. Load Completed State (Green nodes)
+            const savedCompleted = localStorage.getItem(STORAGE_KEY_COMPLETED);
+            if (savedCompleted) {
+                const ids = JSON.parse(savedCompleted);
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.classList.add('completed');
+                });
+            }
         }
 
-        // 1. ZOOM pe Scroll
+        function saveCompletedState() {
+            const completedNodes = Array.from(document.querySelectorAll('.node.completed')).map(node => node.id);
+            localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completedNodes));
+        }
+
+        function saveNotesState() {
+            localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesStorage));
+        }
+
+        function clearAllData() {
+            if(confirm("Ești sigur că vrei să ștergi tot progresul și notițele?")) {
+                localStorage.removeItem(STORAGE_KEY_COMPLETED);
+                localStorage.removeItem(STORAGE_KEY_NOTES);
+                location.reload();
+            }
+        }
+
+        function updateTransform() {
+            canvas.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        }
+
+        // --- FORCED CENTERING LOGIC ---
+        function centerNodeA() {
+            const nodeA = document.querySelector('g[id^="flowchart-A-"]');
+            if (nodeA) {
+                const nodeBox = nodeA.getBBox();
+                
+                // --- AICI ESTE SCHIMBAREA MAJORĂ ---
+                state.scale = 20; // Era 0.9, acum e 1.5 pentru ZOOM IN
+                // -----------------------------------
+
+                const screenW = window.innerWidth;
+                const scaledNodeX = (nodeBox.x + nodeBox.width / 2) * state.scale;
+                //state.x = (screenW / 2) - scaledNodeX;
+                state.x=430;
+                //state.y = 100 - (nodeBox.y * state.scale); 
+                state.y=185;
+                updateTransform();
+            } else {
+                setTimeout(centerNodeA, 100);
+            }
+        }
+
+        // Wait for render
+        let attempts = 0;
+        const initInterval = setInterval(() => {
+            const node = document.querySelector('.node');
+            if (node) {
+                clearInterval(initInterval);
+                setTimeout(() => {
+                    centerNodeA();
+                    loadPersistence(); // LOAD DATA AFTER RENDER
+                }, 300);
+            }
+            if(++attempts > 50) clearInterval(initInterval);
+        }, 100);
+
+        // --- ZOOM & PAN ---
         scene.addEventListener('wheel', (e) => {
             e.preventDefault();
-            
-            const xs = (e.clientX - state.pointX) / state.scale;
-            const ys = (e.clientY - state.pointY) / state.scale;
-            
+            const xs = (e.clientX - state.x) / state.scale;
+            const ys = (e.clientY - state.y) / state.scale;
             const delta = -e.deltaY;
-            
-            // Factor de zoom
-            (delta > 0) ? (state.scale *= 1.1) : (state.scale /= 1.1);
-            
-            // Limite zoom
+            const factor = 1.1;
+            (delta > 0) ? (state.scale *= factor) : (state.scale /= factor);
             if(state.scale < 0.1) state.scale = 0.1;
-            if(state.scale > 10) state.scale = 10;
+            //if(state.scale > 5) state.scale = 5;
+            state.x = e.clientX - xs * state.scale;
+            state.y = e.clientY - ys * state.scale;
+            updateTransform();
+        }, { passive: false });
 
-            state.pointX = e.clientX - xs * state.scale;
-            state.pointY = e.clientY - ys * state.scale;
-
-            setTransform();
-        });
-
-        // 2. PAN (Drag and Drop)
         let isDragging = false;
         let dragStartTime = 0;
 
         scene.addEventListener('mousedown', (e) => {
-            // Dacă dăm click pe overlay sau drawer, ignorăm
-            if(e.target.closest('#drawer') || e.target.closest('.overlay')) return;
-
+            if(e.target.closest('#drawer') || e.target.closest('.controls') || e.target.closest('.reset-data-btn')) return;
             state.panning = true;
-            state.startX = e.clientX - state.pointX;
-            state.startY = e.clientY - state.pointY;
+            state.startX = e.clientX - state.x;
+            state.startY = e.clientY - state.y;
             isDragging = false;
             dragStartTime = Date.now();
-            canvas.style.transition = 'none'; // Dezactivăm tranziția în timpul tragerii
+            canvas.style.transition = 'none';
+            scene.style.cursor = 'grabbing';
         });
 
-        scene.addEventListener('mousemove', (e) => {
+        window.addEventListener('mousemove', (e) => {
             if (!state.panning) return;
             e.preventDefault();
-            state.pointX = e.clientX - state.startX;
-            state.pointY = e.clientY - state.startY;
-            setTransform();
-            isDragging = true; // Dacă mișcăm mouse-ul, e drag, nu click
+            state.x = e.clientX - state.startX;
+            state.y = e.clientY - state.startY;
+            updateTransform();
+            isDragging = true;
         });
 
-        scene.addEventListener('mouseup', (e) => {
-            state.panning = false;
-            canvas.style.transition = 'transform 0.05s linear'; // Reactivăm tranziția
-            
-            // Logică diferențiere Click vs Drag
-            // Dacă timpul a fost scurt și nu s-a mișcat mult, e CLICK
-            const timeDiff = Date.now() - dragStartTime;
-            if (timeDiff < 200 && !isDragging) {
-                handleNodeClick(e);
+        window.addEventListener('mouseup', (e) => {
+            if(state.panning) {
+                state.panning = false;
+                scene.style.cursor = 'grab';
+                canvas.style.transition = 'transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)';
+                if (Date.now() - dragStartTime < 200 && !isDragging) handleNodeClick(e);
             }
         });
 
-        // 3. Logică Click pe Noduri (Manuală)
+        function modifyZoom(factor) {
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const xs = (cx - state.x) / state.scale;
+            const ys = (cy - state.y) / state.scale;
+            state.scale *= factor;
+            state.x = cx - xs * state.scale;
+            state.y = cy - ys * state.scale;
+            updateTransform();
+        }
+
+        // --- INTERACTION ---
         function handleNodeClick(e) {
-            // Căutăm cel mai apropiat părinte care este nod mermaid
             const nodeElement = e.target.closest('.node');
-            
             if (nodeElement) {
-                // SINGLE CLICK: Toggle verde
                 nodeElement.classList.toggle('completed');
+                saveCompletedState(); // SAVE ON CLICK
             }
         }
 
-        // 4. Logică Double Click
         scene.addEventListener('dblclick', (e) => {
             const nodeElement = e.target.closest('.node');
             if (nodeElement) {
-                const nodeId = nodeElement.id;
-                // Extragem text
-                let content = "";
-                // Mermaid randează textul diferit, uneori în foreignObject div, alteori span
-                const label = nodeElement.querySelector('.nodeLabel') || nodeElement;
-                content = label.innerText;
-                
-                openDrawer(nodeId, content);
+                const label = nodeElement.querySelector('.nodeLabel');
+                openDrawer(nodeElement.id, label ? label.innerText : "");
             }
         });
 
-        // Funcții Helper Zoom
-        function zoomCenter(factor) {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            
-            const xs = (centerX - state.pointX) / state.scale;
-            const ys = (centerY - state.pointY) / state.scale;
-
-            state.scale *= factor;
-            
-            state.pointX = centerX - xs * state.scale;
-            state.pointY = centerY - ys * state.scale;
-            setTransform();
-        }
-
-        function resetView() {
-            state.scale = 1;
-            state.pointX = 0;
-            state.pointY = 0;
-            setTransform();
-        }
-
-        // Logică Sertar
+        // --- DRAWER ---
         const drawer = document.getElementById('drawer');
         const overlay = document.getElementById('overlay');
-        const drawerTitle = document.getElementById('drawer-title');
-        const nodeTextDisplay = document.getElementById('node-text');
+        const title = document.getElementById('drawer-title');
+        const contentDiv = document.getElementById('node-text');
         const noteArea = document.getElementById('user-notes');
-        const notesStorage = {}; 
-        let currentActiveNodeId = null;
+        let currentId = null;
+
+        // Save note on input
+        noteArea.addEventListener('input', () => {
+            if(currentId) {
+                notesStorage[currentId] = noteArea.value;
+                saveNotesState(); // SAVE ON TYPING
+            }
+        });
 
         function openDrawer(id, content) {
-            if(currentActiveNodeId) notesStorage[currentActiveNodeId] = noteArea.value;
-            currentActiveNodeId = id;
-            
-            const cleanId = id.split('-')[1] || id; 
-            drawerTitle.textContent = "Pasul: " + cleanId;
-            nodeTextDisplay.innerText = content;
+            currentId = id;
+            let cleanId = id.split('-')[1] || "Info";
+            title.textContent = "Pasul: " + cleanId;
+            contentDiv.innerHTML = content.replace(/\n/g, "<br>");
             noteArea.value = notesStorage[id] || "";
-            
             drawer.classList.add('open');
             overlay.classList.add('active');
         }
 
         function closeDrawer() {
-            if(currentActiveNodeId) notesStorage[currentActiveNodeId] = noteArea.value;
             drawer.classList.remove('open');
             overlay.classList.remove('active');
-            currentActiveNodeId = null;
+            currentId = null;
         }
-
-        // Centrare inițială după ce Mermaid randează
-        setTimeout(() => {
-            // O centrare aproximativă
-            const contentWidth = document.querySelector('.mermaid svg').getBoundingClientRect().width;
-            if(contentWidth > 100) {
-                 // Ajustare fină dacă e nevoie
-            }
-            // Zoom in puțin la start
-            zoomCenter(1.2);
-        }, 1000);
-
     </script>
 </body>
 </html>
