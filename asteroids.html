@@ -137,7 +137,7 @@
         <div id="stats">
             <div>Scor: <span id="score">0</span></div>
             <div>Vieți: <span id="lives">3</span></div>
-            <div>Rachete: <span id="rockets">3</span></div>
+            <div>Rachete: <span id="rockets">100</span></div>
         </div>
         
         <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -607,7 +607,8 @@
             score = 0;
             lives = 3;
             gameActive = true;
-            availableRockets = 100;
+            availableRockets = 100
+            ;
             nextLifeAt = POINTS_FOR_LIFE;
             
             document.getElementById('gameOver').style.display = 'none';
