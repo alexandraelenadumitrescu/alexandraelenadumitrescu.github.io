@@ -1,0 +1,190 @@
+/* Reset pentru a elimina marginile default ale browser-ului */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Stilizarea corpului paginii */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000000; /* Fundal negru ca in spatiu */
+    color: #ffffff; /* Text alb pentru contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container-ul principal care tine toate elementele jocului */
+#game-container {
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+}
+
+/* Titlul jocului */
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #00ff00; /* Verde neon */
+    text-shadow: 0 0 10px #00ff00; /* Efect de lumina */
+}
+
+/* Zona cu informatiile jocului (scor, vieti) */
+#game-info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Fiecare element de informatie */
+#game-info > div {
+    padding: 10px 20px;
+    background-color: #1a1a1a;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+}
+
+/* Canvas-ul pe care se deseneaza jocul */
+#game-canvas {
+    border: 3px solid #00ff00;
+    background-color: #0a0a0a;
+    display: block;
+    margin: 0 auto;
+    /* Dimensiunile vor fi setate prin JavaScript */
+}
+
+/* Zona cu controalele jocului */
+#game-controls {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #1a1a1a;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+}
+
+#game-controls h3 {
+    color: #00ff00;
+    margin-bottom: 10px;
+}
+
+#game-controls p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Ecranul de start */
+#start-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 40px;
+    border: 3px solid #00ff00;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+#start-screen h2 {
+    color: #00ff00;
+    margin-bottom: 20px;
+}
+
+/* Ecranul de game over */
+#game-over-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.95);
+    padding: 40px;
+    border: 3px solid #ff0000;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+#game-over-screen h2 {
+    color: #ff0000;
+    margin-bottom: 20px;
+}
+
+/* Input pentru numele jucatorului */
+#player-name {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 20px 0;
+    font-size: 16px;
+    border: 2px solid #00ff00;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-radius: 5px;
+}
+
+/* Butoanele din game over screen */
+#game-over-screen button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    background-color: #00ff00;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#game-over-screen button:hover {
+    background-color: #00cc00;
+}
+
+/* Tabelul cu scorurile */
+#high-scores-table {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #1a1a1a;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+}
+
+#high-scores-table h3 {
+    color: #00ff00;
+    margin-bottom: 15px;
+}
+
+/* Lista cu scorurile */
+#scores-list {
+    list-style-position: inside;
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#scores-list li {
+    padding: 8px;
+    margin: 5px 0;
+    background-color: #0a0a0a;
+    border: 1px solid #00ff00;
+    border-radius: 3px;
+}
+
+/* Stilizare pentru ecrane mici (mobile) */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 32px;
+    }
+    
+    #game-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #game-controls p {
+        font-size: 12px;
+    }
+}
