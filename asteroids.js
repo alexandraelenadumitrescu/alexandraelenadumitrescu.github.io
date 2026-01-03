@@ -619,7 +619,7 @@ function createMissile() {
     
     // Distanta de la centrul navei la varf
     var tipDistance = ship.size;
-    const OFFSET = Math.PI / 2;
+    const OFFSET = Math.PI / 2;//pentru ca racheta sa se lanseze de la varful navei
     
     // Calculam pozitia varfului folosind unghiul navei
         // Unghiul navei indica directia in care este orientat varful
