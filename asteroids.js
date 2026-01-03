@@ -136,6 +136,14 @@ document.addEventListener('keyup', function(event) {
         event.preventDefault();
     }
 });
+let divStartScreen = document.getElementById('start-screen');
+
+divStartScreen.addEventListener('click', function(event) {
+    if (!gameRunning) {
+        startGame();
+    }
+});
+
 
 // ============================================
 // SECTIUNEA 6: FUNCTII PENTRU DESENARE
