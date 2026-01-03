@@ -68,12 +68,6 @@ var numberOfAsteroids = 5;
 // Initial este gol, vom adauga rachete in Stage 4
 var missiles = [];
 
-// Numarul maxim de rachete care pot fi lansate simultan
-var maxMissiles = 3;
-
-// Variabila pentru a preveni spam-ul tastei X (cooldown intre lansari)
-var canShoot = true;
-
 // ============================================
 // SECTIUNEA 4: TRACKING PENTRU TASTELE APASATE
 // ============================================
@@ -92,11 +86,20 @@ var keys = {
 };
 
 // ============================================
-// SECTIUNEA 5: EVENT LISTENERS PENTRU TASTATURA SI TOUCH
+// SECTIUNEA 5: EVENT LISTENERS PENTRU TASTATURA
 // ============================================
 
 // Functie care se apeleaza cand o tasta este apasata
+// Functie care se apeleaza cand o tasta este apasata
 document.addEventListener('keydown', function(event) {
+    // Verificam daca utilizatorul scrie in input (pentru nume)
+    // Daca da, nu procesam tastele de joc
+    var playerNameInput = document.getElementById('player-name');
+    if (document.activeElement === playerNameInput) {
+        // Utilizatorul scrie in input, nu procesam tastele de joc
+        return;
+    }
+    
     // event.key contine numele tastei apasate
     
     // Verificam daca tasta apasata este in obiectul nostru keys
@@ -117,7 +120,15 @@ document.addEventListener('keydown', function(event) {
 });
 
 // Functie care se apeleaza cand o tasta este eliberata
+// Functie care se apeleaza cand o tasta este eliberata
 document.addEventListener('keyup', function(event) {
+    // Verificam daca utilizatorul scrie in input (pentru nume)
+    var playerNameInput = document.getElementById('player-name');
+    if (document.activeElement === playerNameInput) {
+        // Utilizatorul scrie in input, nu procesam tastele de joc
+        return;
+    }
+    
     // Verificam daca tasta eliberata este in obiectul nostru keys
     if (keys.hasOwnProperty(event.key)) {
         // Setam valoarea pe false pentru a marca ca tasta nu mai este apasata
@@ -125,60 +136,6 @@ document.addEventListener('keyup', function(event) {
         event.preventDefault();
     }
 });
-
-// ============================================
-// SECTIUNEA 5B: EVENT LISTENERS PENTRU TOUCH CONTROLS
-// ============================================
-
-// Functie care se apeleaza la incarcarea paginii pentru a seta touch controls
-function setupTouchControls() {
-    // Obtinem toate butoanele touch
-    var touchUp = document.getElementById('touch-up');
-    var touchDown = document.getElementById('touch-down');
-    var touchLeft = document.getElementById('touch-left');
-    var touchRight = document.getElementById('touch-right');
-    var touchRotateLeft = document.getElementById('touch-rotate-left');
-    var touchRotateRight = document.getElementById('touch-rotate-right');
-    var touchShoot = document.getElementById('touch-shoot');
-    
-    // Functie helper pentru a seta evenimentele touch pe un buton
-    // keyName = numele tastei din obiectul keys (ex: 'ArrowUp')
-    function setupTouchButton(button, keyName) {
-        // Eveniment cand butonul este apasat (touchstart)
-        button.addEventListener('touchstart', function(event) {
-            keys[keyName] = true;
-            event.preventDefault(); // Prevenim scroll-ul pe mobil
-        });
-        
-        // Eveniment cand butonul este eliberat (touchend)
-        button.addEventListener('touchend', function(event) {
-            keys[keyName] = false;
-            event.preventDefault();
-        });
-        
-        // Si pentru mouse (pentru testare pe desktop)
-        button.addEventListener('mousedown', function(event) {
-            keys[keyName] = true;
-            event.preventDefault();
-        });
-        
-        button.addEventListener('mouseup', function(event) {
-            keys[keyName] = false;
-            event.preventDefault();
-        });
-    }
-    
-    // Setam fiecare buton cu tasta corespunzatoare
-    setupTouchButton(touchUp, 'ArrowUp');
-    setupTouchButton(touchDown, 'ArrowDown');
-    setupTouchButton(touchLeft, 'ArrowLeft');
-    setupTouchButton(touchRight, 'ArrowRight');
-    setupTouchButton(touchRotateLeft, 'z');
-    setupTouchButton(touchRotateRight, 'c');
-    setupTouchButton(touchShoot, 'x');
-    
-    console.log('Touch controls au fost configurate');
-}
 
 // ============================================
 // SECTIUNEA 6: FUNCTII PENTRU DESENARE
@@ -279,31 +236,6 @@ function drawAsteroids() {
     }
 }
 
-// Functie care deseneaza o racheta
-// Parametru: missile - obiectul care contine proprietatile rachetei
-function drawMissile(missile) {
-    // Desenam racheta ca un mic cerc alb
-    ctx.beginPath();
-    ctx.arc(missile.x, missile.y, missile.size, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff'; // Alb
-    ctx.fill();
-    ctx.strokeStyle = '#00ff00'; // Contur verde
-    ctx.lineWidth = 1;
-    ctx.stroke();
-}
-
-// Functie care deseneaza toate rachetele
-function drawMissiles() {
-    // Parcurgem fiecare racheta din array
-    for (var i = 0; i < missiles.length; i++) {
-        // Luam racheta curenta
-        var missile = missiles[i];
-        
-        // Desenam racheta
-        drawMissile(missile);
-    }
-}
-
 // Functie care sterge tot canvas-ul
 // Aceasta functie se apeleaza inainte de fiecare frame pentru a "curata" ecranul
 function clearCanvas() {
@@ -316,7 +248,7 @@ function clearCanvas() {
 }
 
 // ============================================
-// SECTIUNEA 7: FUNCTII PENTRU CREAREA ASTEROIZILOR SI RACHETELOR
+// SECTIUNEA 7: FUNCTII PENTRU CREAREA ASTEROIZILOR
 // ============================================
 
 // Functie care returneaza culoarea asteroidului bazat pe HP
@@ -341,15 +273,6 @@ function getAsteroidSize(hp) {
     var baseSize = 15;
     var sizeIncrement = 10;
     return baseSize + (hp * sizeIncrement);
-}
-
-// Functie care actualizeaza proprietatile asteroidului cand HP-ul se schimba
-function updateAsteroidProperties(asteroid) {
-    // Actualizam culoarea bazat pe noul HP
-    asteroid.color = getAsteroidColor(asteroid.hp);
-    
-    // Actualizam dimensiunea bazat pe noul HP
-    asteroid.size = getAsteroidSize(asteroid.hp);
 }
 
 // Functie care creeaza un asteroid nou cu proprietati aleatoare
@@ -392,53 +315,6 @@ function createAsteroid() {
     return asteroid;
 }
 
-// Functie care creeaza o racheta noua
-function createMissile() {
-    // Verificam daca putem lansa racheta (cooldown)
-    if (!canShoot) {
-        return; // Nu lansam racheta daca nu putem
-    }
-    
-    // Verificam daca avem deja numarul maxim de rachete
-    if (missiles.length >= maxMissiles) {
-        console.log('Prea multe rachete active! Maxim:', maxMissiles);
-        return; // Nu lansam racheta daca avem deja 3
-    }
-    
-    // Cream obiectul pentru racheta
-    var missile = {};
-    
-    // Racheta porneste de la pozitia navei
-    missile.x = ship.x;
-    missile.y = ship.y;
-    
-    // Dimensiunea rachetei
-    missile.size = 3;
-    
-    // Viteza rachetei (mai rapida decat nava)
-    var missileSpeed = 8;
-    
-    // Calculam directia rachetei bazat pe unghiul navei
-    // Folosim trigonometrie:
-    // - cos(unghi) da componenta X a directiei
-    // - sin(unghi) da componenta Y a directiei
-    missile.velocityX = Math.cos(ship.angle) * missileSpeed;
-    missile.velocityY = Math.sin(ship.angle) * missileSpeed;
-    
-    // Adaugam racheta in array
-    missiles.push(missile);
-    
-    console.log('Racheta lansata! Total rachete:', missiles.length);
-    
-    // Activam cooldown-ul pentru a preveni spam
-    canShoot = false;
-    
-    // Dupa 250ms permitem lansarea altei rachete
-    setTimeout(function() {
-        canShoot = true;
-    }, 250);
-}
-
 // Functie care creeaza mai multi asteroizi la inceputul jocului
 function createInitialAsteroids() {
     // Golim array-ul de asteroizi (in caz ca jocul este restartat)
@@ -477,71 +353,53 @@ function createInitialAsteroids() {
 // Functie care actualizeaza pozitia si rotatia navei bazat pe tastele apasate
 function updateShip() {
     // ROTATIE
-    // Daca tasta Z este apasata, rotim nava spre stanga
-    if (keys.z) {
-        // Scadem din unghi pentru a roti in sens trigonometric (stanga)
+    // Verificam atat tastatura cat si touch controls
+    if (keys.z || touchControls.rotateLeft) {
         ship.angle = ship.angle - ship.rotationSpeed;
     }
     
-    // Daca tasta C este apasata, rotim nava spre dreapta
-    if (keys.c) {
-        // Adunam la unghi pentru a roti in sens orar (dreapta)
+    if (keys.c || touchControls.rotateRight) {
         ship.angle = ship.angle + ship.rotationSpeed;
     }
     
     // MISCARE
-    // Resetam viteza la 0 inainte de a verifica tastele
     ship.velocityX = 0;
     ship.velocityY = 0;
     
-    // Daca sageata stanga este apasata, ne miscam spre stanga
-    if (keys.ArrowLeft) {
-        ship.velocityX = -ship.speed; // Viteza negativa = miscare spre stanga
+    if (keys.ArrowLeft || touchControls.moveLeft) {
+        ship.velocityX = -ship.speed;
     }
     
-    // Daca sageata dreapta este apasata, ne miscam spre dreapta
-    if (keys.ArrowRight) {
-        ship.velocityX = ship.speed; // Viteza pozitiva = miscare spre dreapta
+    if (keys.ArrowRight || touchControls.moveRight) {
+        ship.velocityX = ship.speed;
     }
     
-    // Daca sageata sus este apasata, ne miscam in sus
-    if (keys.ArrowUp) {
-        ship.velocityY = -ship.speed; // Viteza negativa = miscare in sus (Y scade)
+    if (keys.ArrowUp || touchControls.moveUp) {
+        ship.velocityY = -ship.speed;
     }
     
-    // Daca sageata jos este apasata, ne miscam in jos
-    if (keys.ArrowDown) {
-        ship.velocityY = ship.speed; // Viteza pozitiva = miscare in jos (Y creste)
+    if (keys.ArrowDown || touchControls.moveDown) {
+        ship.velocityY = ship.speed;
     }
     
     // Aplicam viteza la pozitie
     ship.x = ship.x + ship.velocityX;
     ship.y = ship.y + ship.velocityY;
     
-    // WRAP-AROUND: Daca nava iese din ecran, apare de cealalta parte
-    // Acest lucru creeaza efectul de "spatiu infinit"
-    
-    // Daca nava iese pe dreapta, apare pe stanga
+    // WRAP-AROUND
     if (ship.x > canvasWidth) {
         ship.x = 0;
     }
-    
-    // Daca nava iese pe stanga, apare pe dreapta
     if (ship.x < 0) {
         ship.x = canvasWidth;
     }
-    
-    // Daca nava iese jos, apare sus
     if (ship.y > canvasHeight) {
         ship.y = 0;
     }
-    
-    // Daca nava iese sus, apare jos
     if (ship.y < 0) {
         ship.y = canvasHeight;
     }
 }
-
 // Functie care actualizeaza pozitia asteroizilor
 function updateAsteroids() {
     // Parcurgem fiecare asteroid
@@ -577,212 +435,8 @@ function updateAsteroids() {
     }
 }
 
-// Functie care actualizeaza pozitia rachetelor
-function updateMissiles() {
-    // Parcurgem rachetele de la sfarsit la inceput
-    // Acest lucru ne permite sa stergem rachete din array in siguranta
-    for (var i = missiles.length - 1; i >= 0; i--) {
-        // Luam racheta curenta
-        var missile = missiles[i];
-        
-        // Actualizam pozitia rachetei
-        missile.x = missile.x + missile.velocityX;
-        missile.y = missile.y + missile.velocityY;
-        
-        // Daca racheta iese din ecran, o stergem din array
-        // Folosim splice pentru a sterge un element din array
-        if (missile.x < 0 || missile.x > canvasWidth || 
-            missile.y < 0 || missile.y > canvasHeight) {
-            missiles.splice(i, 1); // Sterge racheta de la pozitia i
-            console.log('Racheta a iesit din ecran. Rachete ramase:', missiles.length);
-        }
-    }
-}
-
 // ============================================
-// SECTIUNEA 9: FUNCTII PENTRU DETECTAREA COLIZIUNILOR
-// ============================================
-
-// Functie care calculeaza distanta dintre doua puncte
-// Foloseste teorema lui Pitagora: distanta = radical din (x^2 + y^2)
-function calculateDistance(x1, y1, x2, y2) {
-    var dx = x1 - x2; // Diferenta pe axa X
-    var dy = y1 - y2; // Diferenta pe axa Y
-    
-    // Ridicam la patrat si adunam: dx^2 + dy^2
-    // Apoi extragem radicalul cu Math.sqrt
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
-// Functie care verifica coliziunea intre doua cercuri
-// Doua cercuri se ciocnesc daca distanta dintre centre < suma razelor
-function checkCircleCollision(x1, y1, radius1, x2, y2, radius2) {
-    var distance = calculateDistance(x1, y1, x2, y2);
-    
-    // Daca distanta este mai mica decat suma razelor, avem coliziune
-    return distance < (radius1 + radius2);
-}
-
-// Functie care verifica coliziunile intre rachete si asteroizi
-function checkMissileAsteroidCollisions() {
-    // Parcurgem rachetele de la sfarsit la inceput
-    for (var i = missiles.length - 1; i >= 0; i--) {
-        var missile = missiles[i];
-        
-        // Parcurgem asteroizii de la sfarsit la inceput
-        for (var j = asteroids.length - 1; j >= 0; j--) {
-            var asteroid = asteroids[j];
-            
-            // Verificam daca racheta si asteroidul se ciocnesc
-            var collision = checkCircleCollision(
-                missile.x, missile.y, missile.size,
-                asteroid.x, asteroid.y, asteroid.size
-            );
-            
-            if (collision) {
-                console.log('Racheta a lovit asteroidul!');
-                
-                // Reducem HP-ul asteroidului
-                asteroid.hp = asteroid.hp - 1;
-                
-                // Verificam daca asteroidul a fost distrus
-                if (asteroid.hp <= 0) {
-                    // Adaugam puncte la scor
-                    // Asteroizi mai mari dau mai multe puncte
-                    var points = 10 * (4 - asteroid.hp + 1); // HP initial x 10
-                    score = score + 25; // Simplificat: 25 puncte per asteroid
-                    updateScoreDisplay();
-                    
-                    // Verificam daca jucatorul castiga o viata noua
-                    checkExtraLife();
-                    
-                    // Stergem asteroidul din array
-                    asteroids.splice(j, 1);
-                    console.log('Asteroid distrus! Scor:', score);
-                } else {
-                    // Daca asteroidul nu a fost distrus, actualizam proprietatile
-                    updateAsteroidProperties(asteroid);
-                    console.log('Asteroid lovit! HP ramas:', asteroid.hp);
-                }
-                
-                // Stergem racheta din array (oricum a lovit ceva)
-                missiles.splice(i, 1);
-                
-                // Iesim din bucla de asteroizi (racheta a fost stearsa)
-                break;
-            }
-        }
-    }
-}
-
-// Functie care verifica coliziunea dintre nava si asteroizi
-function checkShipAsteroidCollisions() {
-    // Parcurgem fiecare asteroid
-    for (var i = 0; i < asteroids.length; i++) {
-        var asteroid = asteroids[i];
-        
-        // Verificam coliziunea cu nava
-        var collision = checkCircleCollision(
-            ship.x, ship.y, ship.size,
-            asteroid.x, asteroid.y, asteroid.size
-        );
-        
-        if (collision) {
-            console.log('Nava a lovit un asteroid!');
-            
-            // Pierdem o viata
-            lives = lives - 1;
-            updateLivesDisplay();
-            
-            // Verificam daca jocul s-a terminat
-            if (lives <= 0) {
-                gameOver();
-            } else {
-                // Respawn-am nava in centru
-                respawnShip();
-            }
-            
-            // Oprim verificarea (o singura coliziune per frame)
-            break;
-        }
-    }
-}
-
-// Functie care verifica daca jucatorul merita o viata noua
-function checkExtraLife() {
-    // Verificam daca scorul a trecut pragul pentru viata noua
-    // Si daca nu am dat deja viata la acest prag
-    if (score >= lastExtraLifeScore + pointsForExtraLife) {
-        lives = lives + 1;
-        updateLivesDisplay();
-        
-        // Actualizam pragul pentru urmatoarea viata
-        lastExtraLifeScore = lastExtraLifeScore + pointsForExtraLife;
-        
-        console.log('Viata noua! Vieti totale:', lives);
-    }
-}
-
-// Functie care verifica coliziunile intre asteroizi
-function checkAsteroidCollisions() {
-    // Parcurgem fiecare pereche de asteroizi
-    // Folosim doua bucle: i parcurge toti asteroizii, j parcurge asteroizii dupa i
-    for (var i = 0; i < asteroids.length; i++) {
-        for (var j = i + 1; j < asteroids.length; j++) {
-            var asteroid1 = asteroids[i];
-            var asteroid2 = asteroids[j];
-            
-            // Verificam daca cei doi asteroizi se ciocnesc
-            var collision = checkCircleCollision(
-                asteroid1.x, asteroid1.y, asteroid1.size,
-                asteroid2.x, asteroid2.y, asteroid2.size
-            );
-            
-            if (collision) {
-                // Calculam directia de la asteroid1 la asteroid2
-                var dx = asteroid2.x - asteroid1.x;
-                var dy = asteroid2.y - asteroid1.y;
-                var distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Normalizam directia (facem lungimea vectorului = 1)
-                // Impartim fiecare componenta la distanta
-                if (distance > 0) {
-                    dx = dx / distance;
-                    dy = dy / distance;
-                }
-                
-                // Schimbam directiile de miscare ale asteroizilor
-                // Folosim o formula simplificata: inversam vitezele pe directia coliziunii
-                
-                // Salvam vitezele vechi
-                var v1x = asteroid1.velocityX;
-                var v1y = asteroid1.velocityY;
-                var v2x = asteroid2.velocityX;
-                var v2y = asteroid2.velocityY;
-                
-                // Interschimbam partial vitezele (simplu, nu fizic perfect)
-                asteroid1.velocityX = v2x;
-                asteroid1.velocityY = v2y;
-                asteroid2.velocityX = v1x;
-                asteroid2.velocityY = v1y;
-                
-                // Separaim asteroizii pentru a preveni suprapunerea
-                // Mutam fiecare asteroid in directia opusa cu jumatate din overlap
-                var overlap = asteroid1.size + asteroid2.size - distance;
-                var separationX = dx * (overlap / 2 + 1);
-                var separationY = dy * (overlap / 2 + 1);
-                
-                asteroid1.x = asteroid1.x - separationX;
-                asteroid1.y = asteroid1.y - separationY;
-                asteroid2.x = asteroid2.x + separationX;
-                asteroid2.y = asteroid2.y + separationY;
-            }
-        }
-    }
-}
-
-// ============================================
-// SECTIUNEA 10: FUNCTII PENTRU ACTUALIZAREA AFISAJULUI
+// SECTIUNEA 9: FUNCTII PENTRU ACTUALIZAREA AFISAJULUI
 // ============================================
 
 // Functie care actualizeaza afisarea scorului pe ecran
@@ -802,122 +456,7 @@ function updateLivesDisplay() {
 }
 
 // ============================================
-// SECTIUNEA 10B: FUNCTII PENTRU LOCAL STORAGE (SCORURI MAXIME)
-// ============================================
-
-// Functie care incarca scorurile din localStorage
-// Returneaza un array cu top 5 scoruri sau un array gol daca nu exista
-function loadHighScores() {
-    // Incercam sa luam datele din localStorage
-    // localStorage.getItem returneaza null daca cheia nu exista
-    var scoresString = localStorage.getItem('asteroidsHighScores');
-    
-    // Daca nu exista scoruri salvate, returnam array gol
-    if (scoresString === null) {
-        console.log('Nu exista scoruri salvate');
-        return [];
-    }
-    
-    // Convertim string-ul JSON inapoi in array
-    // JSON.parse transforma string-ul in obiect JavaScript
-    try {
-        var scores = JSON.parse(scoresString);
-        console.log('Scoruri incarcate:', scores);
-        return scores;
-    } catch (error) {
-        // Daca JSON-ul este invalid, returnam array gol
-        console.error('Eroare la citirea scorurilor:', error);
-        return [];
-    }
-}
-
-// Functie care salveaza scorurile in localStorage
-function saveHighScores(scores) {
-    // Convertim array-ul in string JSON
-    // JSON.stringify transforma obiectul JavaScript in string
-    var scoresString = JSON.stringify(scores);
-    
-    // Salvam string-ul in localStorage
-    localStorage.setItem('asteroidsHighScores', scoresString);
-    
-    console.log('Scoruri salvate:', scores);
-}
-
-// Functie care adauga un scor nou in lista si actualizeaza top 5
-function addHighScore(playerName, playerScore) {
-    // Incarcam scorurile existente
-    var scores = loadHighScores();
-    
-    // Cream obiectul pentru noul scor
-    var newScore = {
-        name: playerName,
-        score: playerScore
-    };
-    
-    // Adaugam noul scor in array
-    scores.push(newScore);
-    
-    // Sortam array-ul dupa scor (de la cel mai mare la cel mai mic)
-    // Functia de comparare: daca b.score > a.score, b vine inaintea lui a
-    scores.sort(function(a, b) {
-        return b.score - a.score;
-    });
-    
-    // Pastram doar primele 5 scoruri
-    // slice(0, 5) returneaza elementele de la index 0 la 4
-    scores = scores.slice(0, 5);
-    
-    // Salvam scorurile actualizate
-    saveHighScores(scores);
-    
-    // Actualizam afisajul
-    displayHighScores();
-    
-    return scores;
-}
-
-// Functie care afiseaza scorurile pe pagina
-function displayHighScores() {
-    // Incarcam scorurile
-    var scores = loadHighScores();
-    
-    // Gasim lista din HTML
-    var scoresList = document.getElementById('scores-list');
-    
-    // Golim lista (stergem continutul anterior)
-    scoresList.innerHTML = '';
-    
-    // Daca nu exista scoruri, afisam un mesaj
-    if (scores.length === 0) {
-        var li = document.createElement('li');
-        li.textContent = 'Inca nu exista scoruri!';
-        scoresList.appendChild(li);
-        return;
-    }
-    
-    // Parcurgem fiecare scor si cream un element <li> pentru el
-    for (var i = 0; i < scores.length; i++) {
-        var score = scores[i];
-        
-        // Cream elementul <li>
-        var li = document.createElement('li');
-        
-        // Setam textul: "Nume - Scor puncte"
-        li.textContent = score.name + ' - ' + score.score + ' puncte';
-        
-        // Adaugam elementul in lista
-        scoresList.appendChild(li);
-    }
-    
-    // Actualizam si high score-ul afisat in info
-    if (scores.length > 0) {
-        var highScoreElement = document.getElementById('high-score');
-        highScoreElement.textContent = scores[0].score;
-    }
-}
-
-// ============================================
-// SECTIUNEA 11: GAME LOOP (BUCLA PRINCIPALA)
+// SECTIUNEA 10: GAME LOOP (BUCLA PRINCIPALA)
 // ============================================
 
 // Functia gameLoop este "inima" jocului
@@ -926,7 +465,6 @@ function displayHighScores() {
 function gameLoop() {
     // Verificam daca jocul este activ
     if (!gameRunning) {
-        // Daca jocul nu ruleaza, nu facem nimic
         return;
     }
     
@@ -936,37 +474,35 @@ function gameLoop() {
     // 2. Actualizam pozitia navei bazat pe input-ul jucatorului
     updateShip();
     
-    // 3. Actualizam pozitia asteroizilor
-    updateAsteroids();
+    // 3. Verificam daca jucatorul vrea sa traga
+    handleShooting();
     
     // 4. Actualizam pozitia rachetelor
     updateMissiles();
     
-    // 5. Verificam coliziunile intre asteroizi
-    checkAsteroidCollisions();
+    // 5. Actualizam pozitia asteroizilor
+    updateAsteroids();
     
-    // 6. Verificam coliziunile intre rachete si asteroizi
+    // 6. Verificam coliziunile
     checkMissileAsteroidCollisions();
-    
-    // 7. Verificam coliziunile intre nava si asteroizi
+    checkAsteroidAsteroidCollisions();
     checkShipAsteroidCollisions();
     
-    // 8. Desenam toti asteroizii
+    // 7. Desenam toti asteroizii
     drawAsteroids();
     
-    // 9. Desenam toate rachetele
+    // 8. Desenam toate rachetele
     drawMissiles();
     
-    // 10. Desenam nava in noua pozitie (desenam nava ultima pentru a fi deasupra asteroizilor)
+    // 9. Desenam nava (ultima pentru a fi deasupra)
     drawShip();
     
-    // 11. Cerem browser-ului sa apeleze din nou gameLoop la urmatorul frame
-    // Acesta este modul corect de a crea o animatie fluenta in JavaScript
+    // 10. Continuam loop-ul
     requestAnimationFrame(gameLoop);
 }
 
 // ============================================
-// SECTIUNEA 12: FUNCTII DE CONTROL AL JOCULUI
+// SECTIUNEA 11: FUNCTII DE CONTROL AL JOCULUI
 // ============================================
 
 // Functie care porneste jocul
@@ -976,23 +512,9 @@ function startGame() {
     // Setam gameRunning pe true
     gameRunning = true;
     
-    // Resetam variabilele jocului
-    score = 0;
-    lives = 3;
-    lastExtraLifeScore = 0;
-    missiles = [];
-    
-    // Actualizam afisajul
-    updateScoreDisplay();
-    updateLivesDisplay();
-    
     // Ascundem ecranul de start
     var startScreen = document.getElementById('start-screen');
     startScreen.style.display = 'none';
-    
-    // Ascundem ecranul de game over (daca este vizibil)
-    var gameOverScreen = document.getElementById('game-over-screen');
-    gameOverScreen.style.display = 'none';
     
     // Resetam pozitia navei in centrul ecranului
     ship.x = canvasWidth / 2;
@@ -1006,82 +528,8 @@ function startGame() {
     gameLoop();
 }
 
-// Functie care respawn-eaza nava dupa o coliziune
-function respawnShip() {
-    console.log('Respawn nava! Vieti ramase:', lives);
-    
-    // Resetam pozitia navei in centru
-    ship.x = canvasWidth / 2;
-    ship.y = canvasHeight / 2;
-    ship.angle = -Math.PI / 2;
-    
-    // Stergem toate rachetele
-    missiles = [];
-    
-    // Facem nava invulnerabila pentru 2 secunde (optional - implementat simplu)
-    // Pentru simplitate, doar miscam asteroizii departe
-    for (var i = 0; i < asteroids.length; i++) {
-        var asteroid = asteroids[i];
-        
-        // Calculam distanta de la asteroid la nava
-        var distance = calculateDistance(asteroid.x, asteroid.y, ship.x, ship.y);
-        
-        // Daca asteroidul este prea aproape, il mutam
-        if (distance < 150) {
-            // Mutam asteroidul la o pozitie aleatoare departe de nava
-            asteroid.x = Math.random() * canvasWidth;
-            asteroid.y = 50; // In partea de sus a ecranului
-        }
-    }
-}
-
-// Functie care se apeleaza cand jocul se termina
-function gameOver() {
-    console.log('GAME OVER! Scor final:', score);
-    
-    // Oprim jocul
-    gameRunning = false;
-    
-    // Afisam scorul final
-    var finalScoreElement = document.getElementById('final-score');
-    finalScoreElement.textContent = score;
-    
-    // Resetam input-ul pentru nume
-    var playerNameInput = document.getElementById('player-name');
-    playerNameInput.value = '';
-    
-    // Afisam ecranul de game over
-    var gameOverScreen = document.getElementById('game-over-screen');
-    gameOverScreen.style.display = 'block';
-}
-
-// Functie care salveaza scorul jucatorului
-function savePlayerScore() {
-    // Luam numele introdus de jucator
-    var playerNameInput = document.getElementById('player-name');
-    var playerName = playerNameInput.value.trim(); // trim() sterge spatiile de la inceput/sfarsit
-    
-    // Verificam daca jucatorul a introdus un nume
-    if (playerName === '') {
-        alert('Te rog introdu numele tau!');
-        return;
-    }
-    
-    // Adaugam scorul in localStorage
-    addHighScore(playerName, score);
-    
-    console.log('Scor salvat pentru:', playerName, 'cu', score, 'puncte');
-    
-    // Ascundem butonul de salvare (pentru a preveni salvari multiple)
-    var saveButton = document.getElementById('save-score-btn');
-    saveButton.style.display = 'none';
-    
-    // Afisam mesaj de confirmare
-    alert('Scorul tau a fost salvat!');
-}
-
 // ============================================
-// SECTIUNEA 13: FUNCTIA PRINCIPALA DE SETUP
+// SECTIUNEA 12: FUNCTIA PRINCIPALA DE SETUP
 // ============================================
 
 // Functie care initializeaza jocul
@@ -1089,47 +537,29 @@ function savePlayerScore() {
 function initGame() {
     console.log('Jocul a fost initializat!');
     
-    // Setam pozitia initiala a navei in centrul canvas-ului
-    ship.x = canvasWidth / 2;  // Impartim latimea la 2 pentru centru
-    ship.y = canvasHeight / 2; // Impartim inaltimea la 2 pentru centru
+    ship.x = canvasWidth / 2;
+    ship.y = canvasHeight / 2;
     
-    // Afisam valorile initiale pe ecran
     updateScoreDisplay();
     updateLivesDisplay();
-    
-    // Incarcam si afisam scorurile salvate
+    updateHighScoreDisplay();
     displayHighScores();
     
-    // Configuram controalele touch
-    setupTouchControls();
+    // Cream butoanele touch
+    createTouchButtons();
     
-    // Desenam instructiuni pe canvas
-    ctx.fillStyle = '#00ff00'; // Culoare verde
-    ctx.font = '20px Arial';   // Fontul textului
-    ctx.textAlign = 'center';  // Aliniere la centru
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
     ctx.fillText('Apasa SPACE pentru a incepe', canvasWidth / 2, canvasHeight / 2);
     
     console.log('Canvas width:', canvasWidth);
     console.log('Canvas height:', canvasHeight);
     console.log('Ship pozitie initiala:', ship.x, ship.y);
-    
-    // Adaugam event listener pentru butonul de restart
-    var restartButton = document.getElementById('restart-btn');
-    restartButton.addEventListener('click', function() {
-        console.log('Restart joc');
-        startGame();
-    });
-    
-    // Adaugam event listener pentru butonul de salvare scor
-    var saveScoreButton = document.getElementById('save-score-btn');
-    saveScoreButton.addEventListener('click', function() {
-        console.log('Salvare scor');
-        savePlayerScore();
-    });
 }
 
 // ============================================
-// SECTIUNEA 14: APELAREA FUNCTIEI DE INITIALIZARE
+// SECTIUNEA 13: APELAREA FUNCTIEI DE INITIALIZARE
 // ============================================
 
 // Asteptam ca intreaga pagina HTML sa se incarce
@@ -1138,3 +568,1150 @@ window.addEventListener('load', function() {
     console.log('Pagina s-a incarcat complet');
     initGame();
 });
+
+// ============================================
+// SECTIUNEA 14: VARIABILE PENTRU RACHETE
+// ============================================
+
+// Viteza cu care se deplaseaza rachetele
+var missileSpeed = 7;
+
+// Dimensiunea rachetelor (raza)
+var missileSize = 3;
+
+// Numarul maxim de rachete care pot fi lansate simultan
+var maxMissiles = 3;
+
+// Variabila pentru a preveni lansarea continua de rachete
+// Cand apasam X, vrem sa lansam doar o racheta, nu mai multe
+var canShoot = true;
+
+// ============================================
+// SECTIUNEA 15: FUNCTII PENTRU RACHETE
+// ============================================
+
+// Functie care creeaza o racheta noua
+// Racheta porneste de la pozitia navei si se deplaseaza in directia in care nava este orientata
+// Functie care creeaza o racheta noua
+// Racheta porneste de la pozitia navei si se deplaseaza in directia in care nava este orientata
+function createMissile() {
+    // Verificam daca putem lansa o racheta
+    // Nu putem lansa daca avem deja 3 rachete active
+    if (missiles.length >= maxMissiles) {
+        console.log('Nu poti lansa mai mult de', maxMissiles, 'rachete simultan');
+        return; // Iesim din functie fara sa cream racheta
+    }
+    
+    // Cream un obiect nou pentru racheta
+    var missile = {};
+    
+    // POZITIA INITIALA: Racheta porneste de la varful navei
+    // Varful navei este desenat la (0, -ship.size) in sistemul local de coordonate
+    // Trebuie sa transformam aceasta pozitie relativa in coordonate absolute
+    
+    // Distanta de la centrul navei la varf
+    var tipDistance = ship.size;
+    const OFFSET = Math.PI / 2;
+    
+    // Calculam pozitia varfului folosind unghiul navei
+        // Unghiul navei indica directia in care este orientat varful
+        missile.x = ship.x + Math.cos(ship.angle - OFFSET) * tipDistance;
+        missile.y = ship.y + Math.sin(ship.angle - OFFSET) * tipDistance;
+    
+    // VITEZA: Racheta se deplaseaza in aceeasi directie ca nava
+    // Inmultim viteza cu cos/sin pentru a obtine componentele pe X si Y
+    missile.velocityX = Math.cos(ship.angle - OFFSET) * missileSpeed;
+    missile.velocityY = Math.sin(ship.angle - OFFSET) * missileSpeed;
+    
+    // Dimensiunea rachetei
+    missile.size = missileSize;
+    
+    // Adaugam racheta in array-ul de rachete
+    missiles.push(missile);
+    
+    console.log('Racheta lansata! Total rachete active:', missiles.length);
+}
+
+// Functie care deseneaza o racheta
+function drawMissile(missile) {
+    // Incepem sa desenam un cerc pentru racheta
+    ctx.beginPath();
+    
+    // Desenam cercul rachetei
+    ctx.arc(missile.x, missile.y, missile.size, 0, Math.PI * 2);
+    
+    // Setam culoarea rachetei
+    ctx.fillStyle = '#ffff00'; // Galben
+    
+    // Umplem cercul
+    ctx.fill();
+    
+    // Adaugam si un contur
+    ctx.strokeStyle = '#ffffff'; // Alb
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
+
+// Functie care deseneaza toate rachetele
+function drawMissiles() {
+    // Parcurgem fiecare racheta din array
+    for (var i = 0; i < missiles.length; i++) {
+        // Luam racheta curenta
+        var missile = missiles[i];
+        
+        // Desenam racheta
+        drawMissile(missile);
+    }
+}
+
+// Functie care actualizeaza pozitia rachetelor
+function updateMissiles() {
+    // Parcurgem rachetele de la sfarsit spre inceput
+    // Acest lucru este important pentru ca vom sterge rachete din array
+    // Si stergerea in timpul parcurgerii de la inceput catre sfarsit cauzeaza probleme
+    for (var i = missiles.length - 1; i >= 0; i--) {
+        // Luam racheta curenta
+        var missile = missiles[i];
+        
+        // Actualizam pozitia rachetei
+        missile.x = missile.x + missile.velocityX;
+        missile.y = missile.y + missile.velocityY;
+        
+        // Verificam daca racheta a iesit din ecran
+        // Daca da, o stergem din array
+        var outOfBounds = false;
+        
+        if (missile.x < 0 || missile.x > canvasWidth) {
+            outOfBounds = true;
+        }
+        
+        if (missile.y < 0 || missile.y > canvasHeight) {
+            outOfBounds = true;
+        }
+        
+        // Daca racheta a iesit din ecran, o stergem
+        if (outOfBounds) {
+            // splice(index, 1) sterge 1 element de la pozitia index
+            missiles.splice(i, 1);
+            console.log('Racheta a iesit din ecran. Rachete ramase:', missiles.length);
+        }
+    }
+}
+
+// Functie care verifica daca tasta X este apasata si lanseaza racheta
+function handleShooting() {
+    // Verificam atat tastatura cat si touch controls
+    if (keys.x || touchControls.shoot) {
+        if (canShoot) {
+            createMissile();
+            canShoot = false;
+        }
+    } else {
+        canShoot = true;
+    }
+}
+// ============================================
+// SECTIUNEA 16: FUNCTII PENTRU DETECTAREA COLIZIUNILOR
+// ============================================
+
+// Functie care calculeaza distanta intre doua puncte
+// Folosim teorema lui Pitagora: distanta = sqrt((x2-x1)^2 + (y2-y1)^2)
+function getDistance(x1, y1, x2, y2) {
+    // Calculam diferenta pe axa X
+    var dx = x2 - x1;
+    
+    // Calculam diferenta pe axa Y
+    var dy = y2 - y1;
+    
+    // Calculam distanta folosind teorema lui Pitagora
+    // dx*dx + dy*dy = ipotenuz^2
+    // sqrt(ipotenuz^2) = ipotenuz
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    
+    return distance;
+}
+
+// Functie care verifica coliziunea intre doua cercuri
+// Doua cercuri se ciocnesc cand distanta dintre centrele lor este mai mica decat suma razelor
+function checkCircleCollision(x1, y1, r1, x2, y2, r2) {
+    // Calculam distanta dintre cele doua centre
+    var distance = getDistance(x1, y1, x2, y2);
+    
+    // Verificam daca distanta este mai mica decat suma razelor
+    // Daca da, cercurile se ciocnesc
+    if (distance < r1 + r2) {
+        return true; // Coliziune detectata
+    }
+    
+    return false; // Nu este coliziune
+}
+
+// Functie care verifica coliziunile dintre rachete si asteroizi
+function checkMissileAsteroidCollisions() {
+    // Parcurgem fiecare racheta (de la sfarsit spre inceput pentru a putea sterge)
+    for (var i = missiles.length - 1; i >= 0; i--) {
+        var missile = missiles[i];
+        
+        // Pentru fiecare racheta, verificam coliziunea cu fiecare asteroid
+        for (var j = asteroids.length - 1; j >= 0; j--) {
+            var asteroid = asteroids[j];
+            
+            // Verificam daca racheta si asteroidul se ciocnesc
+            var collision = checkCircleCollision(
+                missile.x, missile.y, missile.size,
+                asteroid.x, asteroid.y, asteroid.size
+            );
+            
+            // Daca s-au ciocnit
+            if (collision) {
+                console.log('Racheta a lovit un asteroid!');
+                
+                // Scadem 1 din HP-ul asteroidului
+                asteroid.hp = asteroid.hp - 1;
+                
+                // Verificam daca asteroidul a fost distrus (HP = 0)
+                if (asteroid.hp <= 0) {
+                    console.log('Asteroid distrus!');
+                    
+                    // Crestem scorul
+                    // Fiecare asteroid distrus da 10 puncte
+                    score = score + 10;
+                    updateScoreDisplay();
+                    
+                    // Verificam daca jucatorul a castigat o viata suplimentara
+                    checkExtraLife();
+                    
+                    // Stergem asteroidul din array
+                    asteroids.splice(j, 1);
+                    
+                    // Verificam daca au fost distrusi toti asteroizii
+                    if (asteroids.length === 0) {
+                        console.log('Toti asteroizii au fost distrusi! Se creeaza altii noi...');
+                        // Cream asteroizi noi
+                        createInitialAsteroids();
+                    }
+                } else {
+                    // Daca asteroidul nu a fost distrus, actualizam culoarea si dimensiunea
+                    asteroid.color = getAsteroidColor(asteroid.hp);
+                    asteroid.size = getAsteroidSize(asteroid.hp);
+                    console.log('Asteroidului ii mai raman', asteroid.hp, 'HP');
+                }
+                
+                // Stergem racheta (indiferent daca asteroidul a fost distrus sau nu)
+                missiles.splice(i, 1);
+                
+                // Iesim din bucla de asteroizi pentru aceasta racheta
+                // (o racheta poate lovi doar un asteroid)
+                break;
+            }
+        }
+    }
+}
+
+// Functie care verifica coliziunile dintre asteroizi
+// Cand doi asteroizi se ciocnesc, isi inverseaza vitezele
+function checkAsteroidAsteroidCollisions() {
+    // Parcurgem fiecare pereche de asteroizi
+    for (var i = 0; i < asteroids.length; i++) {
+        var asteroid1 = asteroids[i];
+        
+        // Incepem de la i+1 pentru a nu verifica acelasi asteroid de doua ori
+        for (var j = i + 1; j < asteroids.length; j++) {
+            var asteroid2 = asteroids[j];
+            
+            // Verificam coliziunea
+            var collision = checkCircleCollision(
+                asteroid1.x, asteroid1.y, asteroid1.size,
+                asteroid2.x, asteroid2.y, asteroid2.size
+            );
+            
+            // Daca s-au ciocnit
+            if (collision) {
+                console.log('Doi asteroizi s-au ciocnit!');
+                
+                // Inversam vitezele pentru ambii asteroizi
+                // Acesta este un mod simplu de a simula "respingerea"
+                
+                // Salvam vitezele temporar
+                var tempVx = asteroid1.velocityX;
+                var tempVy = asteroid1.velocityY;
+                
+                // Inversam vitezele
+                asteroid1.velocityX = asteroid2.velocityX;
+                asteroid1.velocityY = asteroid2.velocityY;
+                asteroid2.velocityX = tempVx;
+                asteroid2.velocityY = tempVy;
+                
+                // Micsoram putin vitezele pentru a simula pierderea de energie
+                asteroid1.velocityX = asteroid1.velocityX * 0.9;
+                asteroid1.velocityY = asteroid1.velocityY * 0.9;
+                asteroid2.velocityX = asteroid2.velocityX * 0.9;
+                asteroid2.velocityY = asteroid2.velocityY * 0.9;
+                
+                // Mutam asteroizii putin deoparte pentru a nu ramana blocati unul in celalalt
+                var dx = asteroid2.x - asteroid1.x;
+                var dy = asteroid2.y - asteroid1.y;
+                var distance = getDistance(asteroid1.x, asteroid1.y, asteroid2.x, asteroid2.y);
+                
+                // Normalizam vectorul directie (facem lungimea = 1)
+                if (distance > 0) {
+                    dx = dx / distance;
+                    dy = dy / distance;
+                }
+                
+                // Mutam asteroizii deoparte
+                var pushDistance = (asteroid1.size + asteroid2.size - distance) / 2;
+                asteroid1.x = asteroid1.x - dx * pushDistance;
+                asteroid1.y = asteroid1.y - dy * pushDistance;
+                asteroid2.x = asteroid2.x + dx * pushDistance;
+                asteroid2.y = asteroid2.y + dy * pushDistance;
+            }
+        }
+    }
+}
+
+// Functie care verifica coliziunile dintre nava si asteroizi
+function checkShipAsteroidCollisions() {
+    // Parcurgem fiecare asteroid
+    for (var i = 0; i < asteroids.length; i++) {
+        var asteroid = asteroids[i];
+        
+        // Verificam coliziunea dintre nava si asteroid
+        // Consideram nava ca un cerc cu raza = ship.size
+        var collision = checkCircleCollision(
+            ship.x, ship.y, ship.size,
+            asteroid.x, asteroid.y, asteroid.size
+        );
+        
+        // Daca nava a lovit un asteroid
+        if (collision) {
+            console.log('Nava a fost lovita de un asteroid!');
+            
+            // Scadem o viata
+            lives = lives - 1;
+            updateLivesDisplay();
+            
+            console.log('Vieti ramase:', lives);
+            
+            // Verificam daca jocul s-a terminat
+            if (lives <= 0) {
+                // Jocul s-a terminat
+                gameOver();
+            } else {
+                // Resetam pozitia navei
+                resetShip();
+            }
+            
+            // Iesim din functie dupa ce am detectat o coliziune
+            return;
+        }
+    }
+}
+
+// ============================================
+// SECTIUNEA 17: FUNCTII PENTRU VIETI SUPLIMENTARE
+// ============================================
+
+// Functie care verifica daca jucatorul a castigat o viata suplimentara
+function checkExtraLife() {
+    // Verificam daca scorul a depasit un multiplu de pointsForExtraLife
+    // si nu am dat deja o viata pentru acest scor
+    
+    // Calculam cate vieti suplimentare ar trebui sa aiba jucatorul bazat pe scor
+    var extraLivesEarned = Math.floor(score / pointsForExtraLife);
+    var extraLivesEarnedLastTime = Math.floor(lastExtraLifeScore / pointsForExtraLife);
+    
+    // Daca jucatorul a trecut la un nivel nou de vieti
+    if (extraLivesEarned > extraLivesEarnedLastTime) {
+        console.log('Ai castigat o viata suplimentara!');
+        
+        // Adunam o viata
+        lives = lives + 1;
+        updateLivesDisplay();
+        
+        // Actualizam ultimul scor la care am dat viata
+        lastExtraLifeScore = score;
+        
+        // Afisam un mesaj pe ecran (optional)
+        console.log('Vieti totale:', lives);
+    }
+}
+
+// ============================================
+// SECTIUNEA 18: FUNCTII PENTRU GAME OVER SI RESET
+// ============================================
+
+// Functie care reseteaza pozitia navei (cand pierde o viata)
+function resetShip() {
+    console.log('Resetare nava...');
+    
+    // Mutam nava in centrul ecranului
+    ship.x = canvasWidth / 2;
+    ship.y = canvasHeight / 2;
+    
+    // Resetam unghiul (nava orientata in sus)
+    ship.angle = -Math.PI / 2;
+    
+    // Oprim miscarea navei
+    ship.velocityX = 0;
+    ship.velocityY = 0;
+    
+    // Stergem toate rachetele
+    missiles = [];
+    
+    // Cream asteroizi noi la distanta de nava
+    createInitialAsteroids();
+    
+    // Oprim jocul pentru 1 secunda pentru a da timp jucatorului sa se pregateasca
+    gameRunning = false;
+    
+    setTimeout(function() {
+        // Repornim jocul dupa 1 secunda
+        gameRunning = true;
+        gameLoop();
+    }, 1000);
+}
+
+// Functie care este apelata cand jocul se termina (vieti = 0)
+function gameOver() {
+    console.log('GAME OVER! Scor final:', score);
+    
+    // Oprim jocul
+    gameRunning = false;
+    
+    // Afisam ecranul de game over
+    var gameOverScreen = document.getElementById('game-over-screen');
+    gameOverScreen.style.display = 'block';
+    
+    // Afisam scorul final
+    var finalScoreElement = document.getElementById('final-score');
+    finalScoreElement.textContent = score;
+}
+
+// Functie care reseteaza jocul pentru a incepe din nou
+function restartGame() {
+    console.log('Restart joc...');
+    
+    // Ascundem ecranul de game over
+    var gameOverScreen = document.getElementById('game-over-screen');
+    gameOverScreen.style.display = 'none';
+    
+    // Resetam variabilele de joc
+    score = 0;
+    lives = 3;
+    lastExtraLifeScore = 0;
+    
+    // Actualizam afisajul
+    updateScoreDisplay();
+    updateLivesDisplay();
+    
+    // Resetam arrays
+    asteroids = [];
+    missiles = [];
+    
+    // Pornim jocul din nou
+    startGame();
+}
+
+// ============================================
+// SECTIUNEA 19: EVENT LISTENERS PENTRU BUTOANE
+// ============================================
+
+// Butonul pentru restart
+document.getElementById('restart-btn').addEventListener('click', function() {
+    restartGame();
+});
+
+// ============================================
+// SECTIUNEA 21: LOCALSTORAGE - SALVARE SI INCARCARE SCORURI
+// ============================================
+
+// Functie care incarca scorurile salvate din LocalStorage
+function loadHighScores() {
+    // Incercam sa luam scorurile din LocalStorage
+    // getItem returneaza null daca nu exista date
+    var savedScores = localStorage.getItem('asteroidsHighScores');
+    
+    // Daca exista scoruri salvate
+    if (savedScores) {
+        // Convertim din text JSON inapoi in array
+        // JSON.parse transforma un string JSON intr-un obiect JavaScript
+        var scoresArray = JSON.parse(savedScores);
+        
+        console.log('Scoruri incarcate din LocalStorage:', scoresArray);
+        
+        return scoresArray;
+    } else {
+        // Daca nu exista scoruri salvate, returnam un array gol
+        console.log('Nu exista scoruri salvate');
+        return [];
+    }
+}
+
+// Functie care salveaza scorurile in LocalStorage
+function saveHighScores(scoresArray) {
+    // Convertim array-ul de scoruri in text JSON
+    // JSON.stringify transforma un obiect JavaScript intr-un string JSON
+    var scoresJSON = JSON.stringify(scoresArray);
+    
+    // Salvam in LocalStorage
+    // setItem primeste o cheie (numele) si o valoare (datele)
+    localStorage.setItem('asteroidsHighScores', scoresJSON);
+    
+    console.log('Scoruri salvate in LocalStorage:', scoresArray);
+}
+
+// Functie care adauga un scor nou in lista de high scores
+function addHighScore(playerName, playerScore) {
+    // Validam numele (nu poate fi gol)
+    if (!playerName || playerName.trim() === '') {
+        alert('Te rog introdu un nume!');
+        return;
+    }
+    
+    // Incarcam scorurile existente
+    var highScores = loadHighScores();
+    
+    // Cream un obiect pentru scorul nou
+    var newScore = {
+        name: playerName.trim(), // trim() elimina spatiile de la inceput si sfarsit
+        score: playerScore
+    };
+    
+    // Adaugam scorul nou in array
+    highScores.push(newScore);
+    
+    // Sortam array-ul descrescator dupa scor
+    // Functia sort primeste o functie de comparare
+    // Daca returneaza un numar negativ, a vine inaintea lui b
+    // Daca returneaza un numar pozitiv, b vine inaintea lui a
+    highScores.sort(function(a, b) {
+        return b.score - a.score; // Descrescator (cel mai mare scor primul)
+    });
+    
+    // Pastram doar primele 5 scoruri
+    // slice(0, 5) ia elementele de la index 0 la 4 (primele 5)
+    highScores = highScores.slice(0, 5);
+    
+    // Salvam scorurile actualizate
+    saveHighScores(highScores);
+    
+    // Actualizam afisajul
+    displayHighScores();
+    
+    console.log('Scor adaugat:', newScore);
+}
+
+// Functie care afiseaza scorurile pe pagina
+function displayHighScores() {
+    // Incarcam scorurile
+    var highScores = loadHighScores();
+    
+    // Gasim lista HTML unde afisam scorurile
+    var scoresList = document.getElementById('scores-list');
+    
+    // Golim lista (stergem toate elementele anterioare)
+    scoresList.innerHTML = '';
+    
+    // Verificam daca exista scoruri
+    if (highScores.length === 0) {
+        // Daca nu exista scoruri, afisam un mesaj
+        var emptyMessage = document.createElement('li');
+        emptyMessage.textContent = 'Niciun scor înregistrat încă';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.fontStyle = 'italic';
+        scoresList.appendChild(emptyMessage);
+        return;
+    }
+    
+    // Parcurgem fiecare scor si il afisam
+    for (var i = 0; i < highScores.length; i++) {
+        var scoreData = highScores[i];
+        
+        // Cream un element <li> nou
+        var listItem = document.createElement('li');
+        
+        // Setam textul elementului
+        // Afisam: pozitie. nume - scor puncte
+        listItem.textContent = scoreData.name + ' - ' + scoreData.score + ' puncte';
+        
+        // Adaugam elementul in lista
+        scoresList.appendChild(listItem);
+    }
+}
+
+// Functie care actualizeaza afisarea celui mai bun scor in header
+function updateHighScoreDisplay() {
+    // Incarcam scorurile
+    var highScores = loadHighScores();
+    
+    // Gasim elementul HTML pentru high score
+    var highScoreElement = document.getElementById('high-score');
+    
+    // Verificam daca exista scoruri
+    if (highScores.length > 0) {
+        // Afisam cel mai bun scor (primul din array dupa sortare)
+        highScoreElement.textContent = highScores[0].score;
+    } else {
+        // Daca nu exista scoruri, afisam 0
+        highScoreElement.textContent = '0';
+    }
+}
+
+// Event listener pentru butonul "Salveaza Scor"
+document.getElementById('save-score-btn').addEventListener('click', function() {
+    // Luam numele introdus de jucator
+    var playerNameInput = document.getElementById('player-name');
+    var playerName = playerNameInput.value;
+    
+    // Adaugam scorul in lista
+    addHighScore(playerName, score);
+    
+    // Golim input-ul
+    playerNameInput.value = '';
+    
+    // Afisam un mesaj de confirmare
+    alert('Scor salvat cu succes!');
+});
+
+// ============================================
+// SECTIUNEA 22: TOUCH CONTROLS - CONTROALE PENTRU TOUCHSCREEN
+// ============================================
+
+// Variabile pentru tracking-ul touch-ului
+var touchControls = {
+    moveUp: false,
+    moveDown: false,
+    moveLeft: false,
+    moveRight: false,
+    rotateLeft: false,
+    rotateRight: false,
+    shoot: false
+};
+
+// Functie care creeaza butoanele virtuale pentru touch control
+function createTouchButtons() {
+    // Verificam daca dispozitivul are touchscreen
+    // Daca nu are, nu cream butoanele
+    var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (!isTouchDevice) {
+        console.log('Dispozitiv fara touchscreen, nu cream butoane virtuale');
+        return;
+    }
+    
+    console.log('Dispozitiv cu touchscreen detectat, cream butoane virtuale');
+    
+    // Cream un container pentru butoanele de control
+    var touchButtonsContainer = document.createElement('div');
+    touchButtonsContainer.id = 'touch-controls';
+    touchButtonsContainer.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 100;
+    `;
+    
+    // Cream container pentru butoanele de miscare (sageti)
+    var moveButtons = document.createElement('div');
+    moveButtons.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        gap: 5px;
+    `;
+    
+    // Functie helper pentru crearea unui buton
+    function createButton(text, gridArea) {
+        var button = document.createElement('button');
+        button.textContent = text;
+        button.style.cssText = `
+            background-color: rgba(0, 255, 0, 0.3);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            grid-area: ${gridArea};
+        `;
+        return button;
+    }
+    
+    // Cream butoanele de directie
+    var upBtn = createButton('↑', '1 / 2 / 2 / 3');
+    var leftBtn = createButton('←', '2 / 1 / 3 / 2');
+    var rightBtn = createButton('→', '2 / 3 / 3 / 4');
+    var downBtn = createButton('↓', '3 / 2 / 4 / 3');
+    
+    // Adaugam butoanele in container
+    moveButtons.appendChild(upBtn);
+    moveButtons.appendChild(leftBtn);
+    moveButtons.appendChild(rightBtn);
+    moveButtons.appendChild(downBtn);
+    
+    // Cream container pentru butoanele de actiune (rotire si tragere)
+    var actionButtons = document.createElement('div');
+    actionButtons.style.cssText = `
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+    `;
+    
+    var rotateLeftBtn = createButton('Z', '');
+    rotateLeftBtn.style.width = '60px';
+    rotateLeftBtn.style.height = '60px';
+    
+    var rotateRightBtn = createButton('C', '');
+    rotateRightBtn.style.width = '60px';
+    rotateRightBtn.style.height = '60px';
+    
+    var shootBtn = createButton('X', '');
+    shootBtn.style.width = '60px';
+    shootBtn.style.height = '60px';
+    shootBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+    shootBtn.style.borderColor = '#ff0000';
+    shootBtn.style.color = '#ff0000';
+    
+    actionButtons.appendChild(rotateLeftBtn);
+    actionButtons.appendChild(rotateRightBtn);
+    actionButtons.appendChild(shootBtn);
+    
+    // Adaugam containerele in containerul principal
+    touchButtonsContainer.appendChild(moveButtons);
+    touchButtonsContainer.appendChild(actionButtons);
+    
+    // Adaugam containerul in pagina
+    document.body.appendChild(touchButtonsContainer);
+    
+    // ===== EVENT LISTENERS PENTRU BUTOANE =====
+    
+    // Buton SUS
+    upBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveUp = true;
+    });
+    upBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveUp = false;
+    });
+    
+    // Buton JOS
+    downBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveDown = true;
+    });
+    downBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveDown = false;
+    });
+    
+    // Buton STANGA
+    leftBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveLeft = true;
+    });
+    leftBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveLeft = false;
+    });
+    
+    // Buton DREAPTA
+    rightBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveRight = true;
+    });
+    rightBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveRight = false;
+    });
+    
+    // Buton ROTIRE STANGA (Z)
+    rotateLeftBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.rotateLeft = true;
+    });
+    rotateLeftBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.rotateLeft = false;
+    });
+    
+    // Buton ROTIRE DREAPTA (C)
+    rotateRightBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.rotateRight = true;
+    });
+    rotateRightBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.rotateRight = false;
+    });
+    
+    // Buton TRAGERE (X)
+    shootBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.shoot = true;
+    });
+    shootBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.shoot = false;
+    });
+    
+    console.log('Butoane touch create cu succes!');
+}
+
+
+
+
+/// ============================================
+// SECTIUNEA 21: LOCALSTORAGE - SALVARE SI INCARCARE SCORURI
+// ============================================
+
+// Functie care incarca scorurile salvate din LocalStorage
+function loadHighScores() {
+    // Incercam sa luam scorurile din LocalStorage
+    // getItem returneaza null daca nu exista date
+    var savedScores = localStorage.getItem('asteroidsHighScores');
+    
+    // Daca exista scoruri salvate
+    if (savedScores) {
+        // Convertim din text JSON inapoi in array
+        // JSON.parse transforma un string JSON intr-un obiect JavaScript
+        var scoresArray = JSON.parse(savedScores);
+        
+        console.log('Scoruri incarcate din LocalStorage:', scoresArray);
+        
+        return scoresArray;
+    } else {
+        // Daca nu exista scoruri salvate, returnam un array gol
+        console.log('Nu exista scoruri salvate');
+        return [];
+    }
+}
+
+// Functie care salveaza scorurile in LocalStorage
+function saveHighScores(scoresArray) {
+    // Convertim array-ul de scoruri in text JSON
+    // JSON.stringify transforma un obiect JavaScript intr-un string JSON
+    var scoresJSON = JSON.stringify(scoresArray);
+    
+    // Salvam in LocalStorage
+    // setItem primeste o cheie (numele) si o valoare (datele)
+    localStorage.setItem('asteroidsHighScores', scoresJSON);
+    
+    console.log('Scoruri salvate in LocalStorage:', scoresArray);
+}
+
+// Functie care adauga un scor nou in lista de high scores
+function addHighScore(playerName, playerScore) {
+    // Validam numele (nu poate fi gol)
+    if (!playerName || playerName.trim() === '') {
+        alert('Te rog introdu un nume!');
+        return;
+    }
+    
+    // Incarcam scorurile existente
+    var highScores = loadHighScores();
+    
+    // Cream un obiect pentru scorul nou
+    var newScore = {
+        name: playerName.trim(), // trim() elimina spatiile de la inceput si sfarsit
+        score: playerScore
+    };
+    
+    // Adaugam scorul nou in array
+    highScores.push(newScore);
+    
+    // Sortam array-ul descrescator dupa scor
+    // Functia sort primeste o functie de comparare
+    // Daca returneaza un numar negativ, a vine inaintea lui b
+    // Daca returneaza un numar pozitiv, b vine inaintea lui a
+    highScores.sort(function(a, b) {
+        return b.score - a.score; // Descrescator (cel mai mare scor primul)
+    });
+    
+    // Pastram doar primele 5 scoruri
+    // slice(0, 5) ia elementele de la index 0 la 4 (primele 5)
+    highScores = highScores.slice(0, 5);
+    
+    // Salvam scorurile actualizate
+    saveHighScores(highScores);
+    
+    // Actualizam afisajul
+    displayHighScores();
+    
+    console.log('Scor adaugat:', newScore);
+}
+
+// Functie care afiseaza scorurile pe pagina
+function displayHighScores() {
+    // Incarcam scorurile
+    var highScores = loadHighScores();
+    
+    // Gasim lista HTML unde afisam scorurile
+    var scoresList = document.getElementById('scores-list');
+    
+    // Golim lista (stergem toate elementele anterioare)
+    scoresList.innerHTML = '';
+    
+    // Verificam daca exista scoruri
+    if (highScores.length === 0) {
+        // Daca nu exista scoruri, afisam un mesaj
+        var emptyMessage = document.createElement('li');
+        emptyMessage.textContent = 'Niciun scor înregistrat încă';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.fontStyle = 'italic';
+        scoresList.appendChild(emptyMessage);
+        return;
+    }
+    
+    // Parcurgem fiecare scor si il afisam
+    for (var i = 0; i < highScores.length; i++) {
+        var scoreData = highScores[i];
+        
+        // Cream un element <li> nou
+        var listItem = document.createElement('li');
+        
+        // Setam textul elementului
+        // Afisam: pozitie. nume - scor puncte
+        listItem.textContent = scoreData.name + ' - ' + scoreData.score + ' puncte';
+        
+        // Adaugam elementul in lista
+        scoresList.appendChild(listItem);
+    }
+}
+
+// Functie care actualizeaza afisarea celui mai bun scor in header
+function updateHighScoreDisplay() {
+    // Incarcam scorurile
+    var highScores = loadHighScores();
+    
+    // Gasim elementul HTML pentru high score
+    var highScoreElement = document.getElementById('high-score');
+    
+    // Verificam daca exista scoruri
+    if (highScores.length > 0) {
+        // Afisam cel mai bun scor (primul din array dupa sortare)
+        highScoreElement.textContent = highScores[0].score;
+    } else {
+        // Daca nu exista scoruri, afisam 0
+        highScoreElement.textContent = '0';
+    }
+}
+
+// Event listener pentru butonul "Salveaza Scor"
+document.getElementById('save-score-btn').addEventListener('click', function() {
+    // Luam numele introdus de jucator
+    var playerNameInput = document.getElementById('player-name');
+    var playerName = playerNameInput.value;
+    
+    // Adaugam scorul in lista
+    addHighScore(playerName, score);
+    
+    // Golim input-ul
+    playerNameInput.value = '';
+    
+    // Afisam un mesaj de confirmare
+    alert('Scor salvat cu succes!');
+});
+
+// ============================================
+// SECTIUNEA 22: TOUCH CONTROLS - CONTROALE PENTRU TOUCHSCREEN
+// ============================================
+
+// Variabile pentru tracking-ul touch-ului
+var touchControls = {
+    moveUp: false,
+    moveDown: false,
+    moveLeft: false,
+    moveRight: false,
+    rotateLeft: false,
+    rotateRight: false,
+    shoot: false
+};
+
+// Functie care creeaza butoanele virtuale pentru touch control
+function createTouchButtons() {
+    // Verificam daca dispozitivul are touchscreen
+    // Daca nu are, nu cream butoanele
+    var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (!isTouchDevice) {
+        console.log('Dispozitiv fara touchscreen, nu cream butoane virtuale');
+        return;
+    }
+    
+    console.log('Dispozitiv cu touchscreen detectat, cream butoane virtuale');
+    
+    // Cream un container pentru butoanele de control
+    var touchButtonsContainer = document.createElement('div');
+    touchButtonsContainer.id = 'touch-controls';
+    touchButtonsContainer.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 100;
+    `;
+    
+    // Cream container pentru butoanele de miscare (sageti)
+    var moveButtons = document.createElement('div');
+    moveButtons.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        gap: 5px;
+    `;
+    
+    // Functie helper pentru crearea unui buton
+    function createButton(text, gridArea) {
+        var button = document.createElement('button');
+        button.textContent = text;
+        button.style.cssText = `
+            background-color: rgba(0, 255, 0, 0.3);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            grid-area: ${gridArea};
+        `;
+        return button;
+    }
+    
+    // Cream butoanele de directie
+    var upBtn = createButton('↑', '1 / 2 / 2 / 3');
+    var leftBtn = createButton('←', '2 / 1 / 3 / 2');
+    var rightBtn = createButton('→', '2 / 3 / 3 / 4');
+    var downBtn = createButton('↓', '3 / 2 / 4 / 3');
+    
+    // Adaugam butoanele in container
+    moveButtons.appendChild(upBtn);
+    moveButtons.appendChild(leftBtn);
+    moveButtons.appendChild(rightBtn);
+    moveButtons.appendChild(downBtn);
+    
+    // Cream container pentru butoanele de actiune (rotire si tragere)
+    var actionButtons = document.createElement('div');
+    actionButtons.style.cssText = `
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+    `;
+    
+    var rotateLeftBtn = createButton('Z', '');
+    rotateLeftBtn.style.width = '60px';
+    rotateLeftBtn.style.height = '60px';
+    
+    var rotateRightBtn = createButton('C', '');
+    rotateRightBtn.style.width = '60px';
+    rotateRightBtn.style.height = '60px';
+    
+    var shootBtn = createButton('X', '');
+    shootBtn.style.width = '60px';
+    shootBtn.style.height = '60px';
+    shootBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+    shootBtn.style.borderColor = '#ff0000';
+    shootBtn.style.color = '#ff0000';
+    
+    actionButtons.appendChild(rotateLeftBtn);
+    actionButtons.appendChild(rotateRightBtn);
+    actionButtons.appendChild(shootBtn);
+    
+    // Adaugam containerele in containerul principal
+    touchButtonsContainer.appendChild(moveButtons);
+    touchButtonsContainer.appendChild(actionButtons);
+    
+    // Adaugam containerul in pagina
+    document.body.appendChild(touchButtonsContainer);
+    
+    // ===== EVENT LISTENERS PENTRU BUTOANE =====
+    
+    // Buton SUS
+    upBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveUp = true;
+    });
+    upBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveUp = false;
+    });
+    
+    // Buton JOS
+    downBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveDown = true;
+    });
+    downBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveDown = false;
+    });
+    
+    // Buton STANGA
+    leftBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveLeft = true;
+    });
+    leftBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveLeft = false;
+    });
+    
+    // Buton DREAPTA
+    rightBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.moveRight = true;
+    });
+    rightBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.moveRight = false;
+    });
+    
+    // Buton ROTIRE STANGA (Z)
+    rotateLeftBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.rotateLeft = true;
+    });
+    rotateLeftBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.rotateLeft = false;
+    });
+    
+    // Buton ROTIRE DREAPTA (C)
+    rotateRightBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.rotateRight = true;
+    });
+    rotateRightBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.rotateRight = false;
+    });
+    
+    // Buton TRAGERE (X)
+    shootBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchControls.shoot = true;
+    });
+    shootBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchControls.shoot = false;
+    });
+    
+    console.log('Butoane touch create cu succes!');
+}
+
