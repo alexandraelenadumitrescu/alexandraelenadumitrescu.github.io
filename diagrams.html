@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proiect FrameShuttr - Documentație Tehnică</title>
+    <style>
+        /* --- STILURI DARK MODE (FrameShuttr Theme) --- */
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --accent-purple: #BB86FC;
+            --accent-teal: #03DAC6;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        header {
+            background: rgba(30, 30, 30, 0.9);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+        .logo span { color: var(--accent-purple); }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* CAPITOLE & SECȚIUNI */
+        .chapter-title {
+            font-size: 2.2rem;
+            color: var(--accent-purple);
+            margin-top: 80px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .sub-section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-teal);
+            padding-left: 15px;
+            color: var(--text-primary);
+            background: linear-gradient(90deg, rgba(3, 218, 198, 0.1), transparent);
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        /* CONTAINERE PENTRU CONȚINUT */
+        .text-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .diagram-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .diagram-label {
+            font-size: 0.9rem;
+            color: var(--accent-teal);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        /* LAYOUT PENTRU UI (GRID) */
+        .ui-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .ui-card {
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 9/16; /* Format telefon */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ui-card img, .ui-card svg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* SVG STYLING */
+        svg { max-width: 100%; height: auto !important; }
+        .diagram-card svg text { fill: #E0E0E0 !important; } /* Corecție text dark mode */
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">Frame<span>Shuttr</span> Docs</div>
+            <div>Proiect ASE - Sisteme Informatice</div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <h1 class="chapter-title">1. Prezentarea Sistemului Informatic</h1>
+
+        <div class="sub-section">
+            <h2 class="section-header">1.1 Descrierea generală a sistemului</h2>
+            <div class="text-card">
+                <p>FrameShuttr este o aplicație mobilă hibridă (Android + Cloud) care permite fotografilor să editeze imagini folosind un editor vizual de noduri și algoritmi de inteligență artificială...</p>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">1.2 Specificarea cerințelor</h2>
+            
+            <div class="diagram-label">1.2.1 Diagrama Cazurilor de Utilizare (Use Case)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[LOC PENTRU DIAGRAMA USE CASE]</div>
+            </div>
+
+            <div class="diagram-label">1.2.2 Descrierea Textuală a Cazurilor de Utilizare</div>
+            <div class="text-card">
+                <h3>UC1: Execute Pipeline Processing</h3>
+                <p><strong>Actori:</strong> Photographer, AI Engine...</p>
+                <p><strong>Flux Principal:</strong> 1. User apasă butonul... 2. Sistemul preia imaginea...</p>
+            </div>
+            <div class="text-card">
+                <h3>UC2: Create Node Workflow</h3>
+                <p><strong>Actori:</strong> Photographer...</p>
+                <p><strong>Flux Principal:</strong> 1. User adaugă nod... 2. User conectează nodurile...</p>
+            </div>
+        </div>
+
+
+        <h1 class="chapter-title">2. Analiza Sistemului Informatic</h1>
+
+        <div class="sub-section">
+            <h2 class="section-header">2.1 Diagrame de Activitate</h2>
+            
+            <div class="diagram-label">Diagrama 1: Flux General Procesare</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA ACTIVITATE 1]</div>
+            </div>
+
+            <div class="diagram-label">Diagrama 2: Validare Conexiuni Noduri</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA ACTIVITATE 2]</div>
+            </div>
+
+            <div class="diagram-label">Diagrama 3: Logica Backend (Vector Search)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA ACTIVITATE 3]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">2.2 Diagrama de Clase (Analiză)</h2>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA CLASE ANALIZĂ]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">2.3 Diagrame de Stare</h2>
+            
+            <div class="diagram-label">Starea 1: Ciclul de viață al unui Workflow (Graf)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA STARE 1]</div>
+            </div>
+
+            <div class="diagram-label">Starea 2: Procesarea Imaginii (Pipeline)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA STARE 2]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">2.4 Diagrame de Interacțiune (Secvență)</h2>
+            
+            <div class="diagram-label">Secvența 1: Adăugarea și Conectarea unui Nod</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA SECVENȚĂ 1]</div>
+            </div>
+
+            <div class="diagram-label">Secvența 2: Execuția AI Style Transfer (Client-Server)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA SECVENȚĂ 2]</div>
+            </div>
+
+            <div class="diagram-label">Secvența 3: Salvare/Export Imagine</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA SECVENȚĂ 3]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">2.5 Diagrame BPMN</h2>
+            
+            <div class="diagram-label">BPMN 1: Diagrama de Proces (Node Graph Creation)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA BPMN PROCES]</div>
+            </div>
+
+            <div class="diagram-label">BPMN 2: Diagrama de Colaborare (AI Style Transfer)</div>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA BPMN COLABORARE]</div>
+            </div>
+        </div>
+
+
+        <h1 class="chapter-title">3. Proiectarea Sistemului Informatic</h1>
+
+        <div class="sub-section">
+            <h2 class="section-header">3.1 Diagrama de Clase Detaliată</h2>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA CLASE DETALIATĂ]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">3.2 Proiectarea Bazei de Date (ERD)</h2>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA ERD]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">3.3 Proiectarea Interfețelor Utilizator</h2>
+            <div class="ui-grid">
+                <div class="ui-card">
+                    <div style="color:#666;">Interface 1<br>(Workspace)</div>
+                </div>
+                <div class="ui-card">
+                    <div style="color:#666;">Interface 2<br>(Node Config)</div>
+                </div>
+                <div class="ui-card">
+                    <div style="color:#666;">Interface 3<br>(Processing)</div>
+                </div>
+                <div class="ui-card">
+                    <div style="color:#666;">Interface 4<br>(Result)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">3.4 Diagrama de Componente</h2>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA COMPONENTE]</div>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <h2 class="section-header">3.5 Diagrama de Desfășurare</h2>
+            <div class="diagram-card">
+                <div style="padding:40px; border:2px dashed #444; color:#666;">[DIAGRAMA DESFĂȘURARE]</div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2025 FrameShuttr Project. Documentație generată pentru proiect universitar.
+    </footer>
+
+</body>
+</html>
