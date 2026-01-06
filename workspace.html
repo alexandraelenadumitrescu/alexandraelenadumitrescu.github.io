@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Edit Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the range slider to make it invisible but clickable */
+        .slider-control {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: col-resize;
+        }
+        .slider-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 100vh;
+            width: 40px; /* larger touch area */
+            background: transparent;
+        }
+        .slider-control::-moz-range-thumb {
+            height: 100vh;
+            width: 40px;
+            background: transparent;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    
+    <div id="root"></div>
+
+    <script type="module">
+        import { html, render, useState } from 'https://unpkg.com/htm/preact/standalone.module.js';
+
+        // --- 1. Icons (Replicating Lucide-React) ---
+        const XIcon = () => html`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+        `;
+
+        const Share2Icon = () => html`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>
+            </svg>
+        `;
+
+        // --- 2. The Missing Component: BeforeAfterSlider ---
+        const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
+            const [sliderPosition, setSliderPosition] = useState(50);
+
+            const handleInput = (e) => {
+                setSliderPosition(e.target.value);
+            };
+
+            return html`
+                <div class="relative w-full h-full select-none">
+                    <img src=${afterImage} class="absolute inset-0 w-full h-full object-cover" alt="After" />
+
+                    <div class="absolute inset-0 w-full h-full overflow-hidden" style="width: ${sliderPosition}%">
+                        <img src=${beforeImage} class="absolute inset-0 w-[430px] max-w-none h-full object-cover" alt="Before" />
+                    </div>
+
+                    <div class="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none" style="left: ${sliderPosition}%">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full border border-white flex items-center justify-center">
+                            <div class="flex gap-1">
+                                <div class="w-0.5 h-3 bg-white"></div>
+                                <div class="w-0.5 h-3 bg-white"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        value=${sliderPosition} 
+                        onInput=${handleInput}
+                        class="slider-control absolute inset-0 w-full h-full z-30 opacity-0"
+                    />
+                </div>
+            `;
+        };
+
+        // --- 3. Main App Component ---
+        function App() {
+            // Using placeholder images since I don't have your Figma assets
+            const beforeImage = "https://alexandraelenadumitrescu.github.io/before.png"; // Gloomy street
+            const afterImage = "https://alexandraelenadumitrescu.github.io/after.png"; // Golden hour street
+
+            return html`
+                <div class="flex items-center justify-center min-h-screen bg-gray-900 font-sans">
+                    <div class="relative w-full max-w-[430px] h-screen max-h-[932px] overflow-hidden bg-black shadow-2xl">
+                        
+                        <${BeforeAfterSlider} 
+                            beforeImage=${beforeImage}
+                            afterImage=${afterImage}
+                            altText="City street photo edit"
+                        />
+                        
+                        <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/60 to-transparent z-40 pt-12 pointer-events-none">
+                            <button class="pointer-events-auto p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors active:scale-95" aria-label="Close">
+                                <${XIcon} />
+                            </button>
+                            
+                            <button class="pointer-events-auto p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors active:scale-95" aria-label="Export">
+                                <${Share2Icon} />
+                            </button>
+                        </div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 px-6 py-8 pb-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent backdrop-blur-sm z-40 pointer-events-none">
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                    <p class="text-white text-sm font-medium">
+                                        Confidence Score: <span class="text-green-400">94%</span>
+                                    </p>
+                                </div>
+                                <p class="text-white/90 text-base">
+                                    Matched Style: <span class="font-semibold">Golden Hour</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            `;
+        }
+
+        render(html`<${App} />`, document.getElementById('root'));
+    </script>
+</body>
+</html>

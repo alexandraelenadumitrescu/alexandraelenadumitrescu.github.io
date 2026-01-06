@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #121212; }
+    </style>
+</head>
+<body>
+    <div id="root" class="h-full w-full"></div>
+
+    <script type="module">
+        import { html, render, useState, useRef, useEffect } from 'https://unpkg.com/htm/preact/standalone.module.js';
+
+        // --- 1. Icons ---
+        const ArrowLeft = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`;
+        const Save = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+        const Play = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+        const Plus = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`;
+        const LayoutGrid = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>`;
+        const Settings = () => html`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
+        // --- 2. EditorNode Component (Recreated) ---
+        const EditorNode = ({ id, label, x, y, isSelected, onSelect, onDrag }) => {
+            const handleMouseDown = (e) => {
+                e.preventDefault();
+                onSelect(id);
+                
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const initialNodeX = x;
+                const initialNodeY = y;
+
+                const handleMouseMove = (moveEvent) => {
+                    const deltaX = moveEvent.clientX - startX;
+                    const deltaY = moveEvent.clientY - startY;
+                    onDrag(id, initialNodeX + deltaX, initialNodeY + deltaY);
+                };
+
+                const handleMouseUp = () => {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('mouseup', handleMouseUp);
+                };
+
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('mouseup', handleMouseUp);
+            };
+
+            return html`
+                <div 
+                    class="absolute w-32 h-24 rounded-xl shadow-lg flex flex-col items-center justify-center cursor-move select-none transition-shadow border-2 bg-[#1E1E1E]"
+                    style="transform: translate(${x}px, ${y}px); border-color: ${isSelected ? '#BB86FC' : '#333'}"
+                    onMouseDown=${handleMouseDown}
+                >
+                    <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#03DAC6]"></div>
+                    
+                    <span class="text-white text-sm font-medium text-center px-2 pointer-events-none">${label}</span>
+                    
+                    <div class="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#BB86FC]"></div>
+                </div>
+            `;
+        };
+
+        // --- 3. Main App Component ---
+        function App() {
+            const canvasRef = useRef(null);
+            const [selectedNodeId, setSelectedNodeId] = useState('node-2');
+            
+            // Adjusted initial positions to center them better on load
+            const [nodes, setNodes] = useState([
+                { id: 'node-1', label: 'Source Image', x: 50, y: 150 },
+                { id: 'node-2', label: 'AI Style Transfer', x: 250, y: 150 },
+                { id: 'node-3', label: 'Output', x: 450, y: 150 }
+            ]);
+            
+            const connections = [
+                { from: 'node-1', to: 'node-2' },
+                { from: 'node-2', to: 'node-3' }
+            ];
+
+            const handleNodeDrag = (id, x, y) => {
+                setNodes(prevNodes =>
+                    prevNodes.map(node =>
+                        node.id === id ? { ...node, x, y } : node
+                    )
+                );
+            };
+
+            const getNodeById = (id) => nodes.find(n => n.id === id);
+
+            // Get standard SVG dimensions for the node to calculate center points for the lines
+            const NODE_WIDTH = 128; // w-32 = 8rem = 128px
+            const NODE_HEIGHT = 96; // h-24 = 6rem = 96px
+
+            const getBezierPath = (from, to) => {
+                // Calculate center points relative to node position
+                // Start from Right side of 'from' node
+                const startX = from.x + NODE_WIDTH; 
+                const startY = from.y + (NODE_HEIGHT / 2);
+                
+                // End at Left side of 'to' node
+                const endX = to.x;
+                const endY = to.y + (NODE_HEIGHT / 2);
+                
+                const controlPointOffset = Math.abs(endX - startX) / 2;
+                const cp1x = startX + controlPointOffset;
+                const cp1y = startY;
+                const cp2x = endX - controlPointOffset;
+                const cp2y = endY;
+
+                return "M " + startX + " " + startY + " C " + cp1x + " " + cp1y + ", " + cp2x + " " + cp2y + ", " + endX + " " + endY;
+            };
+
+            return html`
+                <div class="dark w-full h-full flex flex-col bg-[#121212] overflow-hidden font-sans">
+                    <div class="flex items-center justify-between px-4 py-3 bg-[#1E1E1E] border-b border-white/10 shrink-0">
+                        <button class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <${ArrowLeft} class="w-6 h-6 text-white" />
+                        </button>
+                        <h1 class="text-white text-base">Node Editor</h1>
+                        <button class="px-4 py-2 bg-[#BB86FC] text-black rounded-full hover:bg-[#9965f4] transition-colors flex items-center justify-center">
+                            <${Save} class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div 
+                        ref=${canvasRef}
+                        class="flex-1 relative overflow-hidden"
+                        style="background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 20px 20px;"
+                    >
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                            ${connections.map((conn, idx) => {
+                                const fromNode = getNodeById(conn.from);
+                                const toNode = getNodeById(conn.to);
+                                if (!fromNode || !toNode) return null;
+
+                                return html`
+                                    <path
+                                        key=${idx}
+                                        d=${getBezierPath(fromNode, toNode)}
+                                        stroke="#BB86FC"
+                                        stroke-width="3"
+                                        fill="none"
+                                        opacity="0.6"
+                                    />
+                                `;
+                            })}
+                        </svg>
+
+                        ${nodes.map(node => html`
+                            <${EditorNode}
+                                key=${node.id}
+                                id=${node.id}
+                                label=${node.label}
+                                x=${node.x}
+                                y=${node.y}
+                                isSelected=${selectedNodeId === node.id}
+                                onSelect=${setSelectedNodeId}
+                                onDrag=${handleNodeDrag}
+                            />
+                        `)}
+                    </div>
+
+                    <button class="absolute bottom-24 right-6 w-14 h-14 bg-[#03DAC6] rounded-full shadow-lg hover:bg-[#02c4b3] transition-all flex items-center justify-center active:scale-95 z-50">
+                        <${Play} class="w-6 h-6 text-black fill-black ml-0.5" />
+                    </button>
+
+                    <div class="flex items-center justify-around px-4 py-4 bg-[#1E1E1E] border-t border-white/10 shrink-0 z-50 relative">
+                        <button class="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors">
+                            <${Plus} class="w-6 h-6 text-white/90" />
+                            <span class="text-xs text-white/70">Add Node</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors">
+                            <${LayoutGrid} class="w-6 h-6 text-white/90" />
+                            <span class="text-xs text-white/70">Layout</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors">
+                            <${Settings} class="w-6 h-6 text-white/90" />
+                            <span class="text-xs text-white/70">Settings</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        render(html`<${App} />`, document.getElementById('root'));
+    </script>
+</body>
+</html>

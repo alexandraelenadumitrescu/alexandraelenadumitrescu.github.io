@@ -5,142 +5,184 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proiect FrameShuttr - Documentație Tehnică</title>
     <style>
-        /* --- STILURI DARK MODE (FrameShuttr Theme) --- */
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1E1E1E;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B0B0B0;
-            --accent-purple: #BB86FC;
-            --accent-teal: #03DAC6;
-            --border-color: #333333;
-        }
+    /* --- STILURI DARK MODE (FrameShuttr Theme) --- */
+    :root {
+        --bg-color: #121212;
+        --card-bg: #1E1E1E;
+        --text-primary: #FFFFFF;
+        --text-secondary: #B0B0B0;
+        --accent-purple: #BB86FC;
+        --accent-teal: #03DAC6;
+        --border-color: #333333;
+    }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+    body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
 
-        /* HEADER */
-        header {
-            background: rgba(30, 30, 30, 0.9);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 40px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
-        .logo span { color: var(--accent-purple); }
+    /* HEADER */
+    header {
+        background: rgba(30, 30, 30, 0.9);
+        border-bottom: 1px solid var(--border-color);
+        padding: 20px 40px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+    .logo span { color: var(--accent-purple); }
 
-        /* CONTAINER */
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+    /* CONTAINER */
+    .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-        /* CAPITOLE & SECȚIUNI */
-        .chapter-title {
-            font-size: 2.2rem;
-            color: var(--accent-purple);
-            margin-top: 80px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-        }
+    /* CAPITOLE & SECȚIUNI */
+    .chapter-title {
+        font-size: 2.2rem;
+        color: var(--accent-purple);
+        margin-top: 80px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
 
-        .sub-section {
-            margin-bottom: 60px;
-        }
+    .sub-section {
+        margin-bottom: 60px;
+    }
 
-        .section-header {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--accent-teal);
-            padding-left: 15px;
-            color: var(--text-primary);
-            background: linear-gradient(90deg, rgba(3, 218, 198, 0.1), transparent);
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
+    .section-header {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--accent-teal);
+        padding-left: 15px;
+        color: var(--text-primary);
+        background: linear-gradient(90deg, rgba(3, 218, 198, 0.1), transparent);
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
 
-        /* CONTAINERE PENTRU CONȚINUT */
-        .text-card {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-        }
+    /* CONTAINERE PENTRU CONȚINUT TEXT */
+    .text-card {
+        background-color: var(--card-bg);
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+    }
 
-        .diagram-card {
-            background-color: #FFFFFF; /* Schimbă din var(--card-bg) în Alb pur */
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    overflow-x: auto;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
+    /* DIAGRAM CARD (PENTRU CHART-URI) */
+    .diagram-card {
+        background-color: #FFFFFF;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        overflow-x: auto;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
 
-        .diagram-label {
-            font-size: 0.9rem;
-            color: var(--accent-teal);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: bold;
-        }
+    .diagram-label {
+        font-size: 0.9rem;
+        color: var(--accent-teal);
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
+    }
 
-        /* LAYOUT PENTRU UI (GRID) */
-        .ui-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .ui-card {
-            background-color: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 9/16; /* Format telefon */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .ui-card img, .ui-card svg {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+    /* --- LAYOUT PENTRU UI / PHONES (ACTUALIZAT) --- */
+    
+    .ui-grid {
+        display: flex;           /* Flexbox pentru centrare mai bună */
+        flex-wrap: wrap;         /* Permite trecerea pe rândul următor */
+        justify-content: center; /* Centrează telefoanele */
+        gap: 40px;               /* Spațiu generos între ele */
+        padding: 20px 0;
+    }
 
-        /* SVG STYLING */
-        svg { max-width: 100%; height: auto !important; }
-        .diagram-card svg text { fill: #000000 !important; } /* Corecție text dark mode */
+    .ui-card {
+        /* Wrapper invizibil pentru fiecare telefon */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 300px;  /* Lățime fixă container */
+    }
 
-        footer {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-            border-top: 1px solid var(--border-color);
-            margin-top: 100px;
-        }
-    </style>
+    /* Stilul Frame-ului de Telefon */
+    .phone-frame {
+        width: 300px;           /* Lățimea vizuală pe site */
+        height: 600px;          /* Înălțimea vizuală pe site */
+        border: 12px solid #000;/* Rama telefonului */
+        border-radius: 40px;    /* Colțuri rotunde */
+        background: #000;
+        position: relative;
+        overflow: hidden;       /* Ascunde ce iese din ecran */
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* Umbră 3D */
+    }
+
+    /* Logica de scalare pentru conținut */
+    .phone-frame iframe {
+        width: 400px;           /* Lățimea reală a aplicației (iPhone size) */
+        height: 800px;          /* Înălțimea reală a aplicației */
+        
+        /* FORMULA MAGICA: */
+        /* Container 300px / Content 400px = 0.75 Scale */
+        transform: scale(0.75); 
+        transform-origin: 0 0;  /* Scalează din colțul stânga-sus */
+        
+        border: none;
+        background-color: #121212; /* Asigură fundal dark în iframe */
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    /* Opțional: Notch-ul telefonului */
+    .phone-frame::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 24px;
+        background: #000;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    /* SVG STYLING */
+    svg { max-width: 100%; height: auto !important; }
+    .diagram-card svg text { fill: #000000 !important; }
+
+    footer {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-secondary);
+        border-top: 1px solid var(--border-color);
+        margin-top: 100px;
+    }
+</style>
 </head>
 <body>
 
@@ -320,23 +362,38 @@
         </div>
 
         <div class="sub-section">
-            <h2 class="section-header">3.3 Proiectarea Interfețelor Utilizator</h2>
-            <div class="ui-grid">
-                <div class="ui-card">
-                    <div style="color:#666;">Interface 1<br>(Workspace)</div>
-                    
-                </div>
-                <div class="ui-card">
-                    <div style="color:#666;">Interface 2<br>(Node Config)</div>
-                </div>
-                <div class="ui-card">
-                    <div style="color:#666;">Interface 3<br>(Processing)</div>
-                </div>
-                <div class="ui-card">
-                    <div style="color:#666;">Interface 4<br>(Result)</div>
-                </div>
+    <h2 class="section-header">3.3 Proiectarea Interfețelor Utilizator</h2>
+    
+    <div class="ui-grid">
+        <div class="ui-card">
+            <h3 style="text-align:center; margin-bottom:10px; font-size:14px; color:#666;">Workspace</h3>
+            <div class="phone-frame">
+                <iframe src="workspace.html" loading="lazy"></iframe>
             </div>
         </div>
+
+        <div class="ui-card">
+            <h3 style="text-align:center; margin-bottom:10px; font-size:14px; color:#666;">Node Config</h3>
+            <div class="phone-frame">
+                <iframe src="config.html" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div class="ui-card">
+            <h3 style="text-align:center; margin-bottom:10px; font-size:14px; color:#666;">Processing</h3>
+            <div class="phone-frame">
+                <iframe src="processing.html" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div class="ui-card">
+            <h3 style="text-align:center; margin-bottom:10px; font-size:14px; color:#666;">Result</h3>
+            <div class="phone-frame">
+                <iframe src="result.html" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
 
         <div class="sub-section">
             <h2 class="section-header">3.4 Diagrama de Componente</h2>

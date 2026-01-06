@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Node Config Sheet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background: #111827; }
+        
+        /* Simple slide-up animation */
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+        /* Aranjare în grilă (2 coloane pe desktop, 1 pe mobil) */
+.ui-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    padding: 20px 0;
+}
+
+.ui-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Stilul de "Telefon" */
+.phone-frame {
+    width: 320px;       /* Lățime tipică de telefon */
+    height: 600px;      /* Înălțime tipică */
+    border: 12px solid #1a1a1a; /* Rama neagră a telefonului */
+    border-radius: 35px; /* Colțuri rotunjite ale telefonului */
+    overflow: hidden;    /* Ascunde ce iese din ecran */
+    background: #000;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3); /* Umbră pentru efect 3D */
+    position: relative;
+}
+
+/* Asigurăm că iframe-ul ocupă tot spațiu */
+.phone-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff; /* Fallback */
+}
+
+/* Opțional: Adaugă o "cameră" sau "notch" sus */
+.phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 25px;
+    background: #1a1a1a;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    z-index: 10; /* Peste iframe */
+    pointer-events: none;
+}
+    </style>
+</head>
+<body>
+    <div id="root" class="h-full w-full"></div>
+
+    <script type="module">
+        import { html, render, useState } from 'https://unpkg.com/htm/preact/standalone.module.js';
+
+        // --- 1. Icons ---
+        const XIcon = () => html`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+        `;
+
+        // --- 2. The Missing Component: NodeConfigSheet ---
+        const NodeConfigSheet = ({ isOpen, onClose }) => {
+            if (!isOpen) return null;
+
+            // Stop clicks inside the sheet from closing it
+            const handleSheetClick = (e) => e.stopPropagation();
+
+            return html`
+                <div class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+                    
+                    <div 
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+                        onClick=${onClose}
+                    ></div>
+
+                    <div 
+                        class="relative w-full max-w-md bg-[#1E1E1E] rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up overflow-hidden border border-white/10"
+                        onClick=${handleSheetClick}
+                    >
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                            <h2 class="text-lg font-semibold text-white">Node Configuration</h2>
+                            <button 
+                                onClick=${onClose}
+                                class="p-2 -mr-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <${XIcon} />
+                            </button>
+                        </div>
+
+                        <div class="p-6 space-y-6">
+                            
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-300">Node Name</label>
+                                <input 
+                                    type="text" 
+                                    value="Style Transfer Node #01"
+                                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-300">AI Model</label>
+                                <select class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none">
+                                    <option>Stable Diffusion XL</option>
+                                    <option>Midjourney v6</option>
+                                    <option>DALL-E 3</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-300">Denoising Strength</span>
+                                    <span class="text-purple-400">0.75</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="1" 
+                                    step="0.01" 
+                                    value="0.75"
+                                    class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                />
+                            </div>
+
+                            <button 
+                                onClick=${onClose}
+                                class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors active:scale-95"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- 3. Main App Component ---
+        function App() {
+            const [isSheetOpen, setIsSheetOpen] = useState(true);
+
+            return html`
+                <div class="h-full w-full bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center font-sans">
+                    
+                    <div class="text-center space-y-4 p-4">
+                        <h1 class="text-3xl font-bold text-white">AI Node Editor</h1>
+                        <p class="text-gray-300">Mobile Bottom Sheet Demo</p>
+                        
+                        <button
+                            onClick=${() => setIsSheetOpen(true)}
+                            class="mt-4 px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg active:scale-95"
+                        >
+                            Open Configuration
+                        </button>
+                    </div>
+
+                    <${NodeConfigSheet}
+                        isOpen=${isSheetOpen}
+                        onClose=${() => setIsSheetOpen(false)}
+                    />
+                </div>
+            `;
+        }
+
+        render(html`<${App} />`, document.getElementById('root'));
+    </script>
+</body>
+</html>
