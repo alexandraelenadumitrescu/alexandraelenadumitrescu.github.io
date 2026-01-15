@@ -868,7 +868,7 @@ function adaptInterfaceForDevice() {
     var controlsDiv = document.getElementById('game-controls');
     
     if (isMobileDevice()) {
-        console.log('Dispozitiv mobil detectat - afisam instructiuni touch');
+        console.log('Dispozitiv mobil detectat - afisam controale touch');
         
         controlsDiv.innerHTML = `
             <h3>Controale Touch:</h3>
