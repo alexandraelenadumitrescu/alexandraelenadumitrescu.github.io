@@ -1,10 +1,13 @@
+require('dotenv').config();
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { CohereClient } = require('cohere-ai');
 
-// --- IMPORTANT ---
-// Replace "YOUR_API_KEY" with your actual Google AI Studio API key.
-const API_KEY = "YOUR_API_KEY";
-// ---
+const API_KEY = process.env.API_KEY;
+
+if (!API_KEY || API_KEY === "YOUR_API_KEY") {
+    console.error("Error: API_KEY is not defined. Please create a .env file and add your Cohere API key.");
+    process.exit(1); // Stop the server if the key is not set
+}
 
 const app = express();
 const port = 3000;
@@ -12,7 +15,9 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static('.')); // Serve static files from the current directory
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const cohere = new CohereClient({
+    token: API_KEY,
+});
 
 app.post('/chat', async (req, res) => {
     try {
@@ -20,17 +25,14 @@ app.post('/chat', async (req, res) => {
             return res.status(400).send({ error: 'Message is required' });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const chat = model.startChat();
-        const result = await chat.sendMessage(req.body.message);
-        const response = await result.response;
-        const text = response.text();
+        const chatResponse = await cohere.chat({
+            message: req.body.message,
+        });
 
-        res.send({ reply: text });
+        res.send({ reply: chatResponse.text });
 
     } catch (error) {
         console.error("Error in /chat endpoint:", error);
-        // It's good practice to not send detailed internal errors to the client.
         res.status(500).send({ error: 'Failed to generate response from AI.' });
     }
 });
