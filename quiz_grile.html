@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator Grile CTS 2024</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #2b579a;
+            --primary-hover: #1e3d73;
+            --success-color: #2e7d32;
+            --success-bg: #e8f5e9;
+            --error-color: #c62828;
+            --error-bg: #ffebee;
+            --border-color: #e0e0e0;
+            --accent-color: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary-color), #4682b4);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .file-loader {
+            background-color: var(--card-bg);
+            border: 2px dashed var(--primary-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .file-loader p {
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: bold;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .question-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f8f9fa;
+            border-color: #b0b0b0;
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            margin-top: 3px;
+            transform: scale(1.1);
+        }
+
+        .option-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Status Styles */
+        .option-label.correct-selected {
+            background-color: var(--success-bg);
+            border-color: var(--success-color);
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .option-label.incorrect-selected {
+            background-color: var(--error-bg);
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .option-label.correct-unselected {
+            border: 2px dashed var(--success-color);
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .feedback-box {
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .feedback-box.success {
+            display: block;
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .feedback-box.error {
+            display: block;
+            background-color: var(--error-bg);
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Simulator Grile CTS 2024</h1>
+        <p>Verifică-ți cunoștințele pentru examenul de Calitatea Sistemelor Software</p>
+    </header>
+
+    <!-- File Loader Fallback in case of CORS or custom file names -->
+    <div id="file-loader" class="file-loader hidden">
+        <p>⚠️ Nu am putut încărca automat fișierul <code>grile_cts_2024.json</code> direct de pe disc din cauza restricțiilor de securitate ale browserului (CORS).</p>
+        <p style="font-size: 14px; font-weight: normal; color: #666;">Te rog selectează manual fișierul JSON din calculatorul tău pentru a începe:</p>
+        <input type="file" id="json-file-input" accept=".json" style="margin-top: 10px;">
+    </div>
+
+    <div id="quiz-stats" class="quiz-stats hidden">
+        <div>Scor curent: <span id="score">0</span> / <span id="answered-count">0</span></div>
+        <div>Total grile: <span id="total-count">0</span></div>
+    </div>
+
+    <div id="quiz-container">
+        <div style="text-align: center; padding: 40px; color: #666;">
+            Se încarcă grilele din <code>grile_cts_2024.json</code>...
+        </div>
+    </div>
+</div>
+
+<script>
+    let quizData = [];
+    let score = 0;
+    let answeredCount = 0;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Try to auto-fetch first (works if on local server like VS Code Live Server or python -m http.server)
+        fetch('grile_cts_2024.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Fișierul nu a fost găsit");
+                }
+                return response.json();
+            })
+            .then(data => {
+                initQuiz(data);
+            })
+            .catch(err => {
+                console.log("Auto-fetch failed or CORS blocked it. Showing manual file uploader.", err);
+                document.getElementById('file-loader').classList.remove('hidden');
+                document.getElementById('quiz-container').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #c62828; font-weight: bold;">
+                        Aștept încărcarea manuală a fișierului JSON de mai sus.
+                    </div>
+                `;
+            });
+
+        // Handle manual file selection to bypass CORS
+        document.getElementById('json-file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    document.getElementById('file-loader').classList.add('hidden');
+                    initQuiz(data);
+                } catch (error) {
+                    alert("Eroare la parsararea fișierului JSON. Asigură-te că este un format valid.");
+                }
+            };
+            reader.readAsText(file);
+        });
+    });
+
+    function initQuiz(data) {
+        quizData = data;
+        score = 0;
+        answeredCount = 0;
+        
+        document.getElementById('quiz-stats').classList.remove('hidden');
+        document.getElementById('total-count').textContent = quizData.length;
+        document.getElementById('score').textContent = score;
+        document.getElementById('answered-count').textContent = answeredCount;
+        
+        renderQuestions();
+    }
+
+    function renderQuestions() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+
+        quizData.forEach((item, qIdx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-card-${qIdx}`;
+
+            // Handle whether it has multiple correct answers or single
+            const isMultiple = item.correct_answers.length > 1;
+            const inputType = isMultiple ? 'checkbox' : 'radio';
+
+            let optionsHtml = '';
+            item.options.forEach((opt, oIdx) => {
+                optionsHtml += `
+                    <label class="option-label" id="label-${qIdx}-${oIdx}">
+                        <input type="${inputType}" name="question-${qIdx}" value="${opt.replace(/"/g, '&quot;')}" id="input-${qIdx}-${oIdx}">
+                        <span class="option-text">${escapeHtml(opt)}</span>
+                    </label>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="question-text">${qIdx + 1}. ${escapeHtml(item.question)}</div>
+                <div class="options-container">
+                    ${optionsHtml}
+                </div>
+                <div class="feedback-box" id="feedback-${qIdx}"></div>
+                <div class="actions">
+                    <button class="btn" id="btn-check-${qIdx}" onclick="checkAnswer(${qIdx})">Verifică Răspunsul</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkAnswer(qIdx) {
+        const item = quizData[qIdx];
+        const inputs = document.querySelectorAll(`input[name="question-${qIdx}"]`);
+        const feedback = document.getElementById(`feedback-${qIdx}`);
+        const checkBtn = document.getElementById(`btn-check-${qIdx}`);
+
+        let selectedAnswers = [];
+        inputs.forEach(input => {
+            if (input.checked) {
+                selectedAnswers.push(input.value);
+            }
+            // Disable inputs after checking
+            input.disabled = true;
+        });
+
+        if (selectedAnswers.length === 0) {
+            alert("Te rog selectează cel puțin un răspuns înainte de a verifica!");
+            inputs.forEach(input => input.disabled = false); // re-enable
+            return;
+        }
+
+        checkBtn.classList.add('hidden'); // Hide button after check
+
+        const correctSet = new Set(item.correct_answers);
+        const selectedSet = new Set(selectedAnswers);
+
+        // Check exact match
+        let isPerfect = true;
+        
+        // All correct ones must be selected, and no incorrect ones selected
+        item.options.forEach((opt, oIdx) => {
+            const label = document.getElementById(`label-${qIdx}-${oIdx}`);
+            const isCorrect = correctSet.has(opt);
+            const isSelected = selectedSet.has(opt);
+
+            if (isCorrect && isSelected) {
+                label.classList.add('correct-selected');
+            } else if (!isCorrect && isSelected) {
+                label.classList.add('incorrect-selected');
+                isPerfect = false;
+            } else if (isCorrect && !isSelected) {
+                label.classList.add('correct-unselected');
+                isPerfect = false;
+            }
+        });
+
+        // Update global stats
+        answeredCount++;
+        if (isPerfect) {
+            score++;
+            feedback.textContent = "🎉 Corect!";
+            feedback.className = "feedback-box success";
+        } else {
+            feedback.textContent = `❌ Incorect. Răspunsul corect: ${item.correct_answers.join(' | ')}`;
+            feedback.className = "feedback-box error";
+        }
+
+        document.getElementById('score').textContent = score;
+        document.getElementById('answered-count').textContent = answeredCount;
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+</script>
+
+</body>
+</html>

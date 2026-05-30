@@ -1,0 +1,302 @@
+[
+    {
+        "question": "Care dintre urmatoarele Design Patterns incalca Dependency Inversion Principle?",
+        "options": [
+            "Command",
+            "Observer",
+            "Strategy",
+            "Simple Factory",
+            "Decorator",
+            "Factory Method",
+            "State"
+        ],
+        "correct_answers": [
+            "Simple Factory"
+        ]
+    },
+    {
+        "question": "O metoda ce realizeaza un back-up al bazei de date trebuie executata in fiecare noapte la ora 02:00. Doriti sa scrieti un test unitar ce verifica daca metoda chiar este apelata la acea ora. Acest test este de tip:",
+        "options": [
+            "Right",
+            "Performance",
+            "Time",
+            "Error condition",
+            "Cardinality"
+        ],
+        "correct_answers": [
+            "Time"
+        ]
+    },
+    {
+        "question": "Pentru metoda public boolean metoda(List<Integer> listaNota) ce returneaza true daca lista contine cel putin 2 note de trecere, care este numarul minim de testari de tipul Cardinality care trebuie realizate pentru a acoperi toate cazurile posibile?",
+        "options": [
+            "4",
+            "1",
+            "3",
+            "2",
+            "5"
+        ],
+        "correct_answers": [
+            "3"
+        ]
+    },
+    {
+        "question": "Pentru metoda oMetoda() ce este corect implementata care dintre următoarele valori pot fi folosite pentru teste de tip Boundary (selectați unul sau mai multe răspunsuri)?",
+        "options": [
+            "5",
+            "10",
+            "20",
+            "Metoda nu poate fi testată prin teste Boundary, deoarece generează o excepție",
+            "30",
+            "1",
+            "0"
+        ],
+        "correct_answers": [
+            "1",
+            "5",
+            "10"
+        ]
+    },
+    {
+        "question": "Implementezi pentru clasa Student metoda setAge(int value) care initializeaza varsta studentului cu valoarea primita. Conform specificatiilor, varsta este cuprinsa in intervalul [18, 90]. Considerand urmatoarea implementare a metodei, indicati care enunt este adevarat (toate testele sunt scrise corect)",
+        "options": [
+            "Un test de tip Boundary pentru valoarea 18 va esua",
+            "Un test de tip Right pentru valoarea 18 va trece cu succes",
+            "Un test de tip Right pentru valoarea 17 va trece cu succes",
+            "Un test de tip Boundary pentru valoarea 18 va trece cu succes",
+            "Un test de tip Error Condition pentru valoarea 18 va esua"
+        ],
+        "correct_answers": [
+            "Un test de tip Boundary pentru valoarea 18 va esua"
+        ]
+    },
+    {
+        "question": "Dezvolți o aplicație software pentru un restaurant. Restaurantul are mai mulți Şefi de sală care au în subordine ospătari. Ospătarii nu au nicio persoană în subordine. Se doreşte implementarea unui modul pentru reprezentarea diagramei organizaționale a ospătarilor şi a şefilor de sală. În cadrul restaurantului există un singur Chef care gătește toate felurile de mâncare. Trebuie implementată clasa Chef, astfel încât să existe unul singur în restaurant la un moment dat, și care să primească toate feluri de mâncare de gătit. În cazul în care sunt mai mulți clienți la un moment dat în restaurant, toate felurile de mâncare pe care trebuie să le gătească Chef, vor fi ordonate într-o coadă de așteptare. Care sunt cele 3 design patternuri care rezolvă optim aceste probleme?",
+        "options": [
+            "Prototype",
+            "Proxy",
+            "Adapter",
+            "Memento",
+            "Flyweight",
+            "Observer",
+            "State",
+            "Composite",
+            "Strategy",
+            "Decorator",
+            "Chain of Responsability",
+            "Factory (simple sau method)",
+            "Singleton",
+            "Builder",
+            "Template",
+            "Command"
+        ],
+        "correct_answers": [
+            "Singleton",
+            "Composite",
+            "Command"
+        ]
+    },
+    {
+        "question": "Dezvolți o soluție software bazata pe 2 microservicii ce au rolul de a gestiona repartizarea locurilor in camin pentru o universitate cu foarte multi studenti. Solutia trebuie sa proceseze un numar mare de solicitari intr-un timp scurt si din acest motiv se implementeaza un mecanism asincron de prelucrare a solicitarilor stundentilor. Un microserviciu are rolul de a valida si inregistra cererile studentilor, ele urmand a fi stocate si procesate printr-un mecanism de tip FIFO, Deoarece volumul mare de cereri nu permite procesarea lor pe acelasi microserviciu, detaliile cererilor sunt incapsulate si transferate pe un alt microserviciu unde sunt si executate. Care sunt cele 2 design patternuri care rezolva optim aceste 2 probleme?",
+        "options": [
+            "Adapter",
+            "Decorator",
+            "Command",
+            "Prototype",
+            "Singleton",
+            "Memento",
+            "Composite",
+            "Proxy",
+            "Strategy",
+            "State",
+            "Factory (simple sau method)",
+            "Template",
+            "Chain of Responsability",
+            "Observer",
+            "Flyweight",
+            "Builder"
+        ],
+        "correct_answers": [
+            "Command",
+            "Memento"
+        ]
+    },
+    {
+        "question": "Ce Design Pattern este implementat corect si complet in clasa de mai jos? public class DesignPattern implements Cloneable { private static DesignPattern field; public static DesignPattern getField() { if(field == null) { field = new DesignPattern(); } return field; } @Override public Object clone() throws CloneNotSupportedException { return field; } }",
+        "options": [
+            "niciunul",
+            "Singleton",
+            "Simple Factory",
+            "Flyweight",
+            "Factory Method",
+            "Builder",
+            "Prototype"
+        ],
+        "correct_answers": [
+            "niciunul"
+        ]
+    },
+    {
+        "question": "Dezvolți o soluție software pentru o companie de închirieri maşini. Compania deține o flotă de maşini DACIA din diferite categorii: Break, Berlină sau SUV. Atunci când un client dorește să închirieze o mașină specifică tipul dorit, iar aplicația furnizează un obiect mașină de tipul dorit. Trebuie implementat modulul care creează acest obiect. Plata pentru închiriere se face de către client în momentul prezentării la ghişeu. Modul de plată poate fi cash în lei, cash în valuta, sau cu cardul. Modul de plată îl decide clientul în momentul efectuării plății. Trebuie implementat modulul care permite efectuarea plății. Care sunt cele 2 design patternuri care rezolvă optim aceste 2 probleme?",
+        "options": [
+            "Proxy",
+            "Factory (simple sau method)",
+            "Chain of Responsability",
+            "Adapter",
+            "Prototype",
+            "Singleton",
+            "Composite",
+            "Memento",
+            "Template",
+            "Flyweight",
+            "State",
+            "Strategy",
+            "Decorator",
+            "Observer",
+            "Command",
+            "Builder"
+        ],
+        "correct_answers": [
+            "Factory (simple sau method)",
+            "Strategy"
+        ]
+    },
+    {
+        "question": "Din implementarea carui Design Pattern poate face parte urmatoarea clasa? public class History { private Stack<String> messages = new Stack<>(); public void saveLastMessage(String message) { messages.push(message); } public String getLastMessage() { return messages.pop(); } }",
+        "options": [
+            "Mediator",
+            "Interpreter",
+            "Prototype",
+            "State",
+            "Memento",
+            "Proxy",
+            "Bridge",
+            "Template method"
+        ],
+        "correct_answers": [
+            "Memento"
+        ]
+    },
+    {
+        "question": "Se ia in considerare urmatorul scenariu: O persoana poate depune cererea pentru preschimbarea permisului de conducere doar la ghiseul special dedicat. De aici cererea va fi analizata de ofiterul de serviciu ce va cere tipografiei printarea unui nou permis daca acest lucru este legal. De la tipografie permisul va ajunge la ghiseul ridicari de unde va putea fi ridicat de solicitant. Modalitatea de evaluare a posibilitatii elibararii unui nou permis precum si toate etapele prin care trece acesta de la depunerea cererii si pana la eliberare nu sunt transparente pentru solicitant. Ce combinatie de Design Pattern puteti utiliza pentru implementarea acestui scenariu?",
+        "options": [
+            "Proxy",
+            "Command",
+            "Composite",
+            "Prototype",
+            "State",
+            "Chain of Responsibility",
+            "Observer",
+            "Strategy",
+            "Facade",
+            "Adapter"
+        ],
+        "correct_answers": [
+            "Facade"
+        ]
+    },
+    {
+        "question": "Posibilitatea interceptării unor apeluri de metodă este dată de următorul DP",
+        "options": [
+            "Decorator",
+            "Facade",
+            "Adapter",
+            "Composite",
+            "Proxy"
+        ],
+        "correct_answers": [
+            "Proxy"
+        ]
+    },
+    {
+        "question": "Ce principiu de clean code este incalcat conform diagramei din imagine: Employee + calculatePay + reportHours + save",
+        "options": [
+            "Dependency Inversion",
+            "Liskov Principle",
+            "Open-Closed",
+            "Single Responsibility",
+            "Interface Segregation"
+        ],
+        "correct_answers": [
+            "Single Responsibility"
+        ]
+    },
+    {
+        "question": "Testati o metoda ce depinde de o conexiunea la o baza de date specificata prin interfata IConnection. Cum procedati?",
+        "options": [
+            "utilizati null in locul referintei respective",
+            "utilizati conexiunea aferenta aplicatiei",
+            "realizati un Stub al interfetei IConnection",
+            "realizati un Mock al interfetei IConnection",
+            "realizati un Fake al interfetei IConnection"
+        ],
+        "correct_answers": [
+            "realizati un Mock al interfetei IConnection",
+            "realizati un Stub al interfetei IConnection",
+            "realizati un Fake al interfetei IConnection"
+        ]
+    },
+    {
+        "question": "In cadrul unei suite de teste (test suite) pot fi specificate spre a fi executate:",
+        "options": [
+            "test methods",
+            "test cases",
+            "alte suite",
+            "toate testele cu exceptia unor categorii",
+            "doar anumite categorii de teste"
+        ],
+        "correct_answers": [
+            "test cases",
+            "alte suite",
+            "doar anumite categorii de teste",
+            "toate testele cu exceptia unor categorii"
+        ]
+    },
+    {
+        "question": "Care sunt adnotarile in JUnit4 ce pot fi folosite pentru metode prin care programatorii pot gestiona TestFixtures?",
+        "options": [
+            "@SuiteClasses",
+            "@After",
+            "@BeforeClass",
+            "@Test",
+            "@RunWith",
+            "@Before",
+            "@Ignore",
+            "@AfterClass"
+        ],
+        "correct_answers": [
+            "@Before",
+            "@After",
+            "@BeforeClass",
+            "@AfterClass"
+        ]
+    },
+    {
+        "question": "Doresti să reduci costurile de dezvoltare prin reutilizarea metodelor implementate in componente din alte proiecte. Ce design pattern iti va permite sa faci asta fara sa le modifici ?",
+        "options": [
+            "Facade",
+            "Delegation",
+            "Singleton",
+            "State",
+            "Adapter",
+            "Decorator",
+            "Strategy",
+            "Command"
+        ],
+        "correct_answers": [
+            "Adapter"
+        ]
+    },
+    {
+        "question": "In aplicatia pe care o editati aveti o interfata denumita KeyConverter si mai multe clase ce implementeaza acesta interfata, implementari ce sunt utilizate pentru a converti obiecte de tip Key in alte formate. Tocmai ati adaugat o noua dependenta (biblioteca) care are o clasa existenta ce stie cum sa converteasca obiecte de tip Key. Noua clasa se numeste StateKeyToStringConverter, dar nu implementeaza interfata KeyConverter. Ce ati schimba in aceasta aplicatie astfel incat sa puteti utiliza noua clasa cu minimul de modificari necesare?",
+        "options": [
+            "Utilizati Proxy",
+            "Creati o noua interfata ce deriveaza ambele interfete existente",
+            "Utilizati Adapter",
+            "Utilizati Strategy"
+        ],
+        "correct_answers": [
+            "Utilizati Adapter"
+        ]
+    }
+]
