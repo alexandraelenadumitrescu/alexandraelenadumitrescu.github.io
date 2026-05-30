@@ -6,7 +6,7 @@ const API_KEY = process.env.API_KEY;
 
 if (!API_KEY || API_KEY === "YOUR_API_KEY") {
     console.error("Error: API_KEY is not defined. Please create a .env file and add your Cohere API key.");
-    process.exit(1); // Stop the server if the key is not set
+    process.exit(1); // Stop the server if the key is not set, still not working
 }
 
 const app = express();
