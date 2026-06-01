@@ -1,0 +1,402 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --gray-800: #222222;
+    --gray-600: #444444;
+    --gray-500: #666666;
+    --gray-400: #888888;
+    --gray-200: #cccccc;
+    --gray-100: #e8e8e8;
+    --gray-50:  #f5f5f5;
+    --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --max-width: 1200px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font-sans);
+    background: var(--white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Navigation ─── */
+.nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    font-family: var(--font-serif);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--black);
+    text-transform: uppercase;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 36px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--black); }
+
+/* ─── Hero ─── */
+.hero {
+    padding: 152px 48px 104px;
+}
+
+.hero-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 28px;
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(58px, 7.5vw, 108px);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    color: var(--black);
+    margin-bottom: 36px;
+}
+
+.hero-subtitle {
+    max-width: 580px;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--gray-500);
+    margin-bottom: 64px;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 56px;
+    padding-top: 44px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.meta-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    font-weight: 500;
+}
+
+.meta-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--black);
+}
+
+/* ─── Section Divider ─── */
+.full-divider {
+    height: 1px;
+    background: var(--gray-100);
+}
+
+/* ─── Speakers Section ─── */
+.speakers-section {
+    padding: 96px 48px 112px;
+}
+
+.section-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.section-header {
+    margin-bottom: 64px;
+}
+
+.section-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--black);
+}
+
+/* ─── Speakers Grid ─── */
+.speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 52px 28px;
+}
+
+/* ─── Speaker Card ─── */
+.speaker-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.speaker-photo-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: var(--gray-50);
+    margin-bottom: 18px;
+}
+
+.speaker-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    filter: grayscale(100%);
+    transition: filter 0.4s ease, transform 0.45s ease;
+}
+
+.speaker-card:hover .speaker-photo {
+    filter: grayscale(0%);
+    transform: scale(1.04);
+}
+
+.speaker-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--black);
+    color: var(--white);
+    padding: 4px 8px;
+}
+
+.speaker-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.speaker-name {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--black);
+    line-height: 1.25;
+    margin-bottom: 2px;
+}
+
+.speaker-title {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.speaker-company {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-800);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1px;
+}
+
+.speaker-email {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--gray-400);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    font-weight: 400;
+}
+
+.speaker-email:hover {
+    color: var(--black);
+    border-bottom-color: var(--black);
+}
+
+/* ─── Agenda strip ─── */
+.agenda-section {
+    background: var(--gray-50);
+    padding: 80px 48px;
+    border-top: 1px solid var(--gray-100);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.agenda-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.agenda-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 48px;
+    border-left: 1px solid var(--gray-100);
+}
+
+.agenda-item {
+    padding: 32px 40px;
+    border-right: 1px solid var(--gray-100);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.agenda-time {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 10px;
+}
+
+.agenda-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.agenda-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.6;
+}
+
+/* ─── Footer ─── */
+.footer {
+    background: var(--black);
+    color: var(--white);
+    padding: 56px 48px;
+}
+
+.footer-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.footer-logo {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.footer-brand p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 300;
+}
+
+.footer-info {
+    text-align: right;
+}
+
+.footer-info p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 6px;
+}
+
+.footer-info a {
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-info a:hover { color: var(--white); }
+
+/* ─── Responsive ─── */
+@media (max-width: 1100px) {
+    .speakers-grid { grid-template-columns: repeat(3, 1fr); }
+    .agenda-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .nav-inner   { padding: 0 24px; }
+    .nav-links   { display: none; }
+    .hero        { padding: 120px 24px 80px; }
+    .hero-meta   { flex-wrap: wrap; gap: 28px; }
+    .speakers-section, .agenda-section { padding-left: 24px; padding-right: 24px; }
+    .speakers-grid { grid-template-columns: repeat(2, 1fr); gap: 36px 20px; }
+    .agenda-grid   { grid-template-columns: 1fr; }
+    .footer-inner  { flex-direction: column; }
+    .footer-info   { text-align: left; }
+    .footer        { padding: 48px 24px; }
+}
+
+@media (max-width: 480px) {
+    .speakers-grid { grid-template-columns: 1fr; }
+}
