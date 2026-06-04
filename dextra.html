@@ -497,23 +497,22 @@
     }
 
     try {
-      // Query: cuvântul exact (case-insensitive via stored lowercase copy)
+      // Query fără orderBy — sortăm client-side ca să nu fie nevoie de index compozit
       const snap = await db.collection("definitions")
         .where("wordLower", "in", [target, targetNorm])
-        .orderBy("votes", "desc")
         .get();
 
-      // Also try normalized match if different
       let docs = snap.docs;
       if (targetNorm !== target) {
         const snap2 = await db.collection("definitions")
           .where("wordLower", "==", targetNorm)
-          .orderBy("votes", "desc")
           .get();
-        // Merge, deduplicate
         const ids = new Set(docs.map(d => d.id));
         snap2.docs.forEach(d => { if (!ids.has(d.id)) docs.push(d); });
       }
+
+      // Sortare după voturi descrescător
+      docs.sort((a, b) => (b.data().votes || 0) - (a.data().votes || 0));
 
       if (docs.length === 0) {
         box.innerHTML = `
